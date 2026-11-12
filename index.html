@@ -3,77 +3,158 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#111318">
-  <meta name="description" content="Ruleta de cartas de Pokémon TypeLink 2">
-  <title>Pokémon TypeLink 2 — Ruleta</title>
+  <meta name="theme-color" content="#111820">
+  <meta name="description" content="Pokémon TypeLink 2 — Plataforma del evento en Teselia">
+  <title>Pokémon TypeLink 2 — Plataforma</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="ambient ambient-one"></div>
-  <div class="ambient ambient-two"></div>
-  <header class="topbar">
-    <a class="brand" href="#" aria-label="TypeLink 2 inicio">
-      <span class="brand-mark">TL<span>2</span></span>
-      <span class="brand-copy"><strong>POKÉMON TYPELINK</strong><small>SISTEMA DE CARTAS</small></span>
-    </a>
-    <div class="beta-tag"><span></span> BETA 0.1</div>
-  </header>
+  <div class="page-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#" data-page="home" aria-label="TypeLink 2 inicio">
+        <span class="brand-emblem"><span>TL</span><b>2</b></span>
+        <span class="brand-copy"><strong>POKÉMON</strong><b>TYPELINK 2</b><small>TESelia · UNOVA REGION</small></span>
+      </a>
 
-  <main class="layout">
-    <section class="hero">
-      <p class="eyebrow">TESALIA · TEMPORADA 02</p>
-      <h1>La suerte está<br><span>de tu lado.</span></h1>
-      <p class="intro">Gira la ruleta y descubre qué carta se une a tu baraja.</p>
-    </section>
+      <div class="sidebar-label">PLATAFORMA</div>
+      <nav class="main-nav" aria-label="Navegación principal">
+        <button class="nav-link active" data-page="home"><span class="nav-icon">⌂</span><span>Inicio</span></button>
+        <button class="nav-link" data-page="roulette"><span class="nav-icon">◉</span><span>Ruleta</span><span class="nav-count" id="navDeckCount">0/5</span></button>
+        <button class="nav-link" data-page="players"><span class="nav-icon">♙</span><span>Jugadores</span></button>
+        <button class="nav-link" data-page="deck"><span class="nav-icon">▤</span><span>Mi baraja</span></button>
+        <button class="nav-link" data-page="pokemon"><span class="nav-icon">✦</span><span>Mi equipo Pokémon</span></button>
+        <button class="nav-link" data-page="notifications"><span class="nav-icon">♧</span><span>Notificaciones</span><span class="nav-dot"></span></button>
+      </nav>
 
-    <section class="game-grid">
-      <div class="wheel-panel panel">
-        <div class="panel-heading">
-          <div><span class="section-kicker">01 / RULETA</span><h2>Ruleta de cartas</h2></div>
-          <span class="live-pill"><i></i> LISTA</span>
-        </div>
-        <div class="wheel-wrap">
-          <div class="pointer"></div>
-          <canvas id="wheel" width="700" height="700" aria-label="Ruleta con cartas disponibles"></canvas>
-          <div class="wheel-center"><span>TYPE</span><strong>LINK</strong><small>2</small></div>
-        </div>
-        <div class="wheel-actions">
-          <button id="spinButton" class="spin-button"><span>GIRAR RULETA</span><b>✦</b></button>
-          <p id="spinHint" class="hint">Cada giro entrega una carta normal aleatoria.</p>
-        </div>
+      <div class="sidebar-label secondary-label">GESTIÓN</div>
+      <nav class="main-nav">
+        <button class="nav-link" data-page="admin"><span class="nav-icon">⚙</span><span>Administración</span></button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="unova-mark"><span class="unova-orb"></span><div><strong>REGIÓN TESelia</strong><small>UNA NUEVA AVENTURA</small></div></div>
+        <div class="sidebar-version">TYPELINK 2 · BETA 0.2</div>
       </div>
+    </aside>
 
-      <aside class="side-column">
-        <div class="result-panel panel">
-          <div class="panel-heading compact">
-            <div><span class="section-kicker">02 / RESULTADO</span><h2>Tu recompensa</h2></div>
-          </div>
-          <div id="resultCard" class="result-card empty">
-            <div class="card-placeholder"><span>✦</span><strong>¿QUÉ TE<br>TOCARÁ?</strong><small>GIRA LA RULETA</small></div>
-          </div>
-          <p id="resultMessage" class="result-message">Tu próxima carta te espera.</p>
+    <div class="main-area">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobileMenu" aria-label="Abrir menú">☰</button>
+        <div class="breadcrumb"><span>TYPELINK 2</span><i>/</i><strong id="currentSection">INICIO</strong></div>
+        <div class="topbar-right">
+          <span class="connection-status"><i></i> MODO DEMOSTRACIÓN</span>
+          <div class="user-chip"><span class="user-avatar">TL</span><span><b>ENTRENADOR</b><small>Sin sesión</small></span></div>
         </div>
+      </header>
 
-        <div class="deck-panel panel">
-          <div class="panel-heading compact">
-            <div><span class="section-kicker">03 / INVENTARIO</span><h2>Mi baraja</h2></div>
-            <span id="deckCount" class="counter">0/5</span>
+      <main class="content">
+        <section class="page-view" id="page-home">
+          <div class="welcome-banner">
+            <div class="welcome-copy">
+              <div class="overline"><span class="overline-line"></span> POKÉMON · TESelia</div>
+              <h1>UNA NUEVA<br><em>AVENTURA</em> COMIENZA.</h1>
+              <p>El centro de operaciones de Pokémon TypeLink 2. Tu recorrido por Teselia empieza aquí.</p>
+              <button class="primary-button" data-page="roulette">IR A LA RULETA <span>↗</span></button>
+            </div>
+            <div class="unova-art" aria-hidden="true">
+              <div class="art-ring ring-one"></div><div class="art-ring ring-two"></div>
+              <div class="bw-symbol"><span class="symbol-black"></span><span class="symbol-white"></span><i></i></div>
+              <div class="art-caption">UNOVA<br><b>REGION</b></div>
+              <div class="art-index">017 / TL2</div>
+            </div>
+            <div class="banner-side-label">TESelia · 5TH GENERATION</div>
           </div>
-          <div class="capacity"><span id="capacityFill"></span></div>
-          <div id="deckList" class="deck-list">
-            <div class="deck-empty">Todavía no tienes cartas.<br><span>¡Haz tu primer giro!</span></div>
+
+          <div class="section-intro">
+            <div><div class="eyebrow">CENTRO DE ENTRENADORES</div><h2>Tu aventura en TypeLink</h2></div>
+            <span class="section-note">BETA 0.2 · ESTRUCTURA INICIAL</span>
           </div>
-          <div class="route-heading"><span>🛣️ CARTAS DE TRAMO</span><strong id="routeCount">0</strong></div>
-          <div id="routeList" class="route-list"><div class="route-empty">Todavía no has iniciado un tramo.</div></div>
-          <button id="tramoButton" class="secondary-button">SIMULAR /TRAMO · RECIBIR 2 CARTAS</button>
-          <p class="tiny-note">Las cartas de tramo se acumulan y no cuentan para el límite de 5 cartas normales.</p>
-          <button id="resetButton" class="text-button">Reiniciar demo</button>
-        </div>
-      </aside>
-    </section>
-    <section class="demo-note"><strong>Esto es una demostración.</strong> Las cartas se guardan únicamente en este navegador. Todavía no está conectada a Discord ni comparte inventarios entre jugadores.</section>
-  </main>
-  <footer><span>POKÉMON TYPELINK 2</span><span>HECHO PARA LA COMUNIDAD · BETA 0.1</span></footer>
+
+          <div class="overview-grid">
+            <button class="overview-card card-roulette" data-page="roulette">
+              <span class="overview-number">01</span><span class="overview-icon">◉</span>
+              <strong>RULETA DE CARTAS</strong><small>Gira y descubre tu próxima carta.</small><span class="card-arrow">↗</span>
+            </button>
+            <button class="overview-card" data-page="players">
+              <span class="overview-number">02</span><span class="overview-icon">♙</span>
+              <strong>JUGADORES</strong><small>Explora los perfiles de los entrenadores.</small><span class="card-arrow">↗</span>
+            </button>
+            <button class="overview-card" data-page="deck">
+              <span class="overview-number">03</span><span class="overview-icon">▤</span>
+              <strong>MI BARAJA</strong><small>Consulta tus cartas y cartas de tramo.</small><span class="card-arrow">↗</span>
+            </button>
+            <button class="overview-card" data-page="pokemon">
+              <span class="overview-number">04</span><span class="overview-icon">✦</span>
+              <strong>EQUIPO POKÉMON</strong><small>Prepara la conexión de tu partida.</small><span class="card-arrow">↗</span>
+            </button>
+          </div>
+
+          <div class="home-bottom-grid">
+            <div class="panel home-status-panel">
+              <div class="panel-topline"><span class="eyebrow">ESTADO DEL ENTRENADOR</span><span class="status-tag">DEMO</span></div>
+              <h3>Tu perfil está esperando.</h3>
+              <p>Cuando conectemos el inicio de sesión con Discord, aquí aparecerán tu identidad, progreso y actividad.</p>
+              <div class="status-placeholder"><span class="profile-placeholder">TL</span><div><b>ENTRENADOR SIN IDENTIFICAR</b><small>Iniciaremos sesión con Discord en una próxima versión.</small></div></div>
+            </div>
+            <div class="panel home-deck-panel">
+              <div class="panel-topline"><span class="eyebrow">RESUMEN DE BARAJA</span><button class="inline-link" data-page="deck">VER BARAJA ↗</button></div>
+              <div class="mini-stats"><div><strong id="homeDeckCount">0/5</strong><small>CARTAS NORMALES</small></div><div><strong id="homeRouteCount">0</strong><small>CARTAS DE TRAMO</small></div></div>
+              <div class="mini-capacity"><span id="homeCapacityFill"></span></div>
+              <p id="homeDeckHint">Tu baraja todavía está vacía. Haz tu primer giro.</p>
+            </div>
+          </div>
+          <div class="demo-banner"><b>AVISO DE BETA</b><span>Esta versión conserva la ruleta funcional. Los perfiles, la conexión con Discord y la importación de partidas todavía no están conectados.</span></div>
+        </section>
+
+        <section class="page-view" id="page-roulette" hidden>
+          <div class="page-heading"><div><div class="eyebrow">01 / SISTEMA DE CARTAS</div><h1>RULETA <em>TYPELINK</em></h1><p>Gira la ruleta y descubre qué carta se une a tu baraja.</p></div><span class="page-stamp">UNOVA<br>LEAGUE</span></div>
+          <section class="game-grid">
+            <div class="wheel-panel panel">
+              <div class="panel-heading"><div><span class="section-kicker">SORTEO DE CARTAS</span><h2>Ruleta de cartas</h2></div><span class="live-pill"><i></i> LISTA</span></div>
+              <div class="wheel-wrap"><div class="pointer"></div><canvas id="wheel" width="700" height="700" aria-label="Ruleta con cartas disponibles"></canvas><div class="wheel-center"><span>TYPE</span><strong>LINK</strong><small>2</small></div></div>
+              <div class="wheel-actions"><button id="spinButton" class="spin-button"><span>GIRAR RULETA</span><b>✦</b></button><p id="spinHint" class="hint">Cada giro entrega una carta normal aleatoria.</p></div>
+            </div>
+            <aside class="side-column">
+              <div class="result-panel panel"><div class="panel-heading compact"><div><span class="section-kicker">RESULTADO</span><h2>Tu recompensa</h2></div></div><div id="resultCard" class="result-card empty"><div class="card-placeholder"><span>✦</span><strong>¿QUÉ TE<br>TOCARÁ?</strong><small>GIRA LA RULETA</small></div></div><p id="resultMessage" class="result-message">Tu próxima carta te espera.</p></div>
+              <div class="panel quick-deck-panel"><div class="panel-heading compact"><div><span class="section-kicker">TU INVENTARIO</span><h2>Mi baraja</h2></div><span id="deckCount" class="counter">0/5</span></div><div class="capacity"><span id="capacityFill"></span></div><div id="deckList" class="deck-list"><div class="deck-empty">Todavía no tienes cartas.<br><span>¡Haz tu primer giro!</span></div></div><button class="inline-link deck-open-link" data-page="deck">ABRIR BARAJA COMPLETA ↗</button></div>
+            </aside>
+          </section>
+          <div class="tramo-tool panel"><div><span class="eyebrow">CARTAS ESPECIALES</span><h3>Cartas de tramo</h3><p>En esta demo, el botón simula la entrega de dos cartas de tramo. No consumen espacios de las cinco cartas normales.</p></div><button id="tramoButton" class="secondary-button">SIMULAR /TRAMO <b>＋2</b></button></div>
+          <div class="demo-note"><strong>Modo demostración:</strong> los giros y las cartas se guardan solamente en este navegador. La ruleta todavía no está conectada a Discord ni a una base de datos compartida.</div>
+        </section>
+
+        <section class="page-view" id="page-players" hidden>
+          <div class="page-heading"><div><div class="eyebrow">02 / COMUNIDAD</div><h1>LOS <em>ENTRENADORES</em></h1><p>El registro de participantes de Pokémon TypeLink 2.</p></div><span class="page-stamp">TRAINER<br>NETWORK</span></div>
+          <div class="empty-feature panel"><div class="empty-emblem">♙</div><div class="eyebrow">PRÓXIMAMENTE</div><h2>La comunidad de Teselia.</h2><p>Aquí aparecerán los participantes cuando conectemos el inicio de sesión con Discord. Cada entrenador tendrá un perfil público con su baraja y su equipo Pokémon.</p><div class="feature-chips"><span>PERFILES</span><span>BARAJAS PÚBLICAS</span><span>EQUIPOS POKÉMON</span></div></div>
+        </section>
+
+        <section class="page-view" id="page-deck" hidden>
+          <div class="page-heading"><div><div class="eyebrow">03 / INVENTARIO</div><h1>MI <em>BARAJA</em></h1><p>Tus cartas normales y las cartas acumulables de cada tramo.</p></div><span class="page-stamp">CARD<br>COLLECTION</span></div>
+          <div class="deck-overview panel"><div class="deck-overview-top"><div><span class="eyebrow">CARTAS NORMALES</span><h2 id="deckCountFull">0 / 5</h2></div><div class="deck-capacity-large"><span id="capacityFillFull"></span></div></div><div id="deckListFull" class="full-deck-list"><div class="deck-empty">Todavía no tienes cartas. Ve a la ruleta para conseguir la primera.</div></div></div>
+          <div class="deck-overview panel route-overview"><div class="deck-overview-top"><div><span class="eyebrow">CARTAS DE TRAMO</span><h2><span id="routeCountFull">0</span> <small>ACUMULADAS</small></h2></div><span class="route-symbol">Ⅱ</span></div><div id="routeListFull" class="full-deck-list"><div class="deck-empty">Todavía no has iniciado un tramo.</div></div><div class="route-demo-actions"><button class="secondary-button" id="tramoButtonFull">SIMULAR /TRAMO · RECIBIR 2 CARTAS</button><p>Las cartas de tramo no cuentan para el límite de cinco cartas normales.</p></div></div>
+          <button id="resetButton" class="text-button reset-button">Reiniciar datos de demostración</button>
+        </section>
+
+        <section class="page-view" id="page-pokemon" hidden>
+          <div class="page-heading"><div><div class="eyebrow">04 / REGISTRO DE PARTIDA</div><h1>MI EQUIPO <em>POKÉMON</em></h1><p>Tu equipo, tus cajas, tus movimientos y tus objetos.</p></div><span class="page-stamp">POKÉMON<br>BLACK / WHITE</span></div>
+          <div class="sync-preview panel"><div class="sync-icon">✦</div><div class="eyebrow">TYPELINK SYNC</div><h2>Conecta tu aventura en Teselia.</h2><p>Estamos preparando la lectura de partidas de Pokémon Blanco y Negro desde DeSmuME. La idea es que puedas autorizar tu archivo de guardado una vez y que la web detecte futuras actualizaciones después de guardar dentro del juego.</p><div class="sync-steps"><span><b>01</b> Seleccionar archivo .dsv</span><span><b>02</b> Analizar equipo y cajas</span><span><b>03</b> Mostrar datos en tu perfil</span></div><div class="coming-soon">IMPORTADOR EN DESARROLLO · TODAVÍA NO SE SUBE NI PROCESA NINGÚN ARCHIVO</div></div>
+        </section>
+
+        <section class="page-view" id="page-notifications" hidden>
+          <div class="page-heading"><div><div class="eyebrow">05 / ACTIVIDAD</div><h1>TUS <em>NOTIFICACIONES</em></h1><p>Novedades y movimientos relacionados con tu entrenador.</p></div><span class="page-stamp">LIVE<br>ACTIVITY</span></div>
+          <div class="empty-feature panel"><div class="empty-emblem">♧</div><div class="eyebrow">PRÓXIMAMENTE</div><h2>Tu actividad aparecerá aquí.</h2><p>En futuras versiones podrás recibir avisos cuando una mecánica del evento requiera tu atención. No hay notificaciones reales conectadas todavía.</p></div>
+        </section>
+
+        <section class="page-view" id="page-admin" hidden>
+          <div class="page-heading"><div><div class="eyebrow">06 / CONTROL DEL EVENTO</div><h1>PANEL DE <em>ADMINISTRACIÓN</em></h1><p>Herramientas para gestionar Pokémon TypeLink 2.</p></div><span class="page-stamp">STAFF<br>ACCESS</span></div>
+          <div class="empty-feature panel"><div class="empty-emblem">⚙</div><div class="eyebrow">PRÓXIMAMENTE</div><h2>El centro de control.</h2><p>Este apartado se habilitará cuando exista el inicio de sesión y podamos distinguir administradores de participantes. No hay acciones administrativas activas en esta beta.</p></div>
+        </section>
+
+        <footer class="app-footer"><span>POKÉMON TYPELINK 2</span><span>TESelia · UNOVA REGION</span><span>BETA 0.2</span></footer>
+      </main>
+    </div>
+  </div>
+  <div class="mobile-scrim" id="mobileScrim"></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="script.js"></script>
 </body>
