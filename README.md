@@ -1,31 +1,24 @@
-# Pokémon TypeLink 2 — Ruleta (Beta 0.1)
+# Pokémon TypeLink 2 — Plataforma (Beta 0.2)
 
-Prototipo visual y funcional de la ruleta de cartas.
+Primera estructura de la plataforma TypeLink 2 con identidad visual inspirada en Pokémon Blanco y Negro y la región de Teselia.
 
-## Cómo probarla
-Abre `index.html` en un navegador moderno. No requiere instalación ni dependencias.
+## Incluye
+- Navegación entre Inicio, Ruleta, Jugadores, Mi baraja, Mi equipo Pokémon, Notificaciones y Administración.
+- Ruleta animada funcional conservada de la Beta 0.1.
+- Cartas normales con límite de cinco.
+- Cartas de tramo acumulables mediante una simulación local.
+- Inventario persistente en el navegador mediante localStorage.
+- Diseño adaptable a escritorio y móvil.
+- Apartados informativos para las funciones que aún no están conectadas.
 
-## Qué incluye
-- Ruleta animada con seis cartas de demostración.
-- Selección aleatoria con animación de giro.
-- Inventario local de cartas normales con límite de cinco.
-- El mismo tipo de carta puede salir más de una vez.
-- Simulación del comando `/tramo`: añade dos cartas de tramo por cada uso.
-- Las cartas de tramo se acumulan y no cuentan para el límite de cinco cartas normales.
-- Inventario guardado en el navegador mediante `localStorage`.
-- Diseño adaptable a ordenador y móvil.
+## Limitaciones actuales
+- No hay inicio de sesión con Discord todavía.
+- No hay base de datos compartida: la baraja sigue siendo local al navegador.
+- Jugadores, notificaciones y administración son apartados de estructura, no funciones conectadas.
+- La importación de partidas DeSmuME y TypeLink Sync aún no están implementados.
+- Las cartas son ilustraciones provisionales.
 
-## Limitaciones de esta beta
-- El inventario solo existe en el navegador y dispositivo actual.
-- No hay inicio de sesión ni conexión con Discord.
-- El botón "Simular /tramo" es una demostración local, no un comando real de Discord.
-- Las cartas incluidas son ejemplos provisionales; pueden reemplazarse por los PNG definitivos.
+## Publicación
+El sitio se publica mediante GitHub Pages desde la rama `main`, carpeta raíz.
 
-## Publicación gratuita con GitHub Pages
-1. En el repositorio, abre **Settings**.
-2. En el menú lateral, elige **Pages**.
-3. En **Build and deployment**, selecciona **Deploy from a branch**.
-4. Selecciona la rama **main** y la carpeta **/ (root)**.
-5. Pulsa **Save**. GitHub publicará el sitio en unos minutos.
-
-Repositorio: https://github.com/Criptor03/typelink2-ruleta
+https://github.com/Criptor03/typelink2-ruleta
