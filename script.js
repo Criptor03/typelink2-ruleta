@@ -19,6 +19,13 @@ let spinning = false;
 let lastCard = null;
 let routeState = loadRouteState();
 const TAU = Math.PI * 2;
+const cardArtImages = {};
+CARDS.forEach(card=>{
+  const image = new Image();
+  image.src = card.art;
+  image.onload = () => drawWheel();
+  cardArtImages[card.id] = image;
+});
 
 function loadDeck(){
   try{
@@ -46,9 +53,20 @@ function drawWheel(){
     ctx.fillStyle = i%2===0 ? "#252b36" : "#191f29";ctx.fill();
     ctx.strokeStyle = "#b28b4d";ctx.lineWidth=3;ctx.stroke();
     const mid=start+slice/2;
-    ctx.save();ctx.translate(center+Math.cos(mid)*radius*.67,center+Math.sin(mid)*radius*.67);ctx.rotate(mid+Math.PI/2);
-    ctx.fillStyle=card.color;ctx.font="bold 19px Arial";ctx.textAlign="center";ctx.textBaseline="middle";
-    ctx.fillText(card.name.length>17?card.name.slice(0,16)+"…":card.name,0,0);
+    const x=center+Math.cos(mid)*radius*.65;
+    const y=center+Math.sin(mid)*radius*.65;
+    ctx.save();
+    ctx.translate(x,y);
+    const image=cardArtImages[card.id];
+    if(image && image.complete && image.naturalWidth){
+      ctx.shadowColor="#000";ctx.shadowBlur=9;
+      ctx.drawImage(image,-34,-46,68,92);
+      ctx.shadowBlur=0;
+      ctx.strokeStyle="#e1bf77";ctx.lineWidth=2;ctx.strokeRect(-34,-46,68,92);
+    }else{
+      ctx.fillStyle=card.color;ctx.font="bold 15px Arial";ctx.textAlign="center";ctx.textBaseline="middle";
+      ctx.fillText(card.name.length>13?card.name.slice(0,12)+"…":card.name,0,0);
+    }
     ctx.restore();
   });
   ctx.beginPath();ctx.arc(center,center,42,0,TAU);ctx.fillStyle="#101319";ctx.fill();ctx.strokeStyle="#dfbd73";ctx.lineWidth=5;ctx.stroke();
