@@ -41,6 +41,8 @@ const TAU = Math.PI * 2;
 let authClient = null;
 let currentAuthUser = null;
 let currentProfile = null;
+let isAdmin = false;
+let adminAccessChecked = false;
 let activeSessionUserId = null;
 let inventoryChannel = null;
 let profilesChannel = null;
@@ -985,24 +987,54 @@ function setupRealtime(){
     .on("postgres_changes",{event:"*",schema:"public",table:"player_type_status",filter:"owner_id=eq."+currentAuthUser.id},()=>loadProfileMechanics())
     .subscribe();
 }
+
+function renderAdminAccess(){
+  const nav=document.getElementById("adminNavLink");
+  const label=document.getElementById("adminSectionLabel");
+  if(nav)nav.hidden=!isAdmin;
+  if(label)label.hidden=!isAdmin;
+  setText("adminAccountName",currentProfile?.display_name||currentAuthUser?.user_metadata?.global_name||currentAuthUser?.email||"Administrador");
+  setText("adminAccountProvider",isAdmin?"Discord · Permiso verificado por Supabase":"Acceso administrativo no disponible");
+}
+async function loadAdminAccess(){
+  isAdmin=false;
+  adminAccessChecked=false;
+  renderAdminAccess();
+  if(!authClient||!currentAuthUser)return false;
+  try{
+    const {data,error}=await authClient.rpc("is_current_user_admin");
+    if(error)throw error;
+    isAdmin=data===true;
+    adminAccessChecked=true;
+  }catch(error){
+    console.error("No se pudo verificar el acceso administrativo:",error);
+    isAdmin=false;
+    adminAccessChecked=false;
+  }
+  renderAdminAccess();
+  if(!isAdmin&&!document.getElementById("page-admin").hidden)setPage("home");
+  return isAdmin;
+}
+
 async function activateUserSession(user){
   if(!user){
     if(inventoryChannel&&authClient)authClient.removeChannel(inventoryChannel);
     if(profilesChannel&&authClient)authClient.removeChannel(profilesChannel);
     if(activityChannel&&authClient)authClient.removeChannel(activityChannel);
     inventoryChannel=null;profilesChannel=null;activityChannel=null;
-    activeSessionUserId=null;currentProfile=null;cloudMode=false;cloudDeck=[];cloudRoute=[];cloudSpecial=[];cloudInventory=[];
+    activeSessionUserId=null;currentProfile=null;isAdmin=false;adminAccessChecked=false;cloudMode=false;cloudDeck=[];cloudRoute=[];cloudSpecial=[];cloudInventory=[];
     currentTramo=0;tramoSpinsRemaining=0;bonusTramoSpinsRemaining=0;
     playerTypeStatus=Object.create(null);incomingCardEffects=[];
     evolutionRulesBySource=Object.create(null);cardEffectsById=Object.create(null);
     demoDeck=loadDeck();demoRouteState=loadRouteState();
-    renderAuthState(null);renderDeck();loadPlayers();loadActivityFeed();renderTypeTracker();renderIncomingEffects([]);return;
+    renderAuthState(null);renderDeck();loadPlayers();loadActivityFeed();renderTypeTracker();renderIncomingEffects([]);renderAdminAccess();return;
   }
   if(activeSessionUserId===user.id&&cloudMode)return;
   activeSessionUserId=user.id;currentAuthUser=user;cloudMode=true;
   cloudDeck=[];cloudRoute=[];cloudSpecial=[];cloudInventory=[];
   renderAuthState(user);renderDeck();
-  await Promise.all([loadMyProfile(),loadCloudInventory(),loadPlayers(),loadActivityFeed()]);
+  await Promise.all([loadAdminAccess(),loadMyProfile(),loadCloudInventory(),loadPlayers(),loadActivityFeed()]);
+  renderAdminAccess();
   setupRealtime();
 }
 
@@ -1087,6 +1119,10 @@ async function startNewTramo(){
 }
 
 function setPage(page){
+  if(page==="admin"&&(!currentAuthUser||!isAdmin)){
+    notify("Este apartado es privado y solo está disponible para administradores autorizados.");
+    page="home";
+  }
   document.querySelectorAll(".page-view").forEach(view=>{view.hidden=view.id!=="page-"+page;});
   document.querySelectorAll("[data-page]").forEach(button=>{
     if(button.classList.contains("nav-link"))button.classList.toggle("active",button.dataset.page===page);
@@ -1100,6 +1136,7 @@ function setPage(page){
   if(page==="activity")loadActivityFeed();
   if(page==="deck"&&cloudMode)loadCloudInventory();
   if(page==="profile"&&currentAuthUser)loadMyProfile();
+  if(page==="admin"&&isAdmin)renderAdminAccess();
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
