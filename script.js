@@ -50,6 +50,7 @@ let activityChannel = null;
 let currentTramo = 0;
 let tramoSpinsRemaining = 0;
 let bonusTramoSpinsRemaining = 0;
+let rouletteAccessByPool = {legendary:0,fiesta:0};
 let cloudMode = false;
 let cloudDeck = [];
 let cloudRoute = [];
@@ -293,6 +294,7 @@ function renderDeck(){
   setText("deckCloudNote",cloudMode
     ?"Tu baraja está conectada a Supabase. Los usos, acciones, giros y evoluciones se validan en el servidor."
     :"Inicia sesión con Discord para activar tu baraja en la nube.");
+  updateSpecialRouletteAccessUI();
 }
 function showResult(card){
   const box=document.getElementById("resultCard");
@@ -716,7 +718,15 @@ function renderActivityFeed(entries,profiles){
     if(entry.activity_type==="tramo_award"){
       symbol="Ⅱ";message="ha avanzado al tramo "+(details.tramo_number||"?")+" y ha recibido 2 cartas de tramo";
     }else if(entry.activity_type==="roulette_spin"){
-      symbol="◉";message="ha girado la ruleta y ha obtenido "+cardName;
+      symbol="◉";
+      const specialName=details.roulette_pool==="legendary"?"la Ruleta Legendaria":
+        details.roulette_pool==="fiesta"?"la Ruleta Fiesta":"la ruleta";
+      message="ha girado "+specialName+" y ha obtenido "+cardName;
+    }else if(entry.activity_type==="roulette_unlock"){
+      symbol="✦";
+      const poolName=details.pool_slug==="legendary"?"Ruleta Legendaria":"Ruleta Fiesta";
+      const spins=Number(details.spins_granted||1);
+      message="ha canjeado "+cardName+" y ha desbloqueado "+spins+" giro(s) para "+poolName;
     }else if(entry.activity_type==="transfer"){
       symbol="⇢";message="ha enviado "+cardName+" a "+targetName;
     }else if(entry.activity_type==="evolution"){
@@ -762,7 +772,7 @@ async function loadActivityFeed(){
   }
   const {data,error}=await authClient.from("card_activity")
     .select("id,actor_id,target_id,activity_type,details,created_at")
-    .in("activity_type",["tramo_award","roulette_spin","play","transfer","evolution","admin_grant","admin_remove","tramo_adjustment"])
+    .in("activity_type",["tramo_award","roulette_spin","roulette_unlock","play","transfer","evolution","admin_grant","admin_remove","tramo_adjustment"])
     .order("created_at",{ascending:false})
     .limit(60);
   if(error){
@@ -966,6 +976,7 @@ async function confirmCardAction(){
     if(error)throw error;
     closeCardAction();
     await loadCloudInventory();
+    if(mode==="use")await loadRouletteAccess();
 
     if(mode==="evolve"){
       showResult({
@@ -978,10 +989,16 @@ async function confirmCardAction(){
     }else if(mode==="transfer"){
       notify("¡"+card.name+" se transfirió correctamente!");
     }else{
-      const remaining=Number(data.remaining_uses??0);
-      notify(remaining>0
-        ?"¡"+card.name+" utilizada! Te quedan "+remaining+" usos."
-        :"¡"+card.name+" agotó todos sus usos!");
+      const unlock=Array.isArray(data.roulette_unlocks)?data.roulette_unlocks[0]:null;
+      if(unlock){
+        const poolName=unlock.pool_slug==="legendary"?"Ruleta Legendaria":"Ruleta Fiesta";
+        notify("¡"+card.name+" canjeada! Has desbloqueado "+Number(unlock.spins_granted||1)+" giro(s) en "+poolName+".");
+      }else{
+        const remaining=Number(data.remaining_uses??0);
+        notify(remaining>0
+          ?"¡"+card.name+" utilizada! Te quedan "+remaining+" usos."
+          :"¡"+card.name+" agotó todos sus usos!");
+      }
     }
   }catch(error){
     console.error("No se pudo completar la acción de carta:",error);
@@ -1034,6 +1051,7 @@ function setupRealtime(){
     .on("postgres_changes",{event:"*",schema:"public",table:"player_tramo_progress",filter:"owner_id=eq."+currentAuthUser.id},()=>loadCloudInventory())
     .on("postgres_changes",{event:"*",schema:"public",table:"player_effects",filter:"owner_id=eq."+currentAuthUser.id},()=>loadProfileMechanics())
     .on("postgres_changes",{event:"*",schema:"public",table:"player_type_status",filter:"owner_id=eq."+currentAuthUser.id},()=>loadProfileMechanics())
+    .on("postgres_changes",{event:"*",schema:"public",table:"player_roulette_unlocks",filter:"owner_id=eq."+currentAuthUser.id},()=>loadRouletteAccess())
     .subscribe();
 }
 
@@ -2233,19 +2251,64 @@ async function deleteAdminCard(card){
   }
 }
 
-async function loadPublicNormalCards(){
-  if(!authClient||!currentAuthUser)return;
-  const {data,error}=await authClient.rpc("get_active_roulette_cards",{p_pool_slug:"normal"});
-  if(error){console.warn("No se pudo cargar la ruleta normal configurada:",error.message);return;}
-  const rarityLabels={common:"Común",rare:"Rara",epic:"Épica",legendary:"Legendaria"};
-  const rarityColors={common:"#8d9a9f",rare:"#6f8dbb",epic:"#bd7a4e",legendary:"#d4ae5b"};
-  const cards=Array.isArray(data)?data:[];
-  CARDS.splice(0,CARDS.length,...cards.map(card=>({
+async function loadRouletteAccess(){
+  if(!authClient||!currentAuthUser){
+    rouletteAccessByPool={legendary:0,fiesta:0};
+    updateSpecialRouletteAccessUI();
+    return;
+  }
+  const {data,error}=await authClient.from("player_roulette_unlocks")
+    .select("spins_granted,spins_used,expires_at,roulette_pools!inner(slug)")
+    .eq("owner_id",currentAuthUser.id);
+  if(error){
+    console.warn("No se pudieron cargar los accesos de ruletas:",error.message);
+    return;
+  }
+  const next={legendary:0,fiesta:0};
+  (data||[]).forEach(row=>{
+    const pool=Array.isArray(row.roulette_pools)?row.roulette_pools[0]:row.roulette_pools;
+    const slug=pool?.slug;
+    if(!Object.prototype.hasOwnProperty.call(next,slug))return;
+    if(row.expires_at&&new Date(row.expires_at).getTime()<=Date.now())return;
+    next[slug]+=Math.max(0,Number(row.spins_granted||0)-Number(row.spins_used||0));
+  });
+  rouletteAccessByPool=next;
+  updateSpecialRouletteAccessUI();
+}
+function updateSpecialRouletteAccessUI(){
+  const definitions=[
+    {slug:"legendary",countId:"legendaryAccessCount",buttonId:"legendarySpinButton",hintId:"legendaryAccessHint",ticket:"Legenleta",label:"la Ruleta Legendaria"},
+    {slug:"fiesta",countId:"fiestaAccessCount",buttonId:"fiestaSpinButton",hintId:"fiestaAccessHint",ticket:"Rumba",label:"la Ruleta Fiesta"}
+  ];
+  definitions.forEach(item=>{
+    const count=Math.max(0,Number(rouletteAccessByPool[item.slug]||0));
+    setText(item.countId,count);
+    const button=document.getElementById(item.buttonId);
+    if(button){
+      button.disabled=spinning||!currentAuthUser||count<=0;
+      button.textContent=count>0
+        ?(item.slug==="legendary"?"GIRAR RULETA LEGENDARIA":"GIRAR RULETA FIESTA")+" · "+count
+        :("CANJEA "+item.ticket.toUpperCase());
+    }
+    setText(item.hintId,!currentAuthUser
+      ?"Inicia sesión con Discord para ver tus accesos."
+      :count>0
+        ?"Tienes "+count+" giro(s) disponible(s). El acceso se consume al recibir un premio."
+        :"Canjea "+item.ticket+" en tu baraja para conseguir 1 giro.");
+  });
+}
+function mapRouletteCardRecord(card){
+  const rarityLabels={common:"Común",rare:"Rara",epic:"Épica",legendary:"Legendaria",tramo:"Tramo",fiesta:"Fiesta"};
+  const rarityColors={common:"#8d9a9f",rare:"#6f8dbb",epic:"#bd7a4e",legendary:"#d4ae5b",fiesta:"#a66c77"};
+  return {
     id:card.slug,slug:card.slug,name:card.name,rarity:rarityLabels[card.rarity]||card.rarity,
     color:rarityColors[card.rarity]||"#8d9a9f",description:card.description,
     art:card.image_path||("assets/"+card.slug+".svg"),image_path:card.image_path,
     weight:Number(card.weight||1)
-  })));
+  };
+}
+function setWheelCards(cards){
+  CARDS.splice(0,CARDS.length,...cards);
   cards.forEach(card=>{
     const image=new Image();
     image.src=card.image_path||("assets/"+card.slug+".svg");
@@ -2253,6 +2316,22 @@ async function loadPublicNormalCards(){
     cardArtImages[card.slug]=image;
   });
   drawWheel();
+}
+async function getPublicRouletteCards(poolSlug){
+  if(!authClient||!currentAuthUser)return [];
+  const {data,error}=await authClient.rpc("get_active_roulette_cards",{p_pool_slug:poolSlug});
+  if(error)throw error;
+  return (Array.isArray(data)?data:[]).map(mapRouletteCardRecord);
+}
+
+async function loadPublicNormalCards(){
+  if(!authClient||!currentAuthUser)return;
+  try{
+    const cards=await getPublicRouletteCards("normal");
+    setWheelCards(cards);
+  }catch(error){
+    console.warn("No se pudo cargar la ruleta normal configurada:",error.message);
+  }
 }
 async function loadAdminAccess(){
   isAdmin=false;
@@ -2282,6 +2361,7 @@ async function activateUserSession(user){
     inventoryChannel=null;profilesChannel=null;activityChannel=null;
     activeSessionUserId=null;currentProfile=null;isAdmin=false;adminAccessChecked=false;cloudMode=false;cloudDeck=[];cloudRoute=[];cloudSpecial=[];cloudInventory=[];
     currentTramo=0;tramoSpinsRemaining=0;bonusTramoSpinsRemaining=0;
+    rouletteAccessByPool={legendary:0,fiesta:0};
     playerTypeStatus=Object.create(null);incomingCardEffects=[];
     evolutionRulesBySource=Object.create(null);cardEffectsById=Object.create(null);
     demoDeck=loadDeck();demoRouteState=loadRouteState();
@@ -2293,7 +2373,7 @@ async function activateUserSession(user){
   activeSessionUserId=user.id;currentAuthUser=user;cloudMode=true;
   cloudDeck=[];cloudRoute=[];cloudSpecial=[];cloudInventory=[];
   renderAuthState(user);renderDeck();
-  await Promise.all([loadAdminAccess(),loadMyProfile(),loadCloudInventory(),loadPlayers(),loadActivityFeed(),loadPublicNormalCards()]);
+  await Promise.all([loadAdminAccess(),loadMyProfile(),loadCloudInventory(),loadPlayers(),loadActivityFeed(),loadPublicNormalCards(),loadRouletteAccess()]);
   renderAdminAccess();
   setupRealtime();
 }
@@ -2358,6 +2438,51 @@ async function spin(){
     }
   }finally{
     spinning=false;renderDeck();
+  }
+}
+
+async function spinSpecialRoulette(poolSlug){
+  if(spinning)return;
+  if(!currentAuthUser||!authClient){notify("Inicia sesión con Discord para usar las ruletas especiales.");return;}
+  if(!["legendary","fiesta"].includes(poolSlug)){notify("La ruleta especial seleccionada no es válida.");return;}
+  if(Number(rouletteAccessByPool[poolSlug]||0)<=0){
+    notify(poolSlug==="legendary"?"Canjea Legenleta para conseguir un giro Legendario.":"Canjea Rumba para conseguir un giro Fiesta.");
+    return;
+  }
+  const poolName=poolSlug==="legendary"?"Ruleta Legendaria":"Ruleta Fiesta";
+  spinning=true;renderDeck();
+  try{
+    const prizeCards=await getPublicRouletteCards(poolSlug);
+    if(!prizeCards.length){
+      throw new Error(poolName+" todavía no está abierta o no tiene premios activos. Tu acceso se conserva.");
+    }
+    setWheelCards(prizeCards);
+    const {data,error}=await authClient.rpc("draw_special_roulette_card",{p_pool_slug:poolSlug});
+    if(error)throw error;
+    const result=Array.isArray(data)?data[0]:data;
+    if(!result||!result.slug)throw new Error("El servidor no devolvió un premio válido.");
+    let card=CARDS.find(item=>item.slug===result.slug);
+    if(!card){
+      card=mapRouletteCardRecord(result);
+      CARDS.push(card);
+    }
+    card.image_path=result.image_path||card.image_path;
+    card.art=card.image_path||card.art;
+    notify("¡Acceso validado! La "+poolName+" está girando...");
+    await startWheelAnimation(card);
+    await loadCloudInventory();
+    await loadRouletteAccess();
+    showResult(card);
+    await showSpinReward(card);
+    notify("¡Has obtenido "+card.name+" en la "+poolName+"!");
+  }catch(error){
+    console.error("No se pudo completar el giro especial:",error);
+    notify("No pudimos girar "+poolName+": "+(error.message||"error desconocido"));
+    await loadRouletteAccess();
+  }finally{
+    await loadPublicNormalCards();
+    spinning=false;
+    renderDeck();
   }
 }
 
@@ -2577,6 +2702,8 @@ document.getElementById("adminCardRemoveImage").addEventListener("click",()=>{
   showAdminCardImage(null);
 });
 spinButton.addEventListener("click",spin);
+document.getElementById("legendarySpinButton").addEventListener("click",()=>spinSpecialRoulette("legendary"));
+document.getElementById("fiestaSpinButton").addEventListener("click",()=>spinSpecialRoulette("fiesta"));
 document.getElementById("tramoButton").addEventListener("click",startNewTramo);
 document.getElementById("tramoButtonFull").addEventListener("click",startNewTramo);
 document.getElementById("saveProfileButton").addEventListener("click",saveProfile);
