@@ -233,7 +233,9 @@
               <button class="admin-module admin-module-button panel" type="button" id="openAdminTrainers">
                 <span class="admin-module-icon">♙</span><span class="admin-module-copy"><strong>Entrenadores</strong><small>Consultar participantes, barajas, tramo, giros, tipos y limpiar inventarios de prueba.</small></span><span class="admin-module-state">ABRIR ENTRENADORES ↗</span>
               </button>
-              <article class="admin-module panel"><span class="admin-module-icon">◉</span><div><h3>Ruletas y recompensas</h3><p>Gestionar las ruletas normal, legendaria y Fiesta y sus permisos de acceso.</p></div><span class="admin-module-state">EN PREPARACIÓN</span></article>
+              <button class="admin-module admin-module-button panel" type="button" id="openAdminRoulettes">
+                <span class="admin-module-icon">◉</span><span class="admin-module-copy"><strong>Ruletas y recompensas</strong><small>Editar Normal, Legendaria y Fiesta, añadir cartas y ajustar probabilidades.</small></span><span class="admin-module-state">ABRIR EDITOR ↗</span>
+              </button>
               <article class="admin-module panel"><span class="admin-module-icon">Ⅱ</span><div><h3>Progresión del evento</h3><p>Configurar tramos, límites de cartas, giros y reglas globales.</p></div><span class="admin-module-state">EN PREPARACIÓN</span></article>
               <article class="admin-module panel"><span class="admin-module-icon">◎</span><div><h3>Estado de la plataforma</h3><p>Supervisar la conexión de cuentas, actividad y módulos de TypeLink 2.</p></div><span class="admin-module-state">EN PREPARACIÓN</span></article>
             </div>
@@ -373,6 +375,61 @@
               <div class="admin-trainer-reset-note">
                 <b>QUÉ HACE EL VACIADO</b>
                 <span>Elimina todas las cartas normales, de tramo, Fiesta y las copias usadas de este entrenador. Conserva su tramo, giros, tipos, efectos activos, desbloqueos de ruletas y el historial de actividad del muro. No se puede deshacer.</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="admin-roulette-workspace" id="adminRouletteWorkspace" hidden>
+            <div class="admin-catalog-heading">
+              <div>
+                <button class="inline-link" type="button" id="adminRoulettesBack">← TODAS LAS HERRAMIENTAS</button>
+                <div class="eyebrow">ADMINISTRACIÓN / SORTEOS</div>
+                <h2>EDITOR DE <em>RULETAS</em></h2>
+                <p>Configura qué cartas aparecen en cada ruleta y cuánto peso tiene cada una en el sorteo.</p>
+              </div>
+            </div>
+
+            <div id="adminRouletteListView">
+              <div class="admin-roulette-pool-grid" id="adminRoulettePoolGrid">
+                <div class="admin-catalog-loading">Cargando ruletas...</div>
+              </div>
+              <div class="admin-roulette-info-note">
+                <b>PROBABILIDADES</b>
+                <span>El peso es relativo: una carta con peso 2 tiene el doble de probabilidad que una con peso 1, siempre que ambas estén habilitadas. La probabilidad se calcula sobre la suma de los pesos activos.</span>
+              </div>
+            </div>
+
+            <div id="adminRouletteEditorView" hidden>
+              <div class="admin-roulette-editor-top">
+                <button class="inline-link" type="button" id="adminRouletteEditorBack">← LISTA DE RULETAS</button>
+                <span class="admin-module-count" id="adminRouletteEditorKind">RULETA NORMAL</span>
+              </div>
+              <div class="admin-roulette-editor-heading">
+                <div>
+                  <span class="eyebrow">CONFIGURACIÓN DE RULETA</span>
+                  <h3 id="adminRouletteEditorName">Ruleta normal</h3>
+                  <p id="adminRouletteEditorHelp">Selecciona las cartas que podrán aparecer.</p>
+                </div>
+                <label class="admin-roulette-active-toggle"><input id="adminRouletteIsActive" type="checkbox"> RULETA ACTIVA</label>
+              </div>
+              <label class="admin-field admin-roulette-description-field" for="adminRouletteDescription">DESCRIPCIÓN
+                <textarea id="adminRouletteDescription" rows="2" maxlength="500" placeholder="Describe esta ruleta..."></textarea>
+              </label>
+
+              <div class="admin-roulette-toolbar panel">
+                <div><span class="eyebrow">CARTAS DISPONIBLES PARA ESTA RULETA</span><strong id="adminRouletteCardSummary">0 cartas seleccionadas</strong></div>
+                <span id="adminRouletteWeightSummary">Peso activo total: 0</span>
+              </div>
+              <div class="admin-roulette-cards-grid" id="adminRouletteCardsGrid">
+                <div class="admin-catalog-loading">Cargando cartas elegibles...</div>
+              </div>
+              <div class="admin-roulette-save-row">
+                <span id="adminRouletteSaveStatus" role="status">Los cambios todavía no se han guardado.</span>
+                <button class="primary-button" type="button" id="adminRouletteSave">GUARDAR RULETA ↗</button>
+              </div>
+              <div class="admin-roulette-info-note">
+                <b>IMPORTANTE</b>
+                <span>Quitar una carta de una ruleta no borra esa carta del catálogo ni del inventario de los entrenadores. Las ruletas Legendaria y Fiesta quedan configuradas aquí; sus pantallas de giro y desbloqueo se conectarán en una siguiente etapa.</span>
               </div>
             </div>
           </section>
