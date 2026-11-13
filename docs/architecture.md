@@ -103,3 +103,12 @@ Supabase Auth Site URL and allowed redirect URL:
 - `20261113033628_add_card_use_counts_and_single_card_evolution`
 
 The server-side `play_card` and `evolve_card` runtimes are implemented and transaction-tested. The Beta 0.3 baraja now exposes use/transfer actions, remaining-use counters and a one-card evolution dialog when a rule is configured. Card art remains attached through each catalog row's `image_path`; evolved results return their own image path. Special roulette draws are still pending.
+
+
+## Tramo progression and community activity
+
+- Advancing a tramo is one atomic action. The trainer must have no unspent normal or bonus roulette credits and at least three free normal-card slots. The server then grants exactly two tramo cards and three normal roulette spins.
+- Each normal draw consumes one per-trainer spin credit. The five-card inventory limit is still enforced for every draw, including bonus spins.
+- Special effects can grant bonus spins through the `tramo_spin_credit` effect key. Configure a self-targeting card with operation `add` and an integer `effect_value` (for example, 5 for Fiebre Dorada). The credit is applied immediately, recorded separately from the three standard spins and does not bypass card capacity.
+- The old `issue_tramo_cards` RPC is retained as a compatibility alias to the guarded tramo-advance action; it can no longer grant tramo cards on its own.
+- The community wall reads `card_activity` and receives realtime inserts for tramo awards, roulette spins, card plays, transfers and single-card evolutions. The table is included in the realtime publication and remains protected by its authenticated read policy.
