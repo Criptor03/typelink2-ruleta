@@ -471,3 +471,15 @@ button[hidden]{display:none!important}
   .admin-trainer-type strong{font-size:11px}
   .admin-trainer-reset-note{align-items:flex-start;flex-direction:column;gap:5px}
 }
+
+.admin-trainer-unlocks-list,.admin-trainer-activity-list{display:flex;flex-direction:column;gap:7px}
+.admin-trainer-unlock-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;background:#f1f5f7;border:1px solid #d8e0e5}
+.admin-trainer-unlock-copy{min-width:0;display:flex;flex-direction:column;gap:4px}
+.admin-trainer-unlock-copy strong{font:800 15px 'Barlow Condensed';color:#2a3944}
+.admin-trainer-unlock-copy small,.admin-trainer-unlock-copy span{font-size:8px;color:#71808a;line-height:1.5}
+.admin-trainer-unlock-item>b{flex:none;font-size:7px;letter-spacing:.7px;color:#4b805a;border:1px solid #a9c5af;background:#eff6f0;padding:5px 7px}
+.admin-trainer-activity-item{display:grid;grid-template-columns:28px minmax(0,1fr);gap:9px;align-items:start;padding:9px 10px;background:#f4f6f7;border:1px solid #dce2e6}
+.admin-trainer-activity-item>i{width:26px;height:26px;display:grid;place-items:center;background:#e2e8ec;color:#435866;font-style:normal;font-size:13px}
+.admin-trainer-activity-copy{min-width:0;display:flex;flex-direction:column;gap:3px}
+.admin-trainer-activity-copy strong{font:800 14px 'Barlow Condensed';color:#2c3b46}
+.admin-trainer-activity-copy small,.admin-trainer-activity-copy span{font-size:8px;color:#78858e;line-height:1.5}
