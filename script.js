@@ -147,8 +147,8 @@ function drawWheel(){
     ctx.save();ctx.translate(x,y);
     const image=cardArtImages[card.id];
     if(image&&image.complete&&image.naturalWidth){
-      ctx.shadowColor="#000";ctx.shadowBlur=9;ctx.drawImage(image,-34,-46,68,92);ctx.shadowBlur=0;
-      ctx.strokeStyle="#f1f4f6";ctx.lineWidth=2;ctx.strokeRect(-34,-46,68,92);
+      ctx.shadowColor="#000";ctx.shadowBlur=9;ctx.drawImage(image,-31,-46.5,62,93);ctx.shadowBlur=0;
+      ctx.strokeStyle="#f1f4f6";ctx.lineWidth=2;ctx.strokeRect(-31,-46.5,62,93);
     }else{
       ctx.fillStyle=card.color;ctx.font="bold 15px Arial";ctx.textAlign="center";ctx.textBaseline="middle";
       ctx.fillText(card.name.length>13?card.name.slice(0,12)+"…":card.name,0,0);
