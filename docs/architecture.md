@@ -139,3 +139,12 @@ The server-side `start_new_tramo`, `draw_random_card`, `play_card` and `evolve_c
 - The browser hides the administrator navigation and rejects attempts to open the admin page unless the server confirms the current account is authorized.
 - Future privileged write RPCs must call `app_private.require_admin()` inside their SECURITY DEFINER implementation. Hiding the browser UI is not considered an authorization boundary.
 - The initial admin console is a protected dashboard shell. Card management, event settings, participant controls and roulette tools are planned modules and are not yet active actions.
+
+
+## Card catalog and roulette eligibility
+
+- `card_catalog.roulette_eligible` is the catalog-level permission for a card to be placed in any roulette. Enabling it does not automatically add the card to a pool; each Normal, Legendary or Fiesta pool remains configured separately.
+- Active evolution sources are automatically marked ineligible and removed from all roulette memberships when their evolution is saved. The editor shows that state in the catalog.
+- Roulette pool listing, pool saving, public card listing and the actual Normal roulette draw all enforce the eligibility flag and reject active evolution sources on the server. Disabling eligibility also deletes existing pool memberships.
+- Disabling an evolution does not automatically re-enable its source card for roulette. An administrator must explicitly re-enable it in the catalog.
+- Card targets are intentionally limited to `self` (the trainer using the card) and `opponent` (a rival). The catalog RPC, mechanics RPC and database check constraint all enforce the same two values. Roulette unlock effects are restricted to `self`.
