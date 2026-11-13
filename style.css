@@ -584,3 +584,81 @@ button[hidden]{display:none!important}
   .admin-roulette-save-row{align-items:stretch;flex-direction:column}
   .admin-roulette-save-row button{width:100%}
 }
+
+/* Admin card mechanics editor: actual effect controllers and evolution rules */
+.admin-mechanics-workspace{margin-top:2px}
+.admin-mechanics-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+.admin-mechanics-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.admin-mechanics-card{display:grid;grid-template-columns:55px minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px;min-width:0}
+.admin-mechanics-list-art{width:55px;aspect-ratio:403/603;background:#e8edf0;border:1px solid #ccd5db;display:grid;place-items:center;overflow:hidden;color:#83909a;font-size:20px}
+.admin-mechanics-list-art img{width:100%;height:100%;object-fit:contain}
+.admin-mechanics-list-copy{min-width:0;display:flex;flex-direction:column;gap:4px}
+.admin-mechanics-list-copy strong{font:800 16px 'Barlow Condensed';color:#293843;overflow-wrap:anywhere}
+.admin-mechanics-list-copy small,.admin-mechanics-list-copy span{font-size:7px;line-height:1.5;color:#78868f}
+.admin-mechanics-list-copy span.is-configured{color:#4f805d;font-weight:900}
+.admin-mechanics-card .admin-card-edit{grid-column:3;align-self:center;white-space:nowrap}
+.admin-mechanics-card-heading{display:flex;align-items:center;gap:14px;padding:14px;margin:12px 0}
+.admin-mechanics-card-art{width:76px;aspect-ratio:403/603;flex:none;background:#e6ebef;border:1px solid #c9d2d9;display:grid;place-items:center;overflow:hidden;color:#84919a;font-size:24px}
+.admin-mechanics-card-art img{width:100%;height:100%;object-fit:contain}
+.admin-mechanics-card-copy{display:flex;flex-direction:column;gap:5px;min-width:0}
+.admin-mechanics-card-copy h3{font:900 23px 'Barlow Condensed';margin:1px 0;color:#293843;overflow-wrap:anywhere}
+.admin-mechanics-card-copy code{font-size:8px;color:#70808b}
+.admin-mechanics-card-copy small{font-size:8px;color:#85919a}
+.admin-mechanics-section{padding:16px;margin:11px 0}
+.admin-mechanics-section .admin-trainer-section-heading{align-items:center}
+.admin-mechanics-base-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.admin-mechanics-help{font-size:8px;line-height:1.65;color:#7b8891;margin:10px 0 0}
+.admin-mechanics-effects-list{display:flex;flex-direction:column;gap:9px}
+.admin-mechanics-effect-row{padding:12px;background:#f4f6f7;border:1px solid #d5dde2;display:flex;flex-direction:column;gap:11px}
+.admin-mechanics-effect-top{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:end}
+.admin-mechanics-effect-top .admin-field{min-width:0}
+.admin-mechanics-effect-top .admin-field select{width:100%}
+.admin-mechanics-effect-top .admin-mechanics-check-row{padding:8px 0;font-size:7px}
+.admin-mechanics-effect-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:end}
+.admin-mechanics-effect-fields[hidden],.admin-mechanics-timed-fields[hidden]{display:none!important}
+.admin-mechanics-timed-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;grid-column:1/-1}
+.admin-mechanics-inline-note{grid-column:1/-1;margin:0;font-size:8px;color:#75838c;line-height:1.5}
+.admin-mechanics-help-panel{display:flex;flex-direction:column;gap:5px;margin-top:12px;padding:11px 13px;background:#eef2f4;border-left:3px solid #899ba6;font-size:8px;line-height:1.6;color:#71808a}
+.admin-mechanics-help-panel>b{font-size:7px;letter-spacing:.8px;color:#40535f;margin-bottom:2px}
+.admin-mechanics-help-panel strong{color:#435864}
+.admin-mechanics-evolution-toggle{display:flex;align-items:center;gap:8px;font-size:8px;font-weight:900;letter-spacing:.7px;color:#4b5e69}
+.admin-mechanics-evolution-toggle input,.admin-mechanics-check-row input{accent-color:#425e70}
+#adminEvolutionFields[hidden],#adminEvolutionDisabledNote[hidden]{display:none!important}
+.admin-mechanics-evolution-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.admin-evolution-name-field,.admin-evolution-description-field{grid-column:1/-1}
+.admin-mechanics-check-row{display:flex;align-items:center;gap:7px;margin-top:12px;font-size:8px;color:#596b76}
+.admin-evolution-method-note{margin-top:11px;padding:10px 12px;background:#eef2f4;border-left:3px solid #8b9ca7;font-size:8px;line-height:1.6;color:#71808a}
+.admin-mechanics-save-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:13px;padding:14px 0;border-top:1px solid #d8dfe3}
+.admin-mechanics-save-row>span{font-size:8px;line-height:1.6;color:#71808a}
+.admin-mechanics-save-row>span.is-error{color:#a33d43}
+.admin-mechanics-save-row button{min-width:190px}
+.admin-mechanics-save-row button:disabled{opacity:.6;cursor:wait}
+#adminMechanicsEditorBack{margin:8px 0 0}
+@media(max-width:900px){
+  .admin-mechanics-card-grid{grid-template-columns:1fr}
+}
+@media(max-width:700px){
+  .admin-mechanics-card{grid-template-columns:48px minmax(0,1fr) auto;padding:9px}
+  .admin-mechanics-list-art{width:48px}
+  .admin-mechanics-base-form,.admin-mechanics-evolution-form{grid-template-columns:1fr}
+  .admin-mechanics-effect-top{grid-template-columns:minmax(0,1fr) auto}
+  .admin-mechanics-effect-top .admin-field{grid-column:1/-1}
+  .admin-mechanics-effect-top .admin-mechanics-check-row{grid-column:1}
+  .admin-mechanics-effect-top .admin-card-delete{grid-column:2;grid-row:2}
+  .admin-mechanics-effect-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .admin-mechanics-save-row{align-items:stretch;flex-direction:column}
+  .admin-mechanics-save-row button{width:100%}
+}
+@media(max-width:560px){
+  .admin-mechanics-stats .panel{padding:10px}
+  .admin-mechanics-stats .eyebrow{font-size:6px;letter-spacing:1px}
+  .admin-mechanics-section{padding:12px}
+  .admin-mechanics-card-heading{padding:11px;gap:10px}
+  .admin-mechanics-card-art{width:61px}
+  .admin-mechanics-card-copy h3{font-size:19px}
+  .admin-mechanics-effect-row{padding:9px}
+  .admin-mechanics-effect-fields{grid-template-columns:1fr 1fr}
+  .admin-mechanics-effect-fields>.admin-field:first-child{grid-column:1/-1}
+  .admin-mechanics-evolution-toggle{align-items:flex-start;line-height:1.5}
+  .admin-mechanics-section .admin-trainer-section-heading{align-items:flex-start;flex-direction:column}
+}
