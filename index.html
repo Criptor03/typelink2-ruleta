@@ -214,25 +214,140 @@
 
         <section class="page-view" id="page-admin" hidden>
           <div class="page-heading"><div><div class="eyebrow">07 / CONTROL PRIVADO</div><h1>CENTRO DE <em>ADMINISTRACIÓN</em></h1><p>Herramientas oficiales de gestión de Pokémon TypeLink 2.</p></div><span class="page-stamp">OWNER<br>ACCESS</span></div>
-          <div class="admin-access-banner panel">
-            <div class="admin-access-seal">⚙</div>
-            <div class="admin-access-copy"><span class="eyebrow">ACCESO AUTORIZADO</span><h2>Bienvenido al centro de control.</h2><p>Esta cuenta está registrada como administradora de TypeLink 2. La autorización se comprueba en Supabase y no depende del nombre visible de Discord.</p></div>
-            <span class="admin-access-badge"><i></i> ADMINISTRADOR</span>
+          <div id="adminOverview">
+            <div class="admin-access-banner panel">
+              <div class="admin-access-seal">⚙</div>
+              <div class="admin-access-copy"><span class="eyebrow">ACCESO AUTORIZADO</span><h2>Bienvenido al centro de control.</h2><p>Esta cuenta está registrada como administradora de TypeLink 2. La autorización se comprueba en Supabase y no depende del nombre visible de Discord.</p></div>
+              <span class="admin-access-badge"><i></i> ADMINISTRADOR</span>
+            </div>
+            <div class="admin-owner-card panel">
+              <div><span class="eyebrow">CUENTA ADMINISTRADORA</span><strong id="adminAccountName">—</strong><small id="adminAccountProvider">Discord · Acceso verificado</small></div>
+              <div class="admin-owner-status"><span class="eyebrow">ESTADO DE ACCESO</span><strong>PERMITIDO</strong><small>Autorización del servidor</small></div>
+            </div>
+            <div class="admin-section-heading"><div><span class="eyebrow">MÓDULOS DEL EVENTO</span><h2>Herramientas de gestión</h2></div><span class="admin-module-count">CENTRO DE CONTROL · BETA</span></div>
+            <div class="admin-module-grid">
+              <button class="admin-module admin-module-button panel" type="button" id="openAdminCatalog">
+                <span class="admin-module-icon">▤</span><span class="admin-module-copy"><strong>Catálogo de cartas</strong><small>Crear cartas, actualizar ilustraciones, rarezas, usos y descripciones.</small></span><span class="admin-module-state">ABRIR CATÁLOGO ↗</span>
+              </button>
+              <article class="admin-module panel"><span class="admin-module-icon">✦</span><div><h3>Efectos y evoluciones</h3><p>Configurar efectos, objetivos, duración, excepciones y transformaciones de una carta.</p></div><span class="admin-module-state">EN PREPARACIÓN</span></article>
+              <article class="admin-module panel"><span class="admin-module-icon">♙</span><div><h3>Entrenadores</h3><p>Consultar participantes y, más adelante, administrar sus datos y sus inventarios.</p></div><span class="admin-module-state">EN PREPARACIÓN</span></article>
+              <article class="admin-module panel"><span class="admin-module-icon">◉</span><div><h3>Ruletas y recompensas</h3><p>Gestionar las ruletas normal, legendaria y Fiesta y sus permisos de acceso.</p></div><span class="admin-module-state">EN PREPARACIÓN</span></article>
+              <article class="admin-module panel"><span class="admin-module-icon">Ⅱ</span><div><h3>Progresión del evento</h3><p>Configurar tramos, límites de cartas, giros y reglas globales.</p></div><span class="admin-module-state">EN PREPARACIÓN</span></article>
+              <article class="admin-module panel"><span class="admin-module-icon">◎</span><div><h3>Estado de la plataforma</h3><p>Supervisar la conexión de cuentas, actividad y módulos de TypeLink 2.</p></div><span class="admin-module-state">EN PREPARACIÓN</span></article>
+            </div>
+            <div class="admin-security-note"><b>PROTECCIÓN DEL PANEL</b><span>El menú y esta pantalla solo se habilitan para cuentas registradas en la lista privada de administradores. Las acciones de gestión también se validan en el servidor.</span></div>
           </div>
-          <div class="admin-owner-card panel">
-            <div><span class="eyebrow">CUENTA ADMINISTRADORA</span><strong id="adminAccountName">—</strong><small id="adminAccountProvider">Discord · Acceso verificado</small></div>
-            <div class="admin-owner-status"><span class="eyebrow">ESTADO DE ACCESO</span><strong>PERMITIDO</strong><small>Autorización del servidor</small></div>
-          </div>
-          <div class="admin-section-heading"><div><span class="eyebrow">MÓDULOS DEL EVENTO</span><h2>Herramientas de gestión</h2></div><span class="admin-module-count">CENTRO DE CONTROL · BETA</span></div>
-          <div class="admin-module-grid">
-            <article class="admin-module panel"><span class="admin-module-icon">▤</span><div><h3>Catálogo de cartas</h3><p>Crear cartas, actualizar ilustraciones, rarezas, usos y descripciones.</p></div><span class="admin-module-state">EN PREPARACIÓN</span></article>
-            <article class="admin-module panel"><span class="admin-module-icon">✦</span><div><h3>Efectos y evoluciones</h3><p>Configurar efectos, objetivos, duración, excepciones y transformaciones de una carta.</p></div><span class="admin-module-state">EN PREPARACIÓN</span></article>
-            <article class="admin-module panel"><span class="admin-module-icon">♙</span><div><h3>Entrenadores</h3><p>Consultar participantes y, más adelante, administrar sus datos y sus inventarios.</p></div><span class="admin-module-state">EN PREPARACIÓN</span></article>
-            <article class="admin-module panel"><span class="admin-module-icon">◉</span><div><h3>Ruletas y recompensas</h3><p>Gestionar las ruletas normal, legendaria y Fiesta y sus permisos de acceso.</p></div><span class="admin-module-state">EN PREPARACIÓN</span></article>
-            <article class="admin-module panel"><span class="admin-module-icon">Ⅱ</span><div><h3>Progresión del evento</h3><p>Configurar tramos, límites de cartas, giros y reglas globales.</p></div><span class="admin-module-state">EN PREPARACIÓN</span></article>
-            <article class="admin-module panel"><span class="admin-module-icon">◎</span><div><h3>Estado de la plataforma</h3><p>Supervisar la conexión de cuentas, actividad y módulos de TypeLink 2.</p></div><span class="admin-module-state">EN PREPARACIÓN</span></article>
-          </div>
-          <div class="admin-security-note"><b>PROTECCIÓN DEL PANEL</b><span>El menú y esta pantalla solo se habilitan para cuentas registradas en la lista privada de administradores. Las futuras acciones de gestión también tendrán validación de permisos en el servidor.</span></div>
+
+          <section class="admin-catalog-workspace" id="adminCatalogWorkspace" hidden>
+            <div class="admin-catalog-heading">
+              <div>
+                <button class="inline-link" type="button" id="adminCatalogBack">← TODAS LAS HERRAMIENTAS</button>
+                <div class="eyebrow">ADMINISTRACIÓN / CARTAS</div>
+                <h2>CATÁLOGO DE <em>CARTAS</em></h2>
+                <p>Gestiona las cartas que utiliza el evento. Las modificaciones se guardan en Supabase.</p>
+              </div>
+              <button class="primary-button admin-new-card-button" type="button" id="adminCreateCard">+ NUEVA CARTA</button>
+            </div>
+
+            <div id="adminCatalogListView">
+              <div class="admin-catalog-stats">
+                <div class="panel"><span class="eyebrow">CARTAS REGISTRADAS</span><strong id="adminCatalogTotal">0</strong></div>
+                <div class="panel"><span class="eyebrow">DISPONIBLES</span><strong id="adminCatalogActive">0</strong></div>
+                <div class="panel"><span class="eyebrow">DESACTIVADAS</span><strong id="adminCatalogInactive">0</strong></div>
+              </div>
+              <div class="admin-catalog-toolbar panel">
+                <input id="adminCatalogSearch" type="search" placeholder="Buscar por nombre o identificador..." aria-label="Buscar cartas">
+                <select id="adminCatalogFilter" aria-label="Filtrar cartas">
+                  <option value="all">Todas las categorías</option>
+                  <option value="normal">Normales</option>
+                  <option value="tramo">De tramo</option>
+                  <option value="fiesta">Fiesta</option>
+                </select>
+              </div>
+              <div class="admin-card-grid" id="adminCardGrid">
+                <div class="admin-catalog-loading">Cargando catálogo...</div>
+              </div>
+              <p class="admin-catalog-footnote">Las cartas desactivadas dejan de estar disponibles para nuevos giros, pero no se borran de los inventarios existentes. No se permite eliminar cartas con historial.</p>
+            </div>
+
+            <div id="adminCardEditorView" hidden>
+              <form class="admin-card-form panel" id="adminCardForm">
+                <div class="admin-card-form-heading">
+                  <div><span class="eyebrow">FICHA DE CARTA</span><h3 id="adminCardEditorTitle">Nueva carta</h3></div>
+                  <span class="admin-module-count">LOS CAMBIOS SE GUARDAN EN LA NUBE</span>
+                </div>
+                <div class="admin-card-form-grid">
+                  <label class="admin-field">NOMBRE DE LA CARTA
+                    <input id="adminCardName" type="text" maxlength="80" required placeholder="Ej. Cambio Táctico">
+                  </label>
+                  <label class="admin-field">IDENTIFICADOR INTERNO
+                    <input id="adminCardSlug" type="text" maxlength="64" required placeholder="cambio-tactico">
+                    <small>Se genera desde el nombre. No cambia una vez creada la carta.</small>
+                  </label>
+                  <label class="admin-field">CATEGORÍA
+                    <select id="adminCardCategory">
+                      <option value="normal">Normal</option>
+                      <option value="tramo">Tramo</option>
+                      <option value="fiesta">Fiesta</option>
+                    </select>
+                  </label>
+                  <label class="admin-field">RAREZA
+                    <select id="adminCardRarity">
+                      <option value="common">Común</option>
+                      <option value="rare">Rara</option>
+                      <option value="epic">Épica</option>
+                      <option value="legendary">Legendaria</option>
+                    </select>
+                  </label>
+                  <label class="admin-field">USOS POR COPIA
+                    <input id="adminCardUses" type="number" min="1" max="99" value="1" required>
+                    <small>Se aplica a las copias nuevas; no altera los usos restantes ya entregados.</small>
+                  </label>
+                  <label class="admin-field">OBJETIVO PREDETERMINADO
+                    <select id="adminCardScope">
+                      <option value="self">Quien la utiliza</option>
+                      <option value="opponent">Oponente</option>
+                      <option value="either">Cualquiera</option>
+                      <option value="all_players">Todos los jugadores</option>
+                      <option value="event">Evento</option>
+                      <option value="none">Sin objetivo</option>
+                    </select>
+                  </label>
+                  <label class="admin-field">AL CANJEAR
+                    <select id="adminCardDisposition">
+                      <option value="consume">Consumir carta</option>
+                      <option value="transfer">Transferir carta</option>
+                    </select>
+                  </label>
+                  <label class="admin-field admin-description-field">DESCRIPCIÓN
+                    <textarea id="adminCardDescription" rows="3" maxlength="1000" placeholder="Describe brevemente la carta..."></textarea>
+                  </label>
+                </div>
+                <div class="admin-image-editor">
+                  <div class="admin-image-preview-wrap">
+                    <img id="adminCardImagePreview" alt="Vista previa de la ilustración" hidden>
+                    <div id="adminCardImageEmpty"><span>▧</span><b>SIN ILUSTRACIÓN</b><small>PNG TRANSPARENTE RECOMENDADO</small></div>
+                  </div>
+                  <div class="admin-image-controls">
+                    <span class="eyebrow">ILUSTRACIÓN DE LA CARTA</span>
+                    <label for="adminCardImageFile">ADJUNTAR IMAGEN PNG</label>
+                    <input id="adminCardImageFile" type="file" accept="image/png,.png">
+                    <small id="adminCardImageHelp">PNG hasta 5 MB. La imagen se subirá al almacenamiento de TypeLink al guardar.</small>
+                    <button class="inline-link" type="button" id="adminCardRemoveImage">QUITAR ILUSTRACIÓN</button>
+                  </div>
+                </div>
+                <div class="admin-card-flags">
+                  <label><input id="adminCardCounts" type="checkbox" checked> Cuenta para el límite de baraja normal</label>
+                  <label><input id="adminCardActive" type="checkbox" checked> Carta activa para el evento</label>
+                </div>
+                <div class="admin-card-form-note"><b>IMPORTANTE</b><span>La categoría de una carta que ya tenga copias en inventarios o reglas conectadas no podrá cambiarse. Desactivar una carta no elimina las copias existentes.</span></div>
+                <div class="admin-card-form-actions">
+                  <span id="adminCardFormStatus" role="status">Completa los datos de la carta.</span>
+                  <div><button class="secondary-button" type="button" id="adminCardCancel">CANCELAR</button><button class="primary-button" type="submit" id="adminCardSave">GUARDAR CARTA ↗</button></div>
+                </div>
+              </form>
+            </div>
+          </section>
         </section>
 
         <footer class="app-footer"><span>POKÉMON TYPELINK 2</span><span>TESelia · UNOVA REGION</span><span>BETA 0.3</span></footer>
