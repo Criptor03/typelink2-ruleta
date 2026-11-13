@@ -648,6 +648,35 @@ export type Database = {
           },
         ]
       }
+      player_type_status: {
+        Row: {
+          is_enabled: boolean
+          owner_id: string
+          type_slug: string
+          updated_at: string
+        }
+        Insert: {
+          is_enabled?: boolean
+          owner_id: string
+          type_slug: string
+          updated_at?: string
+        }
+        Update: {
+          is_enabled?: boolean
+          owner_id?: string
+          type_slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_type_status_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       player_tramo_progress: {
         Row: {
           bonus_spins_remaining: number
