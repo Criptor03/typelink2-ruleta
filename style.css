@@ -16,3 +16,57 @@
 .logout-button{border:1px solid #cbd3da;background:#fff;color:#64717b;padding:6px 7px;font-size:7px;font-weight:900;letter-spacing:.7px;cursor:pointer;margin-left:3px}
 .logout-button:hover{background:#e9edf1;color:#17212b}
 @media(max-width:560px){.discord-login-button{font-size:7px;padding:9px 8px;gap:5px}.user-chip{gap:6px}.logout-button{padding:5px}}
+
+/* Connected trainer identity, public directory and cloud inventory */
+.profile-open-link{margin-top:13px}
+.profile-placeholder,.profile-avatar-large,.player-directory-avatar{background-color:#17212b;background-size:cover;background-position:center;color:#fff}
+.profile-editor{padding:25px 27px;margin-bottom:16px}
+.profile-identity{display:flex;align-items:center;gap:19px;padding-bottom:22px;border-bottom:1px solid #d9dfe4}
+.profile-avatar-large{width:86px;height:86px;flex:none;border:2px solid #f4f6f7;outline:1px solid #7b8791;display:grid;place-items:center;font:900 29px 'Barlow Condensed'}
+.profile-identity h2{font:800 29px 'Barlow Condensed';margin:6px 0 3px}
+.profile-identity p{font-size:10px;color:#74818b;margin:0 0 8px}
+.profile-verified{font-size:8px;font-weight:900;letter-spacing:1px;color:#4b936e}
+.profile-form{max-width:540px;padding:23px 0}
+.profile-form label{display:block;font-size:10px;font-weight:800;letter-spacing:.7px;margin-bottom:8px}
+.profile-form input{width:100%;height:43px;border:1px solid #c5ced6;background:#fff;padding:0 12px;color:#17212b;font:600 12px Inter;outline:none}
+.profile-form input:focus{border-color:#526879;box-shadow:0 0 0 3px #52687918}
+.profile-form p{font-size:9px;line-height:1.6;color:#75828c;margin:8px 0 14px}
+.profile-form .secondary-button{width:auto;min-width:180px}
+.profile-form .secondary-button:disabled{opacity:.6;cursor:wait}
+.profile-save-status{display:block;margin-top:9px;font-size:9px;color:#657681}
+.profile-save-status.error{color:#b43c42}
+.profile-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid #d9dfe4;padding-top:18px;gap:10px}
+.profile-stats div{display:flex;flex-direction:column;gap:4px}
+.profile-stats strong{font:800 25px 'Barlow Condensed';color:#17212b}
+.profile-stats small{font-size:8px;letter-spacing:1px;color:#79858e}
+.profile-info-note{display:flex;gap:12px;align-items:center;padding:13px 15px;background:#e1e7eb;border-left:3px solid #4b936e;font-size:9px;color:#65727c;line-height:1.6}
+.profile-info-note b{color:#263541;white-space:nowrap;font-size:8px;letter-spacing:1px}
+.directory-toolbar{display:flex;align-items:center;justify-content:space-between;padding:17px 20px;margin-bottom:13px}
+.directory-toolbar h2{font:800 24px 'Barlow Condensed';margin:5px 0 0}
+.directory-count{font-size:8px;font-weight:900;letter-spacing:1px;color:#65737e}
+.players-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.player-directory-card{display:grid;grid-template-columns:50px minmax(0,1fr) auto;align-items:center;gap:12px;background:#fafbfc;border:1px solid #cbd3da;padding:15px}
+.player-directory-avatar{width:48px;height:48px;border:1px solid #d0d7dd;display:grid;place-items:center;font:800 17px 'Barlow Condensed'}
+.player-directory-info{min-width:0;display:flex;flex-direction:column;gap:5px}
+.player-directory-info strong{font:800 16px 'Barlow Condensed';overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.player-directory-info small{font-size:8px;color:#79858e}
+.player-directory-stats{display:flex;flex-direction:column;gap:5px;text-align:right}
+.player-directory-stats span{font-size:7px;font-weight:900;letter-spacing:.5px;color:#687782;white-space:nowrap}
+.player-view-button{grid-column:2/4;justify-self:start;border:1px solid #c7d0d7;background:#f0f3f5;color:#344653;padding:7px 9px;font-size:8px;font-weight:900;letter-spacing:1px;cursor:pointer}
+.player-view-button:hover{background:#17212b;color:#fff;border-color:#17212b}
+.players-loading{padding:35px;text-align:center;color:#71808b;font-size:11px;background:#f9fafb;border:1px solid #cbd3da}
+.public-profile-modal[hidden]{display:none!important}
+.public-profile-modal{position:fixed;inset:0;z-index:60;background:#101820b8;display:grid;place-items:center;padding:20px}
+.public-profile-dialog{position:relative;width:min(600px,100%);max-height:min(82vh,760px);overflow:auto;padding:24px;background:#fbfcfd;box-shadow:0 24px 70px #0005}
+.modal-close{position:absolute;right:15px;top:12px;border:0;background:transparent;color:#344653;font-size:27px;cursor:pointer}
+.public-profile-heading{display:flex;align-items:center;gap:16px;padding:4px 30px 20px 0;border-bottom:1px solid #d8dfe4}
+.public-profile-heading h2{font:800 27px 'Barlow Condensed';margin:5px 0}
+.public-profile-heading p{font-size:9px;color:#75828c;margin:0}
+.public-profile-section{padding-top:19px}
+.public-profile-section .panel-topline{font-size:8px;letter-spacing:1px;color:#64717b}
+.public-card-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.deck-cloud-note{font-size:9px;color:#6c7a84;margin:8px 0 20px}
+.deck-item .deck-info strong{overflow-wrap:anywhere}
+button[hidden]{display:none!important}
+@media(max-width:800px){.players-grid{grid-template-columns:1fr}.profile-editor{padding:20px}.directory-toolbar{gap:10px}.directory-count{font-size:7px}}
+@media(max-width:560px){.profile-identity{gap:13px}.profile-avatar-large{width:68px;height:68px}.profile-identity h2{font-size:24px}.profile-stats{grid-template-columns:1fr 1fr}.profile-info-note{align-items:flex-start;flex-direction:column;gap:4px}.directory-toolbar{align-items:flex-start;flex-direction:column}.player-directory-card{grid-template-columns:44px minmax(0,1fr);gap:9px;padding:12px}.player-directory-avatar{width:42px;height:42px}.player-directory-stats{grid-column:1/3;flex-direction:row;text-align:left}.player-view-button{grid-column:1/3}.public-profile-dialog{padding:18px}.public-card-list{grid-template-columns:1fr}}
