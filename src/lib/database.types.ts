@@ -788,6 +788,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      is_current_user_admin: { Args: never; Returns: boolean }
       draw_random_card: { Args: never; Returns: Json }
       issue_tramo_cards: { Args: never; Returns: Json }
       start_new_tramo: { Args: never; Returns: Json }
