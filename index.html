@@ -229,7 +229,9 @@
               <button class="admin-module admin-module-button panel" type="button" id="openAdminCatalog">
                 <span class="admin-module-icon">▤</span><span class="admin-module-copy"><strong>Catálogo de cartas</strong><small>Crear cartas, actualizar ilustraciones, rarezas, usos y descripciones.</small></span><span class="admin-module-state">ABRIR CATÁLOGO ↗</span>
               </button>
-              <article class="admin-module panel"><span class="admin-module-icon">✦</span><div><h3>Efectos y evoluciones</h3><p>Configurar efectos, objetivos, duración, excepciones y transformaciones de una carta.</p></div><span class="admin-module-state">EN PREPARACIÓN</span></article>
+              <button class="admin-module admin-module-button panel" type="button" id="openAdminMechanics">
+                <span class="admin-module-icon">✦</span><span class="admin-module-copy"><strong>Efectos y evoluciones</strong><small>Configurar qué hace cada carta y cómo cambia al avanzar de tramo.</small></span><span class="admin-module-state">ABRIR EDITOR ↗</span>
+              </button>
               <button class="admin-module admin-module-button panel" type="button" id="openAdminTrainers">
                 <span class="admin-module-icon">♙</span><span class="admin-module-copy"><strong>Entrenadores</strong><small>Consultar participantes, barajas, tramo, giros, tipos y limpiar inventarios de prueba.</small></span><span class="admin-module-state">ABRIR ENTRENADORES ↗</span>
               </button>
@@ -241,6 +243,127 @@
             </div>
             <div class="admin-security-note"><b>PROTECCIÓN DEL PANEL</b><span>El menú y esta pantalla solo se habilitan para cuentas registradas en la lista privada de administradores. Las acciones de gestión también se validan en el servidor.</span></div>
           </div>
+
+          <section class="admin-mechanics-workspace" id="adminMechanicsWorkspace" hidden>
+            <div class="admin-catalog-heading">
+              <div>
+                <button class="inline-link" type="button" id="adminMechanicsBack">← TODAS LAS HERRAMIENTAS</button>
+                <div class="eyebrow">ADMINISTRACIÓN / MECÁNICAS</div>
+                <h2>EFECTOS Y <em>EVOLUCIONES</em></h2>
+                <p>Define cómo funciona cada carta y qué sucede cuando un entrenador avanza de tramo.</p>
+              </div>
+            </div>
+
+            <div id="adminMechanicsListView">
+              <div class="admin-catalog-stats admin-mechanics-stats">
+                <div class="panel"><span class="eyebrow">CARTAS</span><strong id="adminMechanicsCardsTotal">0</strong></div>
+                <div class="panel"><span class="eyebrow">CON EFECTOS</span><strong id="adminMechanicsEffectsTotal">0</strong></div>
+                <div class="panel"><span class="eyebrow">CON EVOLUCIÓN</span><strong id="adminMechanicsEvolutionsTotal">0</strong></div>
+              </div>
+              <div class="admin-catalog-toolbar panel">
+                <input id="adminMechanicsSearch" type="search" placeholder="Buscar carta por nombre..." aria-label="Buscar carta para configurar">
+                <select id="adminMechanicsCategory" aria-label="Filtrar cartas por categoría">
+                  <option value="all">Todas las categorías</option>
+                  <option value="normal">Normales</option>
+                  <option value="tramo">De tramo</option>
+                  <option value="fiesta">Fiesta</option>
+                </select>
+              </div>
+              <div class="admin-mechanics-card-grid" id="adminMechanicsGrid">
+                <div class="admin-catalog-loading">Cargando cartas y sus mecánicas...</div>
+              </div>
+            </div>
+
+            <div id="adminMechanicsEditorView" hidden>
+              <button class="inline-link" type="button" id="adminMechanicsEditorBack">← LISTA DE CARTAS</button>
+              <div class="admin-mechanics-card-heading panel">
+                <div class="admin-mechanics-card-art" id="adminMechanicsCardArt"><span>▧</span></div>
+                <div class="admin-mechanics-card-copy">
+                  <span class="eyebrow">CONFIGURANDO MECÁNICAS DE</span>
+                  <h3 id="adminMechanicsCardName">Carta seleccionada</h3>
+                  <code id="adminMechanicsCardSlug">—</code>
+                  <small id="adminMechanicsCardMeta">—</small>
+                </div>
+              </div>
+
+              <section class="admin-mechanics-section panel">
+                <div class="admin-trainer-section-heading">
+                  <div><span class="eyebrow">COMPORTAMIENTO DE LA CARTA</span><h3>Objetivo y canje</h3></div>
+                </div>
+                <div class="admin-mechanics-base-form">
+                  <label class="admin-field" for="adminMechanicsTargetScope">¿A QUIÉN AFECTA?
+                    <select id="adminMechanicsTargetScope">
+                      <option value="self">A quien la utiliza</option>
+                      <option value="opponent">A un rival</option>
+                      <option value="either">A quien se elija</option>
+                      <option value="all_players">A todos los entrenadores</option>
+                      <option value="event">Al evento completo</option>
+                      <option value="none">No necesita objetivo</option>
+                    </select>
+                  </label>
+                  <label class="admin-field" for="adminMechanicsDisposition">¿QUÉ OCURRE AL CANJEARLA?
+                    <select id="adminMechanicsDisposition">
+                      <option value="consume">Se consume</option>
+                      <option value="transfer">Se transfiere a otro entrenador</option>
+                    </select>
+                  </label>
+                </div>
+                <p class="admin-mechanics-help">Estos valores se guardan en la ficha de la carta. Algunos efectos requieren un objetivo y un comportamiento concretos; el editor te indicará cuáles son compatibles.</p>
+              </section>
+
+              <section class="admin-mechanics-section panel">
+                <div class="admin-trainer-section-heading">
+                  <div><span class="eyebrow">EFECTOS QUE SE ACTIVAN AL CANJEAR</span><h3>Efectos de la carta</h3></div>
+                  <button class="secondary-button" type="button" id="adminAddEffect">+ AÑADIR EFECTO</button>
+                </div>
+                <div class="admin-mechanics-effects-list" id="adminMechanicsEffectsList">
+                  <div class="profile-module-empty">Esta carta todavía no tiene efectos configurados.</div>
+                </div>
+                <div class="admin-mechanics-help-panel">
+                  <b>CONTROLADORES DISPONIBLES</b>
+                  <span><strong>Modificar límite de baraja:</strong> suma o resta espacios durante un periodo definido.</span>
+                  <span><strong>Desbloquear ruleta:</strong> concede giros de la Ruleta Legendaria o Fiesta.</span>
+                  <span>Las nuevas mecánicas, como bloquear tipos o retirar cartas de una baraja, necesitarán que añadamos su controlador antes de poder activarlas.</span>
+                </div>
+              </section>
+
+              <section class="admin-mechanics-section panel">
+                <div class="admin-trainer-section-heading">
+                  <div><span class="eyebrow">TRANSFORMACIÓN DE UNA CARTA EN OTRA</span><h3>Evolución</h3></div>
+                  <label class="admin-mechanics-evolution-toggle"><input id="adminEvolutionEnabled" type="checkbox"> ESTA CARTA PUEDE EVOLUCIONAR</label>
+                </div>
+                <div id="adminEvolutionFields" hidden>
+                  <div class="admin-mechanics-evolution-form">
+                    <label class="admin-field" for="adminEvolutionResultCard">CARTA RESULTADO
+                      <select id="adminEvolutionResultCard">
+                        <option value="">Selecciona la carta a la que evoluciona...</option>
+                      </select>
+                    </label>
+                    <label class="admin-field" for="adminEvolutionTrigger">MÉTODO DE EVOLUCIÓN
+                      <select id="adminEvolutionTrigger">
+                        <option value="manual">Manual · El entrenador pulsa EVOLUCIONAR</option>
+                        <option value="tramo_advance">Automática · Al avanzar de tramo</option>
+                      </select>
+                    </label>
+                    <label class="admin-field admin-evolution-name-field" for="adminEvolutionName">NOMBRE DE LA REGLA
+                      <input id="adminEvolutionName" type="text" maxlength="120" placeholder="Evolución de la carta">
+                    </label>
+                    <label class="admin-field admin-evolution-description-field" for="adminEvolutionDescription">DESCRIPCIÓN
+                      <textarea id="adminEvolutionDescription" rows="2" maxlength="500" placeholder="Describe las condiciones o el método de evolución..."></textarea>
+                    </label>
+                  </div>
+                  <label class="admin-mechanics-check-row"><input id="adminEvolutionSameTramo" type="checkbox"> Solo puede evolucionar durante el tramo en el que se obtuvo.</label>
+                  <div class="admin-evolution-method-note" id="adminEvolutionMethodNote">La evolución manual aparecerá como botón en la baraja del entrenador.</div>
+                </div>
+                <div id="adminEvolutionDisabledNote" class="profile-module-empty">Esta carta no tiene una evolución configurada.</div>
+              </section>
+
+              <div class="admin-mechanics-save-row">
+                <span id="adminMechanicsSaveStatus" role="status">Los cambios todavía no se han guardado.</span>
+                <button class="primary-button" type="button" id="adminSaveMechanics">GUARDAR MECÁNICAS ↗</button>
+              </div>
+            </div>
+          </section>
 
           <section class="admin-trainers-workspace" id="adminTrainersWorkspace" hidden>
             <div class="admin-catalog-heading">
