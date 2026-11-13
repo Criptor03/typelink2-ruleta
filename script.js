@@ -1,3 +1,136 @@
+
+/* -------------------- Supabase / Discord authentication -------------------- */
+let authClient = null;
+let currentAuthUser = null;
+
+function setText(id, value) {
+  const node = document.getElementById(id);
+  if (node) node.textContent = value;
+}
+
+function renderAuthState(user) {
+  currentAuthUser = user || null;
+  const loginButton = document.getElementById("loginButton");
+  const userChip = document.getElementById("userChip");
+  const status = document.getElementById("connectionStatus");
+  const avatar = document.getElementById("userAvatar");
+
+  if (!loginButton || !userChip || !status || !avatar) return;
+
+  if (!user) {
+    loginButton.hidden = false;
+    userChip.hidden = true;
+    status.innerHTML = "<i></i> MODO DEMOSTRACIÓN";
+    setText("userDisplayName", "ENTRENADOR");
+    setText("userStatus", "Sin sesión");
+    avatar.textContent = "TL";
+    avatar.style.backgroundImage = "";
+    return;
+  }
+
+  const metadata = user.user_metadata || {};
+  const displayName =
+    metadata.global_name ||
+    metadata.full_name ||
+    metadata.name ||
+    metadata.user_name ||
+    metadata.preferred_username ||
+    (user.email ? user.email.split("@")[0] : "ENTRENADOR");
+
+  loginButton.hidden = true;
+  userChip.hidden = false;
+  status.innerHTML = "<i></i> DISCORD CONECTADO";
+  setText("userDisplayName", displayName);
+  setText("userStatus", "Sesión iniciada");
+  const avatarUrl = metadata.avatar_url || metadata.picture || "";
+  avatar.textContent = displayName.slice(0, 2).toUpperCase();
+  avatar.style.backgroundImage = "";
+  avatar.style.backgroundSize = "cover";
+  avatar.style.backgroundPosition = "center";
+  if (avatarUrl) {
+    avatar.style.backgroundImage = 'url("' + String(avatarUrl).replace(/["\\\\]/g, "") + '")';
+    avatar.textContent = "";
+  }
+}
+
+function initSupabaseAuth() {
+  const config = window.TYPELINK_SUPABASE_CONFIG;
+  const loginButton = document.getElementById("loginButton");
+  const logoutButton = document.getElementById("logoutButton");
+
+  if (!config || !window.supabase || typeof window.supabase.createClient !== "function") {
+    if (loginButton) {
+      loginButton.disabled = true;
+      loginButton.title = "No se pudo cargar el cliente de Supabase.";
+    }
+    notify("No se pudo cargar el servicio de inicio de sesión.");
+    return;
+  }
+
+  authClient = window.supabase.createClient(config.url, config.publishableKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
+    }
+  });
+
+  authClient.auth.onAuthStateChange((event, session) => {
+    renderAuthState(session ? session.user : null);
+    if (event === "SIGNED_IN") notify("¡Bienvenido a Pokémon TypeLink 2!");
+    if (event === "SIGNED_OUT") notify("Has cerrado tu sesión.");
+  });
+
+  authClient.auth.getSession().then(({ data, error }) => {
+    if (error) {
+      console.error("No se pudo recuperar la sesión de TypeLink:", error.message);
+      notify("No se pudo comprobar tu sesión de Discord.");
+      return;
+    }
+    renderAuthState(data.session ? data.session.user : null);
+  });
+
+  if (loginButton) {
+    loginButton.addEventListener("click", async () => {
+      loginButton.disabled = true;
+      loginButton.textContent = "CONECTANDO...";
+      try {
+        const redirectTo = window.location.origin + window.location.pathname;
+        const { error } = await authClient.auth.signInWithOAuth({
+          provider: "discord",
+          options: {
+            redirectTo,
+            scopes: "identify email"
+          }
+        });
+        if (error) throw error;
+        // Supabase redirects the browser to Discord when OAuth starts successfully.
+      } catch (error) {
+        console.error("Error al iniciar sesión con Discord:", error);
+        notify("No se pudo iniciar sesión: " + (error.message || "revisa la configuración OAuth."));
+        loginButton.disabled = false;
+        loginButton.innerHTML = '<span class="discord-symbol">◉</span> ENTRAR CON DISCORD';
+      }
+    });
+  }
+
+  if (logoutButton) {
+    logoutButton.addEventListener("click", async () => {
+      logoutButton.disabled = true;
+      try {
+        const { error } = await authClient.auth.signOut();
+        if (error) throw error;
+      } catch (error) {
+        console.error("Error al cerrar sesión:", error);
+        notify("No se pudo cerrar sesión: " + (error.message || "error desconocido."));
+      } finally {
+        logoutButton.disabled = false;
+      }
+    });
+  }
+}
+/* --------------------------------------------------------------------------- */
+
 const CARDS = [
   {id:"katateka",name:"Katateka",rarity:"Común",color:"#8d9a9f",description:"Carta de prueba de TypeLink 2.",art:"assets/katateka.svg"},
   {id:"cambio-tipo",name:"Cambio de Tipo",rarity:"Común",color:"#6b9b83",description:"Carta de prueba de TypeLink 2.",art:"assets/cambio-tipo.svg"},
@@ -160,4 +293,4 @@ document.getElementById("resetButton").addEventListener("click",()=>{
 document.getElementById("mobileMenu").addEventListener("click",()=>document.getElementById("sidebar").classList.toggle("open"));
 document.getElementById("mobileScrim").addEventListener("click",()=>{document.getElementById("sidebar").classList.remove("open");document.getElementById("mobileScrim").classList.remove("show");});
 document.getElementById("mobileMenu").addEventListener("click",()=>document.getElementById("mobileScrim").classList.toggle("show"));
-drawWheel();renderDeck();
+drawWheel();renderDeck();initSupabaseAuth();
