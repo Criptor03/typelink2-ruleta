@@ -128,3 +128,13 @@ The server-side `start_new_tramo`, `draw_random_card`, `play_card` and `evolve_c
 - The profile shows active card effects applied by other trainers, grouped by source card and including card art, trainer name, effect summary and remaining duration/charges.
 - When a trainer advances a tramo, effects whose configured boundary has passed are expired in the same transaction. `tramo_end` effects end at the next tramo; `next_tramo_end` effects remain through the next tramo; timed, charge-based and permanent effects retain their configured duration.
 - The profile's type tracker is a participant-facing record. It does not independently validate Pokémon team composition; a future game-rule handler can enforce type restrictions if required.
+
+
+## Administrator access
+
+- `app_private.admin_users` is a private allowlist that is not exposed through the Supabase Data API. The initial project owner is the only seeded administrator.
+- The owner is identified by their immutable Supabase Auth user UUID, verified to be linked to Discord. Display names and email addresses are not used for authorization.
+- `public.is_current_user_admin()` is a SECURITY INVOKER read-only check; its private SECURITY DEFINER core checks only `auth.uid()` against the allowlist. It returns a boolean and exposes no administrator list.
+- The browser hides the administrator navigation and rejects attempts to open the admin page unless the server confirms the current account is authorized.
+- Future privileged write RPCs must call `app_private.require_admin()` inside their SECURITY DEFINER implementation. Hiding the browser UI is not considered an authorization boundary.
+- The initial admin console is a protected dashboard shell. Card management, event settings, participant controls and roulette tools are planned modules and are not yet active actions.
