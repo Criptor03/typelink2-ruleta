@@ -19,6 +19,7 @@ Plataforma web de TypeLink 2 con identidad visual inspirada en Pokémon Blanco y
 - Cada carta admite de 1 a 99 usos configurables; el inventario muestra los usos restantes y agota la carta al llegar a cero.
 - Evoluciones de una sola carta a otra: consumen la instancia original y entregan una nueva, sin fusiones.
 - La baraja permite usar, transferir y evolucionar cartas cuando tienen efectos o reglas configuradas.
+- Editor administrativo de efectos y evoluciones: configura modificadores del límite de baraja, giros extra, accesos a ruletas y evoluciones manuales o automáticas al avanzar de tramo.
 - El catálogo conserva `image_path` para mantener cada carta vinculada a su ilustración; las imágenes provisionales actuales se sustituirán por el arte definitivo sin rehacer las mecánicas.
 - Diseño adaptable a escritorio y móvil.
 
