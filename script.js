@@ -1353,7 +1353,10 @@ async function saveAdminTrainerTramo(){
     notify("Tramo ajustado: "+result.old_tramo+" → "+result.new_tramo+". Los giros se conservaron.");
     await loadAdminTrainers();
     await openAdminTrainerDetail(adminSelectedTrainerId);
-    if(currentAuthUser?.id===adminSelectedTrainerId)await loadProfileMechanics();
+    if(currentAuthUser?.id===adminSelectedTrainerId){
+      await loadCloudInventory();
+      await loadProfileMechanics();
+    }
     await loadActivityFeed();
   }catch(error){
     console.error("No se pudo ajustar el tramo:",error);
