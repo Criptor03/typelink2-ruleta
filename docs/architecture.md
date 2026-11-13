@@ -53,6 +53,15 @@ The active Supabase callback URL is:
 4. Configure the Supabase Auth Site URL and allowed redirect URL to:
    `https://criptor03.github.io/typelink2-ruleta/`
 
+## Frontend Discord authentication
+
+- The public frontend uses `@supabase/supabase-js` pinned to `2.119.0`.
+- `supabase-config.js` contains only the Supabase project URL and publishable key, which are intended for browser use when RLS is enabled.
+- The frontend initiates Discord OAuth with `identify email` scopes and redirects back to the GitHub Pages site URL.
+- The browser stores and refreshes the Supabase Auth session.
+- Never place the Discord Client Secret, Supabase secret key, or legacy service-role key in this repository.
+- The OAuth provider's enabled status and credentials must be checked in the Supabase dashboard; the GitHub code alone cannot verify those dashboard settings.
+
 ## Not implemented yet
 
 - Discord OAuth credentials and frontend login flow.
