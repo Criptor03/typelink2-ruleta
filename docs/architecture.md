@@ -99,6 +99,6 @@ Supabase Auth Site URL and allowed redirect URL:
 - `20261113025249_enforce_non_normal_inventory_limit`
 - `20261113030738_add_play_card_runtime`
 - `20261113030931_add_card_effect_duration_constraints`
-- `2026111303xxxx_index_event_effects_applied_by`
+- `20261113031122_index_event_effects_applied_by`
 
 The server-side `play_card` runtime is implemented and transaction-tested, but the current Beta 0.3 interface has not yet been connected to it. The standard roulette remains in place; special roulette draws and evolution actions are still pending. Card art is stored as each card's `image_path` in `card_catalog` and is returned by the card RPCs.
