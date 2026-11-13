@@ -807,6 +807,8 @@ export type Database = {
       admin_list_roulette_pools: { Args: never; Returns: Json }
       admin_save_roulette_pool: { Args: { p_pool_slug: string; p_is_active: boolean; p_description: string; p_cards: Json }; Returns: Json }
       get_active_roulette_cards: { Args: { p_pool_slug: string }; Returns: Json }
+      get_my_roulette_unlocks: { Args: never; Returns: Json }
+      draw_special_roulette_card: { Args: { p_pool_slug: string }; Returns: Json }
       admin_list_card_mechanics: { Args: never; Returns: Json }
       admin_save_card_mechanics: {
         Args: { p_card_id: string; p_target_scope: string; p_disposition: string; p_effects: Json; p_evolution: Json }
