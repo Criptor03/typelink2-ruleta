@@ -11,7 +11,9 @@ Plataforma web de TypeLink 2 con identidad visual inspirada en Pokémon Blanco y
 - Barajas persistentes en Supabase, visibles para los participantes autenticados.
 - Ruleta que solicita una carta aleatoria al backend y guarda la recompensa en la base de datos.
 - Editor privado de ruletas Normal, Legendaria y Fiesta, conectado al catálogo: permite incluir/quitar cartas, activar apariciones y ajustar pesos de probabilidad.
-- El sorteo de la ruleta Normal usa las cartas activas y sus pesos configurados en el editor; las ruletas Legendaria y Fiesta ya admiten configuración, a la espera de conectar sus flujos de acceso y giro.
+- El sorteo de la ruleta Normal usa las cartas activas y sus pesos configurados en el editor.
+- Las cartas-ticket Legenleta y Rumba aparecen en la ruleta Normal; al canjearlas entregan 1 acceso a la Ruleta Legendaria y Fiesta, respectivamente.
+- Las ruletas Legendaria y Fiesta ya tienen su motor de acceso y giro: el servidor valida el pase, usa los pesos configurados y descuenta exactamente un crédito por premio. Los premios de esas ruletas se podrán añadir desde el catálogo cuando estén diseñados.
 - Límite de cartas normales controlado por el servidor; ahora admite modificadores aditivos temporales.
 - Dos cartas de tramo entregadas mediante una función segura; se acumulan y no consumen espacios normales.
 - Actualizaciones Realtime preparadas para barajas, perfiles y notificaciones.
