@@ -795,6 +795,9 @@ export type Database = {
       admin_list_trainers: { Args: never; Returns: Json }
       admin_get_trainer: { Args: { p_player_id: string }; Returns: Json }
       admin_clear_trainer_cards: { Args: { p_player_id: string }; Returns: Json }
+      admin_adjust_trainer_tramo: { Args: { p_player_id: string; p_new_tramo: number }; Returns: Json }
+      admin_grant_trainer_card: { Args: { p_player_id: string; p_card_id: string; p_quantity?: number }; Returns: Json }
+      admin_remove_trainer_card: { Args: { p_player_id: string; p_card_instance_id: string }; Returns: Json }
       draw_random_card: { Args: never; Returns: Json }
       issue_tramo_cards: { Args: never; Returns: Json }
       start_new_tramo: { Args: never; Returns: Json }
