@@ -792,6 +792,9 @@ export type Database = {
       admin_list_catalog: { Args: never; Returns: Json }
       admin_save_card: { Args: { p_card: Json }; Returns: Json }
       admin_delete_card: { Args: { p_card_id: string }; Returns: Json }
+      admin_list_trainers: { Args: never; Returns: Json }
+      admin_get_trainer: { Args: { p_player_id: string }; Returns: Json }
+      admin_clear_trainer_cards: { Args: { p_player_id: string }; Returns: Json }
       draw_random_card: { Args: never; Returns: Json }
       issue_tramo_cards: { Args: never; Returns: Json }
       start_new_tramo: { Args: never; Returns: Json }
