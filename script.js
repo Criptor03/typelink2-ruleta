@@ -786,7 +786,10 @@ async function loadActivityFeed(){
     const result=await authClient.from("profiles").select("id,display_name,avatar_url").in("id",profileIds);
     if(!result.error)profiles=Object.fromEntries((result.data||[]).map(profile=>[profile.id,profile]));
   }
-  renderActivityFeed(data||[],profiles);
+  const visibleEntries=(data||[]).filter(entry=>
+    !(entry.activity_type==="play"&&Number(entry.details?.unlock_count||0)>0)
+  );
+  renderActivityFeed(visibleEntries,profiles);
 }
 
 async function loadPlayers(){
