@@ -720,7 +720,10 @@ function renderActivityFeed(entries,profiles){
     }else if(entry.activity_type==="transfer"){
       symbol="⇢";message="ha enviado "+cardName+" a "+targetName;
     }else if(entry.activity_type==="evolution"){
-      symbol="⬡";message="ha evolucionado "+(details.source_name||"una carta")+" → "+(details.result_name||"nueva carta");
+      symbol="⬡";
+      message=details.evolution_trigger==="tramo_advance"
+        ?"ha avanzado de tramo y "+(details.source_name||"una carta")+" ha evolucionado a "+(details.result_name||"una nueva carta")
+        :"ha evolucionado "+(details.source_name||"una carta")+" → "+(details.result_name||"nueva carta");
     }else if(entry.activity_type==="admin_grant"){
       symbol="＋";message="ha entregado "+cardName+(Number(details.quantity)>1?" ×"+details.quantity:"")+" a "+targetName;
     }else if(entry.activity_type==="admin_remove"){
@@ -1301,7 +1304,11 @@ function renderAdminTrainerDetail(data){
       const tramo=entry.details?.tramo_number?" · Tramo "+entry.details.tramo_number:"";
       const adjustment=entry.activity_type==="tramo_adjustment"?" · "+entry.details?.old_tramo+" → "+entry.details?.new_tramo:"";
       const quantity=entry.activity_type==="admin_grant"&&Number(entry.details?.quantity)>1?" · ×"+entry.details.quantity:"";
-      detail.textContent=(cardName?cardName:"")+targetName+tramo+adjustment+quantity;
+      const evolution=entry.activity_type==="evolution"
+        ?" · "+(entry.details?.source_name||"Carta")+" → "+(entry.details?.result_name||"Resultado")+
+          (entry.details?.evolution_trigger==="tramo_advance"?" · Automática al pasar al tramo "+entry.details?.to_tramo:" · Manual")
+        :"";
+      detail.textContent=(cardName?cardName:"")+targetName+tramo+adjustment+quantity+evolution;
       const when=document.createElement("span");when.textContent=formatDate(entry.created_at);
       copy.append(title,detail,when);row.append(marker,copy);activityWrap.append(row);
     });
@@ -1753,9 +1760,12 @@ async function loadAdminMechanics(){
 }
 function updateAdminEvolutionMethodNote(){
   const trigger=document.getElementById("adminEvolutionTrigger")?.value;
-  setText("adminEvolutionMethodNote",trigger==="tramo_advance"
+  const sameTramo=document.getElementById("adminEvolutionSameTramo")?.checked;
+  let message=trigger==="tramo_advance"
     ?"La carta se transformará automáticamente cuando su entrenador avance al siguiente tramo. La copia anterior quedará registrada como usada y recibirá la carta resultado con sus usos configurados."
-    :"La evolución manual aparecerá como botón en la baraja del entrenador. El jugador decidirá cuándo utilizarla.");
+    :"La evolución manual aparecerá como botón en la baraja del entrenador. El jugador decidirá cuándo utilizarla.";
+  if(sameTramo)message+=" Las copias antiguas que no tengan registrado el tramo en que se obtuvieron no cumplirán esta condición.";
+  setText("adminEvolutionMethodNote",message);
 }
 function createAdminEffectRow(effect={}){
   const row=document.createElement("article");row.className="admin-mechanics-effect-row";
@@ -2329,10 +2339,12 @@ async function startNewTramo(){
     await loadCloudInventory();
     await loadProfileMechanics();
     const cardCount=Array.isArray(data?.cards)?data.cards.length:2;
-    const evolvedCount=Number(data?.automatic_evolutions_count||0);
+    const evolutions=Array.isArray(data?.automatic_evolutions)?data.automatic_evolutions:[];
+    const evolvedCount=Number(data?.automatic_evolutions_count??evolutions.length);
     const tramo=data?.tramo_number||currentTramo;
+    const evolutionNames=evolutions.slice(0,2).map(item=>(item.source_name||"Carta")+" → "+(item.result_name||"evolución")).join("; ");
     notify("¡Tramo "+tramo+" iniciado! Recibiste "+cardCount+" cartas de tramo y 3 giros normales."+
-      (evolvedCount>0?" Además, evolucionaron automáticamente "+evolvedCount+" carta(s).":""));
+      (evolvedCount>0?" Evoluciones automáticas: "+evolvedCount+(evolutionNames?" · "+evolutionNames:"")+".":""));
   }catch(error){
     console.error("No se pudo avanzar de tramo:",error);
     notify("No se pudo avanzar de tramo: "+(error.message||"error desconocido"));
@@ -2457,6 +2469,7 @@ document.getElementById("adminEvolutionEnabled").addEventListener("change",event
   document.getElementById("adminEvolutionDisabledNote").hidden=event.target.checked;
 });
 document.getElementById("adminEvolutionTrigger").addEventListener("change",updateAdminEvolutionMethodNote);
+document.getElementById("adminEvolutionSameTramo").addEventListener("change",updateAdminEvolutionMethodNote);
 document.getElementById("adminSaveMechanics").addEventListener("click",saveAdminMechanics);
 
 document.getElementById("openAdminRoulettes").addEventListener("click",async()=>{
