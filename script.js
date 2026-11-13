@@ -1689,6 +1689,7 @@ function adminMechanicsEffectLabel(effect){
     const value=Number(effect.effect_value||0);
     return (value>0?"+":"")+value+" espacios de baraja";
   }
+  if(effect.effect_key==="tramo_spin_credit")return "+"+Number(effect.effect_value||0)+" giros extra";
   if(effect.effect_key==="unlock_roulette"){
     const pool=effect.parameters?.pool_slug==="fiesta"?"Fiesta":"Legendaria";
     return "Desbloquea ruleta "+pool;
@@ -1762,8 +1763,8 @@ function createAdminEffectRow(effect={}){
   const typeLabel=document.createElement("label");typeLabel.className="admin-field";
   typeLabel.textContent="TIPO DE EFECTO";
   const type=document.createElement("select");type.dataset.role="effect-key";
-  type.innerHTML='<option value="normal_card_limit">Modificar límite de baraja</option><option value="unlock_roulette">Desbloquear ruleta</option>';
-  type.value=effect.effect_key==="unlock_roulette"?"unlock_roulette":"normal_card_limit";
+  type.innerHTML='<option value="normal_card_limit">Modificar límite de baraja</option><option value="tramo_spin_credit">Conceder giros extra</option><option value="unlock_roulette">Desbloquear ruleta</option>';
+  type.value=["normal_card_limit","tramo_spin_credit","unlock_roulette"].includes(effect.effect_key)?effect.effect_key:"normal_card_limit";
   typeLabel.append(type);
   const activeLabel=document.createElement("label");activeLabel.className="admin-mechanics-check-row";
   const active=document.createElement("input");active.type="checkbox";active.dataset.role="is-active";active.checked=effect.is_active!==false;
@@ -1789,20 +1790,30 @@ function createAdminEffectRow(effect={}){
   timedWrap.append(amountLabel,unitLabel);
   limitFields.append(valueLabel,durationLabel,timedWrap);
 
-  const unlockFields=document.createElement("div");unlockFields.className="admin-mechanics-effect-fields";unlockFields.dataset-role="unlock-fields";
+  const spinFields=document.createElement("div");spinFields.className="admin-mechanics-effect-fields";spinFields.dataset.role="spin-fields";
+  const spinValueLabel=document.createElement("label");spinValueLabel.className="admin-field";spinValueLabel.textContent="GIROS EXTRA QUE CONCEDE";
+  const spinValue=document.createElement("input");spinValue.type="number";spinValue.min="1";spinValue.max="100";spinValue.step="1";spinValue.value=String(effect.effect_key==="tramo_spin_credit"?effect.effect_value??1:1);spinValue.dataset.role="effect-value";spinValueLabel.append(spinValue);
+  const spinNote=document.createElement("p");spinNote.className="admin-mechanics-inline-note";spinNote.textContent="Se añaden inmediatamente a los giros extra del entrenador objetivo. No tienen duración.";
+  spinFields.append(spinValueLabel,spinNote);
+
+  const unlockFields=document.createElement("div");unlockFields.className="admin-mechanics-effect-fields";unlockFields.dataset.role="unlock-fields";
   const poolLabel=document.createElement("label");poolLabel.className="admin-field";poolLabel.textContent="RULETA A DESBLOQUEAR";
-  const pool=document.createElement("select");pool.dataset-role="pool-slug";
+  const pool=document.createElement("select");pool.dataset.role="pool-slug";
   pool.innerHTML='<option value="legendary">Ruleta Legendaria</option><option value="fiesta">Ruleta Fiesta</option>';
   pool.value=effect.parameters?.pool_slug==="fiesta"?"fiesta":"legendary";poolLabel.append(pool);
   const spinsLabel=document.createElement("label");spinsLabel.className="admin-field";spinsLabel.textContent="GIROS QUE CONCEDE";
   const spins=document.createElement("input");spins.type="number";spins.min="1";spins.max="100";spins.step="1";spins.value=String(effect.parameters?.spins_granted??1);spins.dataset.role="spins-granted";spinsLabel.append(spins);
-  const instantNote=document.createElement("p");instantNote.className="admin-mechanics-inline-note";instantNote.textContent="El acceso se concede al canjear la carta y no tiene duración temporal.";
+  const instantNote=document.createElement("p");instantNote.className="admin-mechanics-inline-note";instantNote.textContent="El acceso se concede al canjear la carta y requiere que la ruleta esté activa.";
   unlockFields.append(poolLabel,spinsLabel,instantNote);
 
   function sync(){
-    const unlock=type.value==="unlock_roulette";
-    limitFields.hidden=unlock;unlockFields.hidden=!unlock;
-    timedWrap.hidden=unlock||duration.value!=="timed";
+    const key=type.value;
+    const unlock=key==="unlock_roulette";
+    const spin=key==="tramo_spin_credit";
+    limitFields.hidden=unlock||spin;
+    spinFields.hidden=!spin;
+    unlockFields.hidden=!unlock;
+    timedWrap.hidden=unlock||spin||duration.value!=="timed";
     if(type.dataset.changed==="true"){
       const target=document.getElementById("adminMechanicsTargetScope");
       const disposition=document.getElementById("adminMechanicsDisposition");
@@ -1811,7 +1822,7 @@ function createAdminEffectRow(effect={}){
   }
   type.addEventListener("change",()=>{type.dataset.changed="true";sync();});
   duration.addEventListener("change",sync);
-  row.append(top,limitFields,unlockFields);
+  row.append(top,limitFields,spinFields,unlockFields);
   row._sync=sync;
   sync();
   return row;
@@ -1883,6 +1894,13 @@ async function saveAdminMechanics(){
           pool_slug:row.querySelector('[data-role="pool-slug"]').value,
           spins_granted:Number(row.querySelector('[data-role="spins-granted"]').value)
         },
+        is_active:row.querySelector('[data-role="is-active"]').checked
+      };
+    }
+    if(key==="tramo_spin_credit"){
+      return {
+        effect_key:key,
+        effect_value:Number(row.querySelector('[data-role="effect-value"]').value),
         is_active:row.querySelector('[data-role="is-active"]').checked
       };
     }
