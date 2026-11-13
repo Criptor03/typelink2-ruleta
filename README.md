@@ -61,3 +61,7 @@ El perfil incluye un registro persistente de los 18 tipos Pokémon (habilitado/b
 
 ### Migración reciente
 - `20261113175916_add_trainer_type_tracker_and_incoming_effects`
+
+
+### Acceso de administración
+El menú y el panel de administración se muestran únicamente cuando Supabase valida que la cuenta autenticada está en la lista privada de administradores. La primera cuenta autorizada es la del propietario del proyecto, identificada por su UUID de Supabase Auth, no por su nombre o correo. Las herramientas de gestión se irán habilitando por módulos.
