@@ -67,6 +67,12 @@ let playerTypeStatus = Object.create(null);
 let incomingCardEffects = [];
 const pendingTypeUpdates = new Set();
 const cardArtImages = {};
+let adminCatalogItems = [];
+let adminEditingCardId = null;
+let adminEditingImagePath = null;
+let adminPendingImageFile = null;
+let adminImageObjectUrl = null;
+
 
 CARDS.forEach(card=>{
   const image=new Image();
@@ -996,6 +1002,226 @@ function renderAdminAccess(){
   setText("adminAccountName",currentProfile?.display_name||currentAuthUser?.user_metadata?.global_name||currentAuthUser?.email||"Administrador");
   setText("adminAccountProvider",isAdmin?"Discord · Permiso verificado por Supabase":"Acceso administrativo no disponible");
 }
+
+function showAdminOverview(){
+  const overview=document.getElementById("adminOverview");
+  const workspace=document.getElementById("adminCatalogWorkspace");
+  if(overview)overview.hidden=false;
+  if(workspace)workspace.hidden=true;
+  const list=document.getElementById("adminCatalogListView");
+  const editor=document.getElementById("adminCardEditorView");
+  if(list)list.hidden=false;
+  if(editor)editor.hidden=true;
+}
+function showAdminCatalogList(){
+  const list=document.getElementById("adminCatalogListView");
+  const editor=document.getElementById("adminCardEditorView");
+  if(list)list.hidden=false;
+  if(editor)editor.hidden=true;
+}
+function adminCategoryLabel(category){
+  return ({normal:"Normal",tramo:"Tramo",fiesta:"Fiesta"})[category]||category||"—";
+}
+function adminRarityLabel(rarity){
+  return ({common:"Común",rare:"Rara",epic:"Épica",legendary:"Legendaria",tramo:"Tramo",fiesta:"Fiesta"})[rarity]||rarity||"—";
+}
+function adminSlugFromName(name){
+  return String(name||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()
+    .replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,64);
+}
+function renderAdminCatalog(){
+  const grid=document.getElementById("adminCardGrid");
+  if(!grid)return;
+  const category=document.getElementById("adminCatalogFilter")?.value||"all";
+  const search=(document.getElementById("adminCatalogSearch")?.value||"").trim().toLowerCase();
+  const activeCount=adminCatalogItems.filter(card=>card.is_active).length;
+  setText("adminCatalogTotal",adminCatalogItems.length);
+  setText("adminCatalogActive",activeCount);
+  setText("adminCatalogInactive",adminCatalogItems.length-activeCount);
+  const filtered=adminCatalogItems.filter(card=>{
+    const matchesCategory=category==="all"||card.category===category;
+    const matchesSearch=!search||String(card.name||"").toLowerCase().includes(search)||String(card.slug||"").toLowerCase().includes(search);
+    return matchesCategory&&matchesSearch;
+  });
+  grid.replaceChildren();
+  if(!filtered.length){
+    const empty=document.createElement("div");empty.className="admin-catalog-loading";
+    empty.textContent=adminCatalogItems.length?"No hay cartas que coincidan con la búsqueda.":"Todavía no hay cartas en el catálogo.";
+    grid.append(empty);return;
+  }
+  filtered.forEach(card=>{
+    const article=document.createElement("article");article.className="admin-card-item panel";
+    const imageWrap=document.createElement("div");imageWrap.className="admin-card-item-image";
+    if(card.image_path){
+      const image=document.createElement("img");image.src=card.image_path;image.alt=card.name||"Carta";
+      image.onerror=()=>{image.remove();const fallback=document.createElement("span");fallback.textContent="▧";imageWrap.append(fallback);};
+      imageWrap.append(image);
+    }else{
+      const fallback=document.createElement("span");fallback.textContent="▧";imageWrap.append(fallback);
+    }
+    const copy=document.createElement("div");copy.className="admin-card-item-copy";
+    const title=document.createElement("strong");title.textContent=card.name||"Carta sin nombre";
+    const meta=document.createElement("small");meta.textContent=adminCategoryLabel(card.category)+" · "+adminRarityLabel(card.rarity)+" · "+Number(card.uses_per_card||1)+" uso(s)";
+    const slug=document.createElement("code");slug.textContent=card.slug||"";
+    const status=document.createElement("span");status.className="admin-card-status "+(card.is_active?"is-active":"is-inactive");
+    status.textContent=card.is_active?"ACTIVA":"DESACTIVADA";
+    copy.append(title,meta,slug,status);
+    const edit=document.createElement("button");edit.className="admin-card-edit";edit.type="button";edit.textContent="EDITAR ↗";
+    edit.addEventListener("click",()=>openAdminCardEditor(card));
+    article.append(imageWrap,copy,edit);grid.append(article);
+  });
+}
+async function loadAdminCatalog(){
+  const grid=document.getElementById("adminCardGrid");
+  if(grid){grid.replaceChildren();const loading=document.createElement("div");loading.className="admin-catalog-loading";loading.textContent="Cargando catálogo desde Supabase...";grid.append(loading);}
+  if(!authClient||!currentAuthUser||!isAdmin){notify("No tienes permiso para consultar el catálogo.");return;}
+  try{
+    const {data,error}=await authClient.rpc("admin_list_catalog");
+    if(error)throw error;
+    adminCatalogItems=Array.isArray(data)?data:[];
+    renderAdminCatalog();
+  }catch(error){
+    console.error("No se pudo cargar el catálogo administrativo:",error);
+    if(grid){grid.replaceChildren();const message=document.createElement("div");message.className="admin-catalog-loading is-error";message.textContent="No se pudo cargar el catálogo: "+(error.message||"error desconocido");grid.append(message);}
+  }
+}
+function showAdminCardImage(path){
+  const image=document.getElementById("adminCardImagePreview");
+  const empty=document.getElementById("adminCardImageEmpty");
+  if(image){image.hidden=!path;if(path)image.src=path;else image.removeAttribute("src");}
+  if(empty)empty.hidden=Boolean(path);
+}
+function updateAdminCardRarity(preferred){
+  const category=document.getElementById("adminCardCategory").value;
+  const rarity=document.getElementById("adminCardRarity");
+  const options=category==="normal"
+    ?[{value:"common",label:"Común"},{value:"rare",label:"Rara"},{value:"epic",label:"Épica"},{value:"legendary",label:"Legendaria"}]
+    :[{value:category,label:category==="tramo"?"Tramo":"Fiesta"}];
+  rarity.replaceChildren();
+  options.forEach(option=>{const item=document.createElement("option");item.value=option.value;item.textContent=option.label;rarity.append(item);});
+  rarity.value=options.some(option=>option.value===preferred)?preferred:options[0].value;
+  const countInput=document.getElementById("adminCardCounts");
+  if(category!=="normal"){countInput.checked=false;countInput.disabled=true;}
+  else{countInput.disabled=false;}
+}
+function openAdminCardEditor(card){
+  if(!isAdmin)return;
+  const form=document.getElementById("adminCardForm");
+  form.reset();
+  adminEditingCardId=card?.id||null;
+  adminEditingImagePath=card?.image_path||null;
+  adminPendingImageFile=null;
+  if(adminImageObjectUrl){URL.revokeObjectURL(adminImageObjectUrl);adminImageObjectUrl=null;}
+  document.getElementById("adminCardEditorTitle").textContent=card?"Editar carta":"Crear nueva carta";
+  document.getElementById("adminCardName").value=card?.name||"";
+  const slugInput=document.getElementById("adminCardSlug");
+  slugInput.value=card?.slug||"";
+  slugInput.disabled=Boolean(card);
+  slugInput.dataset.touched=card?"true":"false";
+  document.getElementById("adminCardCategory").value=card?.category||"normal";
+  updateAdminCardRarity(card?.rarity||"common");
+  document.getElementById("adminCardUses").value=Number(card?.uses_per_card||1);
+  document.getElementById("adminCardScope").value=card?.target_scope||"self";
+  document.getElementById("adminCardDisposition").value=card?.disposition||"consume";
+  document.getElementById("adminCardDescription").value=card?.description||"";
+  document.getElementById("adminCardCounts").checked=card?.counts_toward_normal_limit!==false;
+  if(card?.category!=="normal")document.getElementById("adminCardCounts").disabled=true;
+  document.getElementById("adminCardActive").checked=card?Boolean(card.is_active):true;
+  document.getElementById("adminCardImageFile").value="";
+  document.getElementById("adminCardImageHelp").textContent=adminEditingImagePath?"Ilustración actual vinculada. Puedes reemplazarla con otro PNG.":"PNG hasta 5 MB. La imagen se subirá al almacenamiento de TypeLink al guardar.";
+  document.getElementById("adminCardFormStatus").textContent="Completa los datos de la carta.";
+  document.getElementById("adminCardFormStatus").classList.remove("is-error");
+  showAdminCardImage(adminEditingImagePath);
+  document.getElementById("adminCatalogListView").hidden=true;
+  document.getElementById("adminCardEditorView").hidden=false;
+  document.getElementById("adminCardName").focus();
+}
+async function uploadAdminCardImage(file,slug){
+  const safeSlug=adminSlugFromName(slug)||"carta";
+  const fileName=Date.now()+"-"+crypto.randomUUID()+".png";
+  const objectPath="cards/"+safeSlug+"/"+fileName;
+  const {data,error}=await authClient.storage.from("typelink-card-art").upload(objectPath,file,{
+    cacheControl:"31536000",contentType:"image/png",upsert:false
+  });
+  if(error)throw error;
+  const publicResult=authClient.storage.from("typelink-card-art").getPublicUrl(data.path);
+  if(!publicResult?.data?.publicUrl)throw new Error("La imagen se subió, pero no pudimos generar su dirección pública.");
+  return publicResult.data.publicUrl;
+}
+async function saveAdminCard(event){
+  event.preventDefault();
+  if(!isAdmin||!authClient){notify("No tienes permiso para guardar cartas.");return;}
+  const saveButton=document.getElementById("adminCardSave");
+  const status=document.getElementById("adminCardFormStatus");
+  const name=document.getElementById("adminCardName").value.trim();
+  const slug=document.getElementById("adminCardSlug").value.trim();
+  const category=document.getElementById("adminCardCategory").value;
+  const rarity=document.getElementById("adminCardRarity").value;
+  const file=adminPendingImageFile;
+  if(!name||!slug){status.textContent="Completa el nombre y el identificador.";status.classList.add("is-error");return;}
+  if(file&&(file.type!=="image/png"||!file.name.toLowerCase().endsWith(".png"))){status.textContent="Solo se permiten imágenes PNG.";status.classList.add("is-error");return;}
+  if(file&&file.size>5*1024*1024){status.textContent="La imagen supera el límite de 5 MB.";status.classList.add("is-error");return;}
+  saveButton.disabled=true;saveButton.textContent="GUARDANDO...";
+  status.classList.remove("is-error");status.textContent="Guardando carta e ilustración...";
+  try{
+    if(file){
+      status.textContent="Subiendo PNG al almacenamiento seguro...";
+      adminEditingImagePath=await uploadAdminCardImage(file,slug);
+    }
+    const payload={
+      id:adminEditingCardId,
+      slug:slug,
+      name:name,
+      category:category,
+      rarity:rarity,
+      description:document.getElementById("adminCardDescription").value,
+      image_path:adminEditingImagePath,
+      uses_per_card:Number(document.getElementById("adminCardUses").value),
+      target_scope:document.getElementById("adminCardScope").value,
+      disposition:document.getElementById("adminCardDisposition").value,
+      counts_toward_normal_limit:document.getElementById("adminCardCounts").checked,
+      is_active:document.getElementById("adminCardActive").checked
+    };
+    const {data,error}=await authClient.rpc("admin_save_card",{p_card:payload});
+    if(error)throw error;
+    const saved=Array.isArray(data)?data[0]:data;
+    if(!saved?.id)throw new Error("Supabase no devolvió la carta guardada.");
+    adminPendingImageFile=null;
+    if(adminImageObjectUrl){URL.revokeObjectURL(adminImageObjectUrl);adminImageObjectUrl=null;}
+    notify(adminEditingCardId?"Carta actualizada correctamente.":"Nueva carta creada correctamente.");
+    await loadAdminCatalog();
+    await loadPublicNormalCards();
+    showAdminCatalogList();
+  }catch(error){
+    console.error("No se pudo guardar la carta:",error);
+    status.textContent=error.message||"No se pudo guardar la carta.";
+    status.classList.add("is-error");
+    notify("No se pudo guardar la carta: "+(error.message||"error desconocido"));
+  }finally{
+    saveButton.disabled=false;saveButton.textContent="GUARDAR CARTA ↗";
+  }
+}
+async function loadPublicNormalCards(){
+  if(!authClient||!currentAuthUser)return;
+  const {data,error}=await authClient.from("card_catalog")
+    .select("id,slug,name,rarity,description,image_path")
+    .eq("category","normal").eq("is_active",true).order("name",{ascending:true});
+  if(error){console.warn("No se pudo actualizar la ruleta con el catálogo:",error.message);return;}
+  const rarityLabels={common:"Común",rare:"Rara",epic:"Épica",legendary:"Legendaria"};
+  const rarityColors={common:"#8d9a9f",rare:"#6f8dbb",epic:"#bd7a4e",legendary:"#d4ae5b"};
+  CARDS.splice(0,CARDS.length,...(data||[]).map(card=>({
+    id:card.slug,slug:card.slug,name:card.name,rarity:rarityLabels[card.rarity]||card.rarity,
+    color:rarityColors[card.rarity]||"#8d9a9f",description:card.description,
+    art:card.image_path||("assets/"+card.slug+".svg"),image_path:card.image_path
+  })));
+  (data||[]).forEach(card=>{
+    const image=new Image();
+    image.src=card.image_path||("assets/"+card.slug+".svg");
+    image.onload=()=>drawWheel();
+    cardArtImages[card.slug]=image;
+  });
+  drawWheel();
+}
 async function loadAdminAccess(){
   isAdmin=false;
   adminAccessChecked=false;
@@ -1035,7 +1261,7 @@ async function activateUserSession(user){
   activeSessionUserId=user.id;currentAuthUser=user;cloudMode=true;
   cloudDeck=[];cloudRoute=[];cloudSpecial=[];cloudInventory=[];
   renderAuthState(user);renderDeck();
-  await Promise.all([loadAdminAccess(),loadMyProfile(),loadCloudInventory(),loadPlayers(),loadActivityFeed()]);
+  await Promise.all([loadAdminAccess(),loadMyProfile(),loadCloudInventory(),loadPlayers(),loadActivityFeed(),loadPublicNormalCards()]);
   renderAdminAccess();
   setupRealtime();
 }
@@ -1138,7 +1364,7 @@ function setPage(page){
   if(page==="activity")loadActivityFeed();
   if(page==="deck"&&cloudMode)loadCloudInventory();
   if(page==="profile"&&currentAuthUser)loadMyProfile();
-  if(page==="admin"&&isAdmin)renderAdminAccess();
+  if(page==="admin"&&isAdmin){renderAdminAccess();showAdminOverview();}
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -1195,6 +1421,50 @@ function initSupabaseAuth(){
 }
 
 document.querySelectorAll("[data-page]").forEach(button=>button.addEventListener("click",()=>setPage(button.dataset.page)));
+document.getElementById("openAdminCatalog").addEventListener("click",async()=>{
+  if(!isAdmin){notify("Acceso reservado al administrador.");return;}
+  document.getElementById("adminOverview").hidden=true;
+  document.getElementById("adminCatalogWorkspace").hidden=false;
+  document.getElementById("adminCatalogListView").hidden=false;
+  document.getElementById("adminCardEditorView").hidden=true;
+  await loadAdminCatalog();
+  window.scrollTo({top:0,behavior:"smooth"});
+});
+document.getElementById("adminCatalogBack").addEventListener("click",showAdminOverview);
+document.getElementById("adminCreateCard").addEventListener("click",()=>openAdminCardEditor(null));
+document.getElementById("adminCardCancel").addEventListener("click",showAdminCatalogList);
+document.getElementById("adminCardForm").addEventListener("submit",saveAdminCard);
+document.getElementById("adminCatalogSearch").addEventListener("input",renderAdminCatalog);
+document.getElementById("adminCatalogFilter").addEventListener("change",renderAdminCatalog);
+document.getElementById("adminCardCategory").addEventListener("change",()=>updateAdminCardRarity());
+document.getElementById("adminCardName").addEventListener("input",event=>{
+  const slug=document.getElementById("adminCardSlug");
+  if(!slug.disabled&&slug.dataset.touched!=="true")slug.value=adminSlugFromName(event.target.value);
+});
+document.getElementById("adminCardSlug").addEventListener("input",event=>{event.target.dataset.touched="true";});
+document.getElementById("adminCardImageFile").addEventListener("change",event=>{
+  const file=event.target.files?.[0]||null;
+  adminPendingImageFile=file;
+  if(adminImageObjectUrl){URL.revokeObjectURL(adminImageObjectUrl);adminImageObjectUrl=null;}
+  if(file){
+    if(file.type!=="image/png"||!file.name.toLowerCase().endsWith(".png")){
+      adminPendingImageFile=null;event.target.value="";notify("Selecciona un archivo PNG.");return;
+    }
+    if(file.size>5*1024*1024){
+      adminPendingImageFile=null;event.target.value="";notify("La imagen supera el límite de 5 MB.");return;
+    }
+    adminImageObjectUrl=URL.createObjectURL(file);
+    showAdminCardImage(adminImageObjectUrl);
+    document.getElementById("adminCardImageHelp").textContent=file.name+" · "+(file.size/1024/1024).toFixed(2)+" MB · Pendiente de subir al guardar.";
+  }
+});
+document.getElementById("adminCardRemoveImage").addEventListener("click",()=>{
+  adminEditingImagePath=null;adminPendingImageFile=null;
+  if(adminImageObjectUrl){URL.revokeObjectURL(adminImageObjectUrl);adminImageObjectUrl=null;}
+  document.getElementById("adminCardImageFile").value="";
+  document.getElementById("adminCardImageHelp").textContent="La carta se guardará sin una ilustración vinculada.";
+  showAdminCardImage(null);
+});
 spinButton.addEventListener("click",spin);
 document.getElementById("tramoButton").addEventListener("click",startNewTramo);
 document.getElementById("tramoButtonFull").addEventListener("click",startNewTramo);
