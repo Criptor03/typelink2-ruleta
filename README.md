@@ -22,3 +22,8 @@ Primera estructura de la plataforma TypeLink 2 con identidad visual inspirada en
 El sitio se publica mediante GitHub Pages desde la rama `main`, carpeta raíz.
 
 https://github.com/Criptor03/typelink2-ruleta
+
+
+## Backend Supabase
+
+El proyecto activo está en São Paulo: `typelink2-platform-saopaulo` (`uytdmfrynuzofkyedhve`). Consulta [`docs/architecture.md`](docs/architecture.md) para el esquema, seguridad y configuración de autenticación. No guardes claves secretas en este repositorio.
