@@ -10,9 +10,10 @@ Plataforma web de TypeLink 2 con identidad visual inspirada en Pokémon Blanco y
 - Directorio de jugadores registrados y perfiles públicos.
 - Barajas persistentes en Supabase, visibles para los participantes autenticados.
 - Ruleta que solicita una carta aleatoria al backend y guarda la recompensa en la base de datos.
-- Límite de cinco cartas normales aplicado dentro de una función transaccional del servidor.
+- Límite de cartas normales controlado por el servidor; ahora admite modificadores aditivos temporales.
 - Dos cartas de tramo entregadas mediante una función segura; se acumulan y no consumen espacios normales.
 - Actualizaciones Realtime preparadas para barajas, perfiles y notificaciones.
+- Base del motor universal de cartas: efectos configurables, objetivos y consumo/transferencia, recetas de evolución, pools de ruleta, créditos de acceso y registro de actividad.
 - Diseño adaptable a escritorio y móvil.
 
 ## Backend Supabase
@@ -31,7 +32,7 @@ Consulta [`docs/architecture.md`](docs/architecture.md) para el esquema, políti
 ## Pendiente
 - Sustituir las ocho cartas provisionales por el catálogo y las imágenes definitivas de TypeLink 2.
 - Conectar importador de partidas Pokémon Blanco/Negro y TypeLink Sync.
-- Construir envío de cartas entre jugadores y notificaciones correspondientes.
+- Conectar las acciones del motor universal a la interfaz: jugar/transferir cartas, aplicar efectos, evolucionar consumiendo ingredientes y girar las ruletas especiales.
 - Añadir autorización de administradores y herramientas del evento.
 - Conectar el bot de Discord para operaciones administrativas y `/tramo` cuando se definan las reglas finales.
 
