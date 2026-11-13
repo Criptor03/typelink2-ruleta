@@ -42,8 +42,13 @@
         <button class="mobile-menu" id="mobileMenu" aria-label="Abrir menú">☰</button>
         <div class="breadcrumb"><span>TYPELINK 2</span><i>/</i><strong id="currentSection">INICIO</strong></div>
         <div class="topbar-right">
-          <span class="connection-status"><i></i> MODO DEMOSTRACIÓN</span>
-          <div class="user-chip"><span class="user-avatar">TL</span><span><b>ENTRENADOR</b><small>Sin sesión</small></span></div>
+          <span class="connection-status" id="connectionStatus"><i></i> MODO DEMOSTRACIÓN</span>
+          <button class="discord-login-button" id="loginButton" type="button"><span class="discord-symbol">◉</span> ENTRAR CON DISCORD</button>
+          <div class="user-chip" id="userChip" hidden>
+            <span class="user-avatar" id="userAvatar">TL</span>
+            <span><b id="userDisplayName">ENTRENADOR</b><small id="userStatus">Sesión Discord</small></span>
+            <button class="logout-button" id="logoutButton" type="button" title="Cerrar sesión">SALIR</button>
+          </div>
         </div>
       </header>
 
@@ -156,6 +161,8 @@
   </div>
   <div class="mobile-scrim" id="mobileScrim"></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0"></script>
+  <script src="supabase-config.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
