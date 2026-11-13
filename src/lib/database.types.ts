@@ -791,6 +791,7 @@ export type Database = {
       is_current_user_admin: { Args: never; Returns: boolean }
       admin_list_catalog: { Args: never; Returns: Json }
       admin_save_card: { Args: { p_card: Json }; Returns: Json }
+      admin_delete_card: { Args: { p_card_id: string }; Returns: Json }
       draw_random_card: { Args: never; Returns: Json }
       issue_tramo_cards: { Args: never; Returns: Json }
       start_new_tramo: { Args: never; Returns: Json }
