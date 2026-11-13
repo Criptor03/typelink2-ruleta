@@ -26,6 +26,7 @@ export type Database = {
           is_active: boolean
           name: string
           rarity: string
+          roulette_eligible: boolean
           slug: string
           target_scope: string
           uses_per_card: number
@@ -41,6 +42,7 @@ export type Database = {
           is_active?: boolean
           name: string
           rarity: string
+          roulette_eligible?: boolean
           slug: string
           target_scope?: string
           uses_per_card?: number
@@ -56,6 +58,7 @@ export type Database = {
           is_active?: boolean
           name?: string
           rarity?: string
+          roulette_eligible?: boolean
           slug?: string
           target_scope?: string
           uses_per_card?: number
