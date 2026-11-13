@@ -148,3 +148,15 @@ The server-side `start_new_tramo`, `draw_random_card`, `play_card` and `evolve_c
 - Roulette pool listing, pool saving, public card listing and the actual Normal roulette draw all enforce the eligibility flag and reject active evolution sources on the server. Disabling eligibility also deletes existing pool memberships.
 - Disabling an evolution does not automatically re-enable its source card for roulette. An administrator must explicitly re-enable it in the catalog.
 - Card targets are intentionally limited to `self` (the trainer using the card) and `opponent` (a rival). The catalog RPC, mechanics RPC and database check constraint all enforce the same two values. Roulette unlock effects are restricted to `self`.
+
+
+## Special roulette access tickets
+
+- `Legenleta` and `Rumba` are one-use normal cards included as entries in the Normal roulette. Canjeing Legenleta creates exactly one credit for the Legendary roulette; Rumba creates exactly one credit for the Fiesta roulette.
+- Ticket redemption consumes the card and creates a row in `player_roulette_unlocks`. Credits are retained even while the corresponding special pool is closed; opening the pool later makes the stored credit usable.
+- `public.draw_special_roulette_card(p_pool_slug)` accepts only `legendary` or `fiesta`, verifies the signed-in trainer owns an unexpired unused access credit, verifies the target pool is active and has an eligible active prize, selects using the configured member weights, consumes exactly one credit and inserts the prize into the trainer's inventory in the same transaction.
+- Legendary rewards are normal-category cards with Legendary rarity; Fiesta rewards belong to the Fiesta category. Catalog eligibility and active evolution exclusions are rechecked during every special draw.
+- Normal-category Legendary rewards respect the trainer's effective normal deck capacity when their catalog flag `counts_toward_normal_limit` is enabled. Fiesta rewards remain outside the normal card limit.
+- `public.get_my_roulette_unlocks()` returns only the caller's unspent, unexpired access credits, including credits for closed pools. The underlying table remains owner-readable only; the private RPC is SECURITY DEFINER with a fixed empty search path and uses `auth.uid()`.
+- The player's Roulette page shows separate Legendary and Fiesta access counts and spin buttons. Access balances refresh after ticket redemption, a special draw and Realtime changes.
+- `player_roulette_unlocks` is included in the Realtime publication so the current trainer's access counts update when credits are granted or consumed.
