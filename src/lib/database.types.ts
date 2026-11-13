@@ -17,35 +17,419 @@ export type Database = {
       card_catalog: {
         Row: {
           category: string
+          counts_toward_normal_limit: boolean
           created_at: string
           description: string
+          disposition: string
           id: string
           image_path: string | null
           is_active: boolean
           name: string
           rarity: string
           slug: string
+          target_scope: string
         }
         Insert: {
           category: string
+          counts_toward_normal_limit?: boolean
           created_at?: string
           description?: string
+          disposition?: string
           id?: string
           image_path?: string | null
           is_active?: boolean
           name: string
           rarity: string
           slug: string
+          target_scope?: string
         }
         Update: {
           category?: string
+          counts_toward_normal_limit?: boolean
           created_at?: string
           description?: string
+          disposition?: string
           id?: string
           image_path?: string | null
           is_active?: boolean
           name?: string
           rarity?: string
+          slug?: string
+          target_scope?: string
+        }
+        Relationships: []
+      }
+      card_effects: {
+        Row: {
+          card_id: string
+          created_at: string
+          duration_type: string
+          duration_value: number | null
+          effect_key: string
+          effect_value: number | null
+          id: string
+          is_active: boolean
+          operation: string
+          parameters: Json
+          sort_order: number
+        }
+        Insert: {
+          card_id: string
+          created_at?: string
+          duration_type?: string
+          duration_value?: number | null
+          effect_key: string
+          effect_value?: number | null
+          id?: string
+          is_active?: boolean
+          operation?: string
+          parameters?: Json
+          sort_order?: number
+        }
+        Update: {
+          card_id?: string
+          created_at?: string
+          duration_type?: string
+          duration_value?: number | null
+          effect_key?: string
+          effect_value?: number | null
+          id?: string
+          is_active?: boolean
+          operation?: string
+          parameters?: Json
+          sort_order?: number
+        }
+        Relationships: [{
+          foreignKeyName: "card_effects_card_id_fkey"
+          columns: ["card_id"]
+          isOneToOne: false
+          referencedRelation: "card_catalog"
+          referencedColumns: ["id"]
+        }]
+      }
+      card_activity: {
+        Row: {
+          activity_type: string
+          actor_id: string | null
+          card_instance_id: string | null
+          created_at: string
+          details: Json
+          id: string
+          target_id: string | null
+        }
+        Insert: {
+          activity_type: string
+          actor_id?: string | null
+          card_instance_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          target_id?: string | null
+        }
+        Update: {
+          activity_type?: string
+          actor_id?: string | null
+          card_instance_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          target_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_activity_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "card_activity_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "card_activity_card_instance_id_fkey"
+            columns: ["card_instance_id"]
+            isOneToOne: false
+            referencedRelation: "player_cards"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      card_evolution_ingredients: {
+        Row: {
+          card_id: string
+          quantity: number
+          rule_id: string
+        }
+        Insert: {
+          card_id: string
+          quantity?: number
+          rule_id: string
+        }
+        Update: {
+          card_id?: string
+          quantity?: number
+          rule_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_evolution_ingredients_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "card_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "card_evolution_ingredients_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "card_evolution_rules"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      card_evolution_rules: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+          name: string
+          result_card_id: string
+          same_tramo_only: boolean
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          result_card_id: string
+          same_tramo_only?: boolean
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          result_card_id?: string
+          same_tramo_only?: boolean
+          slug?: string
+        }
+        Relationships: [{
+          foreignKeyName: "card_evolution_rules_result_card_id_fkey"
+          columns: ["result_card_id"]
+          isOneToOne: false
+          referencedRelation: "card_catalog"
+          referencedColumns: ["id"]
+        }]
+      }
+      player_effects: {
+        Row: {
+          applied_by: string | null
+          created_at: string
+          duration_type: string
+          duration_value: number | null
+          effect_key: string
+          effect_value: number | null
+          expires_after_tramo: number | null
+          expires_at: string | null
+          id: string
+          operation: string
+          owner_id: string
+          parameters: Json
+          remaining_uses: number | null
+          source_card_instance_id: string | null
+          starts_at: string
+          status: string
+        }
+        Insert: {
+          applied_by?: string | null
+          created_at?: string
+          duration_type: string
+          duration_value?: number | null
+          effect_key: string
+          effect_value?: number | null
+          expires_after_tramo?: number | null
+          expires_at?: string | null
+          id?: string
+          operation: string
+          owner_id: string
+          parameters?: Json
+          remaining_uses?: number | null
+          source_card_instance_id?: string | null
+          starts_at?: string
+          status?: string
+        }
+        Update: {
+          applied_by?: string | null
+          created_at?: string
+          duration_type?: string
+          duration_value?: number | null
+          effect_key?: string
+          effect_value?: number | null
+          expires_after_tramo?: number | null
+          expires_at?: string | null
+          id?: string
+          operation?: string
+          owner_id?: string
+          parameters?: Json
+          remaining_uses?: number | null
+          source_card_instance_id?: string | null
+          starts_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_effects_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_effects_applied_by_fkey"
+            columns: ["applied_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_effects_source_card_instance_id_fkey"
+            columns: ["source_card_instance_id"]
+            isOneToOne: false
+            referencedRelation: "player_cards"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      player_roulette_unlocks: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          owner_id: string
+          pool_id: string
+          source_card_instance_id: string | null
+          spins_granted: number
+          spins_used: number
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          owner_id: string
+          pool_id: string
+          source_card_instance_id?: string | null
+          spins_granted?: number
+          spins_used?: number
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          owner_id?: string
+          pool_id?: string
+          source_card_instance_id?: string | null
+          spins_granted?: number
+          spins_used?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_roulette_unlocks_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_roulette_unlocks_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "roulette_pools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_roulette_unlocks_source_card_instance_id_fkey"
+            columns: ["source_card_instance_id"]
+            isOneToOne: false
+            referencedRelation: "player_cards"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      roulette_pool_cards: {
+        Row: {
+          card_id: string
+          created_at: string
+          is_active: boolean
+          pool_id: string
+          weight: number
+        }
+        Insert: {
+          card_id: string
+          created_at?: string
+          is_active?: boolean
+          pool_id: string
+          weight?: number
+        }
+        Update: {
+          card_id?: string
+          created_at?: string
+          is_active?: boolean
+          pool_id?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roulette_pool_cards_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "roulette_pools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roulette_pool_cards_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "card_catalog"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      roulette_pools: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+          name: string
+          pool_type: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          pool_type: string
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          pool_type?: string
           slug?: string
         }
         Relationships: []
