@@ -192,8 +192,8 @@ function renderDeck(){
   const width=(normalCardLimit>0?Math.min(normalCount,normalCardLimit)/normalCardLimit*100:0)+"%";
   const fillIds=["capacityFill","capacityFillFull","homeCapacityFill"];
   fillIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.width=width;});
-  setText("homeDeckHint",normalCount?("Tienes "+normalCount+" de 5 cartas normales disponibles."):"Tu baraja todavía está vacía. Haz tu primer giro.");
-  setText("profileNormalCount",normalCount+"/5");
+  setText("homeDeckHint",normalCount?("Tienes "+normalCount+" de "+normalCardLimit+" cartas normales disponibles."):"Tu baraja todavía está vacía. Haz tu primer giro.");
+  setText("profileNormalCount",normalCount+"/"+normalCardLimit);
   setText("profileRouteCount",route.length);
 
   const resetButton=document.getElementById("resetButton");
@@ -460,6 +460,7 @@ async function openCardAction(instanceId,mode){
   const targetSelect=document.getElementById("cardActionTarget");
   const confirmButton=document.getElementById("confirmCardAction");
   const feedback=document.getElementById("cardActionFeedback");
+  confirmButton.disabled=false;
   pendingCardAction={instanceId,mode,card};
 
   const sourceImage=document.getElementById("cardActionImage");
@@ -498,9 +499,11 @@ async function openCardAction(instanceId,mode){
       targetWrap.hidden=false;
       const prompt=document.createElement("option");
       prompt.value="";
-      prompt.textContent=card.target_scope==="either"?"Usarla sobre mí":"Selecciona un entrenador";
+      prompt.textContent=mode==="transfer"
+        ?"Selecciona otro entrenador"
+        :(card.target_scope==="either"?"Usarla sobre mí":"Selecciona un entrenador");
       targetSelect.append(prompt);
-      if(card.target_scope==="opponent")prompt.disabled=true;
+      if(card.target_scope==="opponent"||mode==="transfer")prompt.disabled=true;
       try{
         const {data,error}=await authClient.from("profiles")
           .select("id,display_name").neq("id",currentAuthUser.id).order("display_name",{ascending:true});
