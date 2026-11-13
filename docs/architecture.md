@@ -87,7 +87,7 @@ Supabase Auth Site URL and allowed redirect URL:
 - Pokémon Black/White DeSmuME `.dsv` parser and browser-assisted save monitoring.
 - Pool-aware roulette draw RPCs and spin-credit redemption for Legendary and Fiesta roulettes.
 - Atomic evolution RPC that validates recipes and consumes the selected ingredient instances.
-- Effect-expiration handling at match boundaries and an admin workflow for managing card definitions, effects, pools and recipes.
+- Decremento de efectos por cargas, expiración automática al finalizar partidos y un panel de administración para gestionar cartas, efectos, pools y recetas.
 - Admin authorization and staff-only controls.
 - Final approved card art and descriptions.
 - Production moderation, rate limiting and event-operational safeguards.
