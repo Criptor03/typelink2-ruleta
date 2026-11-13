@@ -72,11 +72,17 @@ function applyAvatar(element,url,fallback){
   element.textContent=fallback||"TL";
   element.style.backgroundImage="";
   if(url){
-    const safeUrl=String(url).replace(/["\\\\]/g,"");
-    element.style.backgroundImage='url("'+safeUrl+'")';
-    element.style.backgroundSize="cover";
-    element.style.backgroundPosition="center";
-    element.textContent="";
+    try{
+      const parsedUrl=new URL(String(url));
+      if(parsedUrl.protocol==="https:"){
+        element.style.backgroundImage='url("'+parsedUrl.href+'")';
+        element.style.backgroundSize="cover";
+        element.style.backgroundPosition="center";
+        element.textContent="";
+      }
+    }catch(error){
+      console.warn("Se omitió una URL de avatar no válida.");
+    }
   }
 }
 function formatDate(dateValue){
