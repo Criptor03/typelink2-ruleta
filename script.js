@@ -1027,7 +1027,9 @@ async function activateUserSession(user){
     playerTypeStatus=Object.create(null);incomingCardEffects=[];
     evolutionRulesBySource=Object.create(null);cardEffectsById=Object.create(null);
     demoDeck=loadDeck();demoRouteState=loadRouteState();
-    renderAuthState(null);renderDeck();loadPlayers();loadActivityFeed();renderTypeTracker();renderIncomingEffects([]);renderAdminAccess();return;
+    renderAuthState(null);renderDeck();loadPlayers();loadActivityFeed();renderTypeTracker();renderIncomingEffects([]);renderAdminAccess();
+    if(!document.getElementById("page-admin").hidden)setPage("home");
+    return;
   }
   if(activeSessionUserId===user.id&&cloudMode)return;
   activeSessionUserId=user.id;currentAuthUser=user;cloudMode=true;
