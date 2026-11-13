@@ -2257,17 +2257,14 @@ async function loadRouletteAccess(){
     updateSpecialRouletteAccessUI();
     return;
   }
-  const {data,error}=await authClient.from("player_roulette_unlocks")
-    .select("spins_granted,spins_used,expires_at,roulette_pools!inner(slug)")
-    .eq("owner_id",currentAuthUser.id);
+  const {data,error}=await authClient.rpc("get_my_roulette_unlocks");
   if(error){
     console.warn("No se pudieron cargar los accesos de ruletas:",error.message);
     return;
   }
   const next={legendary:0,fiesta:0};
-  (data||[]).forEach(row=>{
-    const pool=Array.isArray(row.roulette_pools)?row.roulette_pools[0]:row.roulette_pools;
-    const slug=pool?.slug;
+  (Array.isArray(data)?data:[]).forEach(row=>{
+    const slug=row.pool_slug;
     if(!Object.prototype.hasOwnProperty.call(next,slug))return;
     if(row.expires_at&&new Date(row.expires_at).getTime()<=Date.now())return;
     next[slug]+=Math.max(0,Number(row.spins_granted||0)-Number(row.spins_used||0));
