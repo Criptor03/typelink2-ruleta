@@ -8,6 +8,27 @@ const CARDS = [
   {id:"destino",slug:"destino",name:"Destino Legendario",rarity:"Legendaria",color:"#d4ae5b",description:"Carta provisional de demostración de TypeLink 2.",art:"assets/destino.svg",image_path:"assets/destino.svg"}
 ];
 
+const POKEMON_TYPES = [
+  {slug:"normal",name:"Normal",color:"#A8A77A"},
+  {slug:"fuego",name:"Fuego",color:"#EE8130"},
+  {slug:"agua",name:"Agua",color:"#6390F0"},
+  {slug:"electrico",name:"Eléctrico",color:"#F7D02C"},
+  {slug:"planta",name:"Planta",color:"#7AC74C"},
+  {slug:"hielo",name:"Hielo",color:"#96D9D6"},
+  {slug:"lucha",name:"Lucha",color:"#C22E28"},
+  {slug:"veneno",name:"Veneno",color:"#A33EA1"},
+  {slug:"tierra",name:"Tierra",color:"#E2BF65"},
+  {slug:"volador",name:"Volador",color:"#A98FF3"},
+  {slug:"psiquico",name:"Psíquico",color:"#F95587"},
+  {slug:"bicho",name:"Bicho",color:"#A6B91A"},
+  {slug:"roca",name:"Roca",color:"#B6A136"},
+  {slug:"fantasma",name:"Fantasma",color:"#735797"},
+  {slug:"dragon",name:"Dragón",color:"#6F35FC"},
+  {slug:"siniestro",name:"Siniestro",color:"#705746"},
+  {slug:"acero",name:"Acero",color:"#B7B7CE"},
+  {slug:"hada",name:"Hada",color:"#D685AD"}
+];
+
 const STORAGE_KEY = "typelink2-beta01-deck";
 const ROUTE_STORAGE_KEY = "typelink2-beta01-route";
 const canvas = document.getElementById("wheel");
@@ -40,6 +61,9 @@ let demoRouteState = loadRouteState();
 let rotation = 0;
 let spinning = false;
 let normalCardLimit = 5;
+let playerTypeStatus = Object.create(null);
+let incomingCardEffects = [];
+const pendingTypeUpdates = new Set();
 const cardArtImages = {};
 
 CARDS.forEach(card=>{
@@ -298,6 +322,202 @@ function renderProfile(profile){
   applyAvatar(document.getElementById("homeProfileAvatar"),avatarUrl,displayName.slice(0,2).toUpperCase());
   applyAvatar(document.getElementById("profileAvatarLarge"),avatarUrl,displayName.slice(0,2).toUpperCase());
 }
+
+function renderTypeTracker(){
+  const container=document.getElementById("typeTrackerGrid");
+  if(!container)return;
+  container.replaceChildren();
+  if(!currentAuthUser){
+    const empty=document.createElement("div");empty.className="profile-module-empty";empty.textContent="Inicia sesión con Discord para marcar los tipos habilitados.";container.append(empty);
+    setText("typeTrackerCount","SIN SESIÓN");return;
+  }
+  const enabledCount=POKEMON_TYPES.filter(type=>playerTypeStatus[type.slug]!==false).length;
+  setText("typeTrackerCount",enabledCount+" / 18 ACTIVOS");
+  POKEMON_TYPES.forEach(type=>{
+    const enabled=playerTypeStatus[type.slug]!==false;
+    const button=document.createElement("button");
+    button.type="button";
+    button.className="type-toggle "+(enabled?"enabled":"disabled");
+    button.style.setProperty("--type-color",type.color);
+    button.setAttribute("aria-pressed",String(enabled));
+    button.setAttribute("aria-label",type.name+": "+(enabled?"habilitado":"bloqueado"));
+    button.title=enabled?"Haz clic para bloquear el tipo "+type.name:"Haz clic para habilitar el tipo "+type.name;
+    button.disabled=pendingTypeUpdates.has(type.slug);
+    const dot=document.createElement("span");dot.className="type-dot";
+    const label=document.createElement("span");label.className="type-toggle-label";
+    const name=document.createElement("strong");name.textContent=type.name;
+    const state=document.createElement("small");state.textContent=enabled?"HABILITADO":"BLOQUEADO";
+    label.append(name,state);button.append(dot,label);
+    button.addEventListener("click",()=>togglePokemonType(type.slug));
+    container.append(button);
+  });
+}
+function durationLabel(effect){
+  switch(effect.duration_type){
+    case "tramo_end":return "Hasta avanzar de tramo";
+    case "next_tramo_end":return "Hasta el final del próximo tramo";
+    case "timed":{
+      if(effect.expires_at){
+        const date=new Date(effect.expires_at);
+        return "Finaliza "+date.toLocaleString("es-CO",{dateStyle:"short",timeStyle:"short"});
+      }
+      const units={seconds:"segundos",minutes:"minutos",hours:"horas",days:"días"};
+      return "Duración: "+(effect.duration_value||"?")+" "+(units[effect.duration_unit]||"unidades");
+    }
+    case "charges":return (effect.remaining_uses??effect.duration_value??"?")+" cargas restantes";
+    case "match_end":return "Hasta finalizar el combate";
+    case "permanent":return "Efecto permanente";
+    default:return "Efecto activo";
+  }
+}
+function effectLabel(effect){
+  const value=effect.effect_value;
+  if(effect.effect_key==="normal_card_limit"){
+    const amount=Number(value)||0;
+    return "Límite de baraja "+(amount>=0?"+":"")+amount;
+  }
+  if(effect.effect_key==="tramo_spin_credit")return "+"+(Number(value)||0)+" giros extra";
+  const name=String(effect.effect_key||"efecto").replace(/_/g," ");
+  return value==null?name:(name+" · "+value);
+}
+function renderIncomingEffects(groups){
+  const container=document.getElementById("incomingEffectsList");
+  if(!container)return;
+  container.replaceChildren();
+  setText("incomingEffectsCount",groups.length+" ACTIVAS");
+  if(!currentAuthUser){
+    const empty=document.createElement("div");empty.className="profile-module-empty";empty.textContent="Inicia sesión para consultar las cartas que te afectan.";container.append(empty);return;
+  }
+  if(!groups.length){
+    const empty=document.createElement("div");empty.className="profile-module-empty";empty.textContent="Ningún otro entrenador tiene cartas con efectos activos sobre ti ahora mismo.";container.append(empty);return;
+  }
+  groups.forEach(group=>{
+    const card=document.createElement("article");card.className="incoming-effect-card";
+    const imagePath=group.card?.image_path;
+    if(imagePath){
+      const image=document.createElement("img");image.className="incoming-effect-image";image.src=imagePath;image.alt=group.card.name||"Carta";card.append(image);
+    }else{
+      const image=document.createElement("div");image.className="incoming-effect-image fallback";image.textContent="✦";card.append(image);
+    }
+    const body=document.createElement("div");body.className="incoming-effect-body";
+    const title=document.createElement("div");title.className="incoming-effect-title";
+    const name=document.createElement("strong");name.textContent=group.card?.name||"Carta TypeLink";
+    const rarity=document.createElement("span");rarity.className="incoming-effect-rarity";rarity.textContent=group.card?.rarity||"CARTA";
+    title.append(name,rarity);
+    const caster=document.createElement("p");caster.className="incoming-effect-caster";caster.textContent="Lanzada por "+(group.casterName||"otro entrenador");
+    const tags=document.createElement("div");tags.className="incoming-effect-tags";
+    const effects=[...new Set(group.effects.map(effectLabel))];
+    const durations=[...new Set(group.effects.map(durationLabel))];
+    [...effects,...durations].forEach(text=>{
+      const tag=document.createElement("span");tag.className="incoming-effect-tag";tag.textContent=text;tags.append(tag);
+    });
+    body.append(title,caster,tags);card.append(body);container.append(card);
+  });
+}
+async function togglePokemonType(typeSlug){
+  if(!authClient||!currentAuthUser||pendingTypeUpdates.has(typeSlug))return;
+  const nextValue=playerTypeStatus[typeSlug]===false;
+  pendingTypeUpdates.add(typeSlug);renderTypeTracker();
+  try{
+    const {error}=await authClient.from("player_type_status").upsert({
+      owner_id:currentAuthUser.id,type_slug:typeSlug,is_enabled:nextValue,updated_at:new Date().toISOString()
+    },{onConflict:"owner_id,type_slug"});
+    if(error)throw error;
+    playerTypeStatus[typeSlug]=nextValue;
+    const type=POKEMON_TYPES.find(item=>item.slug===typeSlug);
+    notify((type?.name||"Tipo Pokémon")+(nextValue?" habilitado.":" bloqueado."));
+  }catch(error){
+    console.error("No se pudo actualizar el tipo Pokémon:",error);
+    notify("No se pudo guardar el tipo: "+(error.message||"error desconocido"));
+  }finally{
+    pendingTypeUpdates.delete(typeSlug);renderTypeTracker();
+  }
+}
+async function loadProfileMechanics(){
+  if(!authClient||!currentAuthUser){
+    playerTypeStatus=Object.create(null);incomingCardEffects=[];
+    renderTypeTracker();renderIncomingEffects([]);return;
+  }
+  const [typesResult,effectsResult]=await Promise.all([
+    authClient.from("player_type_status").select("type_slug,is_enabled")
+      .eq("owner_id",currentAuthUser.id),
+    authClient.from("player_effects").select("id,owner_id,applied_by,source_card_instance_id,effect_key,effect_value,parameters,duration_type,duration_value,duration_unit,expires_at,expires_after_tramo,remaining_uses,status,created_at")
+      .eq("owner_id",currentAuthUser.id).eq("status","active")
+      .order("created_at",{ascending:false})
+  ]);
+  if(typesResult.error){
+    console.error("No se pudieron cargar los tipos Pokémon:",typesResult.error.message);
+    notify("No pudimos cargar tu registro de tipos Pokémon.");
+  }else{
+    playerTypeStatus=Object.create(null);
+    (typesResult.data||[]).forEach(row=>{playerTypeStatus[row.type_slug]=row.is_enabled;});
+    const missing=POKEMON_TYPES.filter(type=>playerTypeStatus[type.slug]===undefined);
+    if(missing.length){
+      const seedRows=missing.map(type=>({owner_id:currentAuthUser.id,type_slug:type.slug,is_enabled:true}));
+      const {error}=await authClient.from("player_type_status").upsert(seedRows,{onConflict:"owner_id,type_slug",ignoreDuplicates:true});
+      if(error)console.warn("No se pudieron completar los estados de tipos:",error.message);
+      missing.forEach(type=>{if(playerTypeStatus[type.slug]===undefined)playerTypeStatus[type.slug]=true;});
+      if(!error){
+        const refreshed=await authClient.from("player_type_status").select("type_slug,is_enabled").eq("owner_id",currentAuthUser.id);
+        if(!refreshed.error)(refreshed.data||[]).forEach(row=>{playerTypeStatus[row.type_slug]=row.is_enabled;});
+      }
+    }
+    renderTypeTracker();
+  }
+
+  if(effectsResult.error){
+    console.error("No se pudieron cargar los efectos activos:",effectsResult.error.message);
+    renderIncomingEffects([]);
+    return;
+  }
+  const activeIncoming=(effectsResult.data||[]).filter(effect=>
+    effect.applied_by&&effect.applied_by!==currentAuthUser.id&&
+    (!effect.expires_at||new Date(effect.expires_at).getTime()>Date.now())&&
+    (effect.expires_after_tramo==null||Number(effect.expires_after_tramo)>=currentTramo)
+  );
+  const sourceIds=[...new Set(activeIncoming.map(effect=>effect.source_card_instance_id).filter(Boolean))];
+  const casterIds=[...new Set(activeIncoming.map(effect=>effect.applied_by).filter(Boolean))];
+  const [cardsResult,profilesResult]=await Promise.all([
+    sourceIds.length
+      ?authClient.from("player_cards").select("id,card_catalog(name,rarity,image_path,description)").in("id",sourceIds)
+      :Promise.resolve({data:[],error:null}),
+    casterIds.length
+      ?authClient.from("profiles").select("id,display_name").in("id",casterIds)
+      :Promise.resolve({data:[],error:null})
+  ]);
+  if(cardsResult.error)console.warn("No se pudieron cargar las cartas fuente:",cardsResult.error.message);
+  if(profilesResult.error)console.warn("No se pudieron cargar los lanzadores:",profilesResult.error.message);
+  const cardMap=Object.create(null);
+  (cardsResult.data||[]).forEach(row=>{
+    const joined=Array.isArray(row.card_catalog)?row.card_catalog[0]:row.card_catalog;
+    cardMap[row.id]=joined||null;
+  });
+  const profileMap=Object.fromEntries((profilesResult.data||[]).map(profile=>[profile.id,profile.display_name||"Entrenador"]));
+  const grouped=new Map();
+  activeIncoming.forEach(effect=>{
+    const key=effect.source_card_instance_id||("effect-"+effect.id);
+    if(!grouped.has(key))grouped.set(key,{sourceId:effect.source_card_instance_id,card:cardMap[key]||null,casterName:profileMap[effect.applied_by]||"otro entrenador",effects:[]});
+    grouped.get(key).effects.push(effect);
+  });
+  incomingCardEffects=[...grouped.values()];
+  renderIncomingEffects(incomingCardEffects);
+}
+async function loadMyProfile(){
+  if(!authClient||!currentAuthUser){
+    renderProfile(null);renderTypeTracker();renderIncomingEffects([]);return;
+  }
+  const {data,error}=await authClient.from("profiles")
+    .select("id,display_name,avatar_url,created_at")
+    .eq("id",currentAuthUser.id).single();
+  if(error){
+    console.error("No se pudo cargar el perfil:",error.message);
+    notify("No pudimos cargar tu perfil de entrenador.");
+    return;
+  }
+  renderProfile(data);
+  await loadProfileMechanics();
+}
+
 function renderAuthState(user){
   currentAuthUser=user||null;
   const loginButton=document.getElementById("loginButton");
@@ -761,6 +981,8 @@ function setupRealtime(){
   activityChannel=authClient.channel("typelink-community-activity")
     .on("postgres_changes",{event:"INSERT",schema:"public",table:"card_activity"},()=>loadActivityFeed())
     .on("postgres_changes",{event:"*",schema:"public",table:"player_tramo_progress",filter:"owner_id=eq."+currentAuthUser.id},()=>loadCloudInventory())
+    .on("postgres_changes",{event:"*",schema:"public",table:"player_effects",filter:"owner_id=eq."+currentAuthUser.id},()=>loadProfileMechanics())
+    .on("postgres_changes",{event:"*",schema:"public",table:"player_type_status",filter:"owner_id=eq."+currentAuthUser.id},()=>loadProfileMechanics())
     .subscribe();
 }
 async function activateUserSession(user){
@@ -771,9 +993,10 @@ async function activateUserSession(user){
     inventoryChannel=null;profilesChannel=null;activityChannel=null;
     activeSessionUserId=null;currentProfile=null;cloudMode=false;cloudDeck=[];cloudRoute=[];cloudSpecial=[];cloudInventory=[];
     currentTramo=0;tramoSpinsRemaining=0;bonusTramoSpinsRemaining=0;
+    playerTypeStatus=Object.create(null);incomingCardEffects=[];
     evolutionRulesBySource=Object.create(null);cardEffectsById=Object.create(null);
     demoDeck=loadDeck();demoRouteState=loadRouteState();
-    renderAuthState(null);renderDeck();loadPlayers();loadActivityFeed();return;
+    renderAuthState(null);renderDeck();loadPlayers();loadActivityFeed();renderTypeTracker();renderIncomingEffects([]);return;
   }
   if(activeSessionUserId===user.id&&cloudMode)return;
   activeSessionUserId=user.id;currentAuthUser=user;cloudMode=true;
@@ -850,6 +1073,7 @@ async function startNewTramo(){
     const {data,error}=await authClient.rpc("start_new_tramo");
     if(error)throw error;
     await loadCloudInventory();
+    await loadProfileMechanics();
     const cardCount=Array.isArray(data?.cards)?data.cards.length:2;
     const tramo=data?.tramo_number||currentTramo;
     notify("¡Tramo "+tramo+" iniciado! Recibiste "+cardCount+" cartas de tramo y 3 giros normales.");
