@@ -47,3 +47,8 @@ https://criptor03.github.io/typelink2-ruleta/
 
 ### Avance de tramo y actividad comunitaria
 Cada avance de tramo entrega 2 cartas de tramo y 3 giros normales, solo cuando hay 3 espacios libres y no quedan giros pendientes. Los efectos especiales pueden sumar giros extra con `tramo_spin_credit` (por ejemplo, +5), sin superar el límite de cartas. El muro de cartas muestra en directo giros, usos, transferencias, evoluciones y avances.
+
+
+### Migraciones recientes
+- `20261113042149_start_tramos_activity_feed_and_spin_credits`
+- `20261113042841_remove_duplicate_card_activity_feed_index`
