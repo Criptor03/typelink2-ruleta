@@ -13,7 +13,10 @@ Plataforma web de TypeLink 2 con identidad visual inspirada en Pokémon Blanco y
 - Límite de cartas normales controlado por el servidor; ahora admite modificadores aditivos temporales.
 - Dos cartas de tramo entregadas mediante una función segura; se acumulan y no consumen espacios normales.
 - Actualizaciones Realtime preparadas para barajas, perfiles y notificaciones.
-- Motor universal de cartas con `play_card()` en el servidor: valida objetivos, aplica efectos configurados, registra acciones y consume, conserva o transfiere cartas según su definición.
+- Motor universal de cartas con `play_card()` y `evolve_card()` en el servidor.
+- Cada carta admite de 1 a 99 usos configurables; el inventario muestra los usos restantes y agota la carta al llegar a cero.
+- Evoluciones de una sola carta a otra: consumen la instancia original y entregan una nueva, sin fusiones.
+- La baraja permite usar, transferir y evolucionar cartas cuando tienen efectos o reglas configuradas.
 - El catálogo conserva `image_path` para mantener cada carta vinculada a su ilustración; las imágenes provisionales actuales se sustituirán por el arte definitivo sin rehacer las mecánicas.
 - Diseño adaptable a escritorio y móvil.
 
@@ -33,7 +36,7 @@ Consulta [`docs/architecture.md`](docs/architecture.md) para el esquema, políti
 ## Pendiente
 - Sustituir las ocho cartas provisionales por el catálogo y las imágenes definitivas de TypeLink 2.
 - Conectar importador de partidas Pokémon Blanco/Negro y TypeLink Sync.
-- Conectar `play_card()` a la interfaz y completar la integración de efectos específicos, evoluciones y giros de las ruletas especiales.
+- Configurar los efectos y las reglas de evolución definitivas para el catálogo aprobado, y completar los giros especiales de las ruletas legendaria y Fiesta.
 - Añadir autorización de administradores y herramientas del evento.
 - Conectar el bot de Discord para operaciones administrativas y `/tramo` cuando se definan las reglas finales.
 
