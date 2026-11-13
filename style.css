@@ -206,3 +206,43 @@ button[hidden]{display:none!important}
   .incoming-effect-card{grid-template-columns:46px minmax(0,1fr);gap:9px;padding:9px}
   .incoming-effect-image{width:46px;height:63px}
 }
+
+
+/* Private administrator console */
+.admin-nav-lock{margin-left:auto;font-size:7px;font-weight:900;letter-spacing:.7px;color:#8ca0ad;border:1px solid #546673;padding:3px 5px}
+.admin-access-banner{display:flex;align-items:center;gap:17px;padding:22px 24px;margin-bottom:12px;background:linear-gradient(110deg,#17212b,#263743);color:#f5f7f8;border:1px solid #3b4c58}
+.admin-access-seal{width:54px;height:54px;display:grid;place-items:center;flex:none;border:1px solid #8d784d;color:#d9c18a;font-size:25px;background:#ffffff08}
+.admin-access-copy{flex:1;min-width:0}
+.admin-access-copy .eyebrow{color:#c9b27c}
+.admin-access-copy h2{font:800 25px 'Barlow Condensed';margin:5px 0}
+.admin-access-copy p{font-size:9px;line-height:1.65;color:#c4cdd3;margin:0;max-width:640px}
+.admin-access-badge{display:flex;align-items:center;gap:7px;white-space:nowrap;padding:8px 10px;border:1px solid #718c78;color:#c0e0c6;font-size:8px;font-weight:900;letter-spacing:.8px}
+.admin-access-badge i{width:7px;height:7px;border-radius:50%;background:#78bd89;box-shadow:0 0 0 3px #78bd8924}
+.admin-owner-card{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 20px;margin-bottom:23px}
+.admin-owner-card>div{display:flex;flex-direction:column;gap:4px}
+.admin-owner-card strong{font:800 17px 'Barlow Condensed';color:#293843}
+.admin-owner-card small{font-size:8px;color:#7a8790}
+.admin-owner-status{text-align:right}
+.admin-owner-status strong{font-size:11px;letter-spacing:1px;color:#4a8d64}
+.admin-section-heading{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:12px}
+.admin-section-heading h2{font:800 25px 'Barlow Condensed';margin:5px 0 0}
+.admin-module-count{font-size:7px;letter-spacing:1px;font-weight:900;color:#78858e}
+.admin-module-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.admin-module{display:grid;grid-template-columns:42px minmax(0,1fr);gap:12px;align-items:start;padding:16px}
+.admin-module-icon{width:40px;height:40px;display:grid;place-items:center;background:#e9eef1;border:1px solid #d4dce1;color:#435a69;font-size:19px}
+.admin-module h3{font:800 17px 'Barlow Condensed';margin:0 0 4px;color:#2c3b46}
+.admin-module p{font-size:9px;line-height:1.65;color:#78858e;margin:0}
+.admin-module-state{grid-column:2;font-size:7px;font-weight:900;letter-spacing:.8px;color:#9a7c3e}
+.admin-security-note{display:flex;gap:12px;align-items:center;padding:13px 15px;margin-top:14px;background:#e9edf0;border-left:3px solid #667b89;color:#697780;font-size:9px;line-height:1.65}
+.admin-security-note b{white-space:nowrap;color:#344653;font-size:8px;letter-spacing:.8px}
+@media(max-width:700px){
+  .admin-access-banner{align-items:flex-start;flex-wrap:wrap;padding:17px}
+  .admin-access-badge{margin-left:71px}
+  .admin-module-grid{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+  .admin-owner-card{align-items:flex-start}
+  .admin-owner-status{max-width:125px}
+  .admin-section-heading{align-items:flex-start;flex-direction:column}
+  .admin-security-note{align-items:flex-start;flex-direction:column;gap:5px}
+}
