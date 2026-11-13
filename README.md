@@ -44,3 +44,6 @@ Consulta [`docs/architecture.md`](docs/architecture.md) para el esquema, políti
 GitHub Pages desde la rama `main`, carpeta raíz:
 
 https://criptor03.github.io/typelink2-ruleta/
+
+### Avance de tramo y actividad comunitaria
+Cada avance de tramo entrega 2 cartas de tramo y 3 giros normales, solo cuando hay 3 espacios libres y no quedan giros pendientes. Los efectos especiales pueden sumar giros extra con `tramo_spin_credit` (por ejemplo, +5), sin superar el límite de cartas. El muro de cartas muestra en directo giros, usos, transferencias, evoluciones y avances.
