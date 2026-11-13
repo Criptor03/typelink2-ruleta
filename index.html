@@ -295,10 +295,6 @@
                     <select id="adminMechanicsTargetScope">
                       <option value="self">A quien la utiliza</option>
                       <option value="opponent">A un rival</option>
-                      <option value="either">A quien se elija</option>
-                      <option value="all_players">A todos los entrenadores</option>
-                      <option value="event">Al evento completo</option>
-                      <option value="none">No necesita objetivo</option>
                     </select>
                   </label>
                   <label class="admin-field" for="adminMechanicsDisposition">¿QUÉ OCURRE AL CANJEARLA?
@@ -625,12 +621,8 @@
                   </label>
                   <label class="admin-field">OBJETIVO PREDETERMINADO
                     <select id="adminCardScope">
-                      <option value="self">Quien la utiliza</option>
-                      <option value="opponent">Oponente</option>
-                      <option value="either">Cualquiera</option>
-                      <option value="all_players">Todos los jugadores</option>
-                      <option value="event">Evento</option>
-                      <option value="none">Sin objetivo</option>
+                      <option value="self">A quien la utiliza</option>
+                      <option value="opponent">A un rival</option>
                     </select>
                   </label>
                   <label class="admin-field">AL CANJEAR
@@ -659,7 +651,9 @@
                 <div class="admin-card-flags">
                   <label><input id="adminCardCounts" type="checkbox" checked> Cuenta para el límite de baraja normal</label>
                   <label><input id="adminCardActive" type="checkbox" checked> Carta activa para el evento</label>
+                  <label><input id="adminCardRouletteEligible" type="checkbox" checked> Puede aparecer en la ruleta</label>
                 </div>
+                <small id="adminCardRouletteHelp" class="admin-card-roulette-help">Si está activada, podrás añadir esta carta a una ruleta desde Administración → Ruletas. Las cartas con evolución se excluyen automáticamente.</small>
                 <div class="admin-card-form-note"><b>IMPORTANTE</b><span>La categoría de una carta que ya tenga copias en inventarios o reglas conectadas no podrá cambiarse. Desactivar una carta no elimina las copias existentes.</span></div>
                 <div class="admin-card-form-actions">
                   <span id="adminCardFormStatus" role="status">Completa los datos de la carta.</span>
