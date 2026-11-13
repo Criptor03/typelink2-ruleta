@@ -1207,6 +1207,69 @@ function renderAdminTrainerDetail(data){
       row.append(copy);effectsWrap.append(row);
     });
   }
+
+  const unlocksWrap=document.getElementById("adminTrainerUnlocks");
+  unlocksWrap.replaceChildren();
+  const unlocks=Array.isArray(data.unlocks)?data.unlocks:[];
+  setText("adminTrainerUnlocksCount",unlocks.length+" DESBLOQUEOS");
+  if(!unlocks.length){
+    const empty=document.createElement("div");empty.className="profile-module-empty";
+    empty.textContent="Este entrenador todavía no tiene ruletas especiales desbloqueadas.";
+    unlocksWrap.append(empty);
+  }else{
+    unlocks.forEach(unlock=>{
+      const row=document.createElement("div");row.className="admin-trainer-unlock-item";
+      const info=document.createElement("div");info.className="admin-trainer-unlock-copy";
+      const title=document.createElement("strong");title.textContent=unlock.pool_name||unlock.pool_slug||"Ruleta especial";
+      const detail=document.createElement("small");detail.textContent=
+        Number(unlock.spins_remaining||0)+" GIROS DISPONIBLES · "+
+        Number(unlock.spins_used||0)+"/"+Number(unlock.spins_granted||0)+" UTILIZADOS";
+      const created=document.createElement("span");created.textContent="Desbloqueada el "+formatDate(unlock.created_at)+
+        (unlock.expires_at?" · Caduca "+formatDate(unlock.expires_at):"");
+      info.append(title,detail,created);
+      const pill=document.createElement("b");pill.textContent=Number(unlock.spins_remaining||0)>0?"DISPONIBLE":"AGOTADA";
+      row.append(info,pill);unlocksWrap.append(row);
+    });
+  }
+
+  const activityWrap=document.getElementById("adminTrainerActivity");
+  activityWrap.replaceChildren();
+  const activity=Array.isArray(data.activity)?data.activity:[];
+  setText("adminTrainerActivityCount",activity.length+" MOVIMIENTOS");
+  const activityMessages={
+    tramo_award:"Avanzó de tramo y recibió cartas de tramo",
+    roulette_spin:"Giró la ruleta",
+    play:"Utilizó una carta",
+    transfer:"Transfirió una carta",
+    evolution:"Evolucionó una carta",
+    effect_applied:"Aplicó un efecto",
+    consume:"Canjeó una carta",
+    roulette_unlock:"Desbloqueó una ruleta"
+  };
+  if(!activity.length){
+    const empty=document.createElement("div");empty.className="profile-module-empty";
+    empty.textContent="Este entrenador todavía no tiene movimientos en el muro.";
+    activityWrap.append(empty);
+  }else{
+    activity.forEach(entry=>{
+      const row=document.createElement("div");row.className="admin-trainer-activity-item";
+      const marker=document.createElement("i");marker.textContent=
+        entry.activity_type==="tramo_award"?"Ⅱ":
+        entry.activity_type==="roulette_spin"?"◉":
+        entry.activity_type==="transfer"?"⇢":
+        entry.activity_type==="evolution"?"⬡":"✦";
+      const copy=document.createElement("div");copy.className="admin-trainer-activity-copy";
+      const title=document.createElement("strong");
+      title.textContent=activityMessages[entry.activity_type]||String(entry.activity_type||"Actividad").replaceAll("_"," ");
+      const detail=document.createElement("small");
+      const cardName=entry.card_name||entry.details?.card_name||entry.details?.name||"";
+      const targetName=entry.target_name&&entry.target_name!==entry.actor_name?" · Objetivo: "+entry.target_name:"";
+      const tramo=entry.details?.tramo_number?" · Tramo "+entry.details.tramo_number:"";
+      detail.textContent=(cardName?cardName:"")+targetName+tramo;
+      const when=document.createElement("span");when.textContent=formatDate(entry.created_at);
+      copy.append(title,detail,when);row.append(marker,copy);activityWrap.append(row);
+    });
+  }
 }
 async function openAdminTrainerDetail(playerId){
   if(!isAdmin||!authClient||!playerId){notify("No tienes permiso para abrir este entrenador.");return;}
