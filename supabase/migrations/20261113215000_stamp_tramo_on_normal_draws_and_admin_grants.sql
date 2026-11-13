@@ -1,3 +1,14 @@
+alter table public.player_cards
+  drop constraint if exists player_cards_tramo_number_check;
+
+alter table public.player_cards
+  add constraint player_cards_tramo_number_check
+  check (
+    (source = 'tramo' and tramo_number is not null and tramo_number > 0)
+    or
+    (source <> 'tramo' and (tramo_number is null or tramo_number >= 0))
+  );
+
 do $patch$
 declare
   v_draw text;
