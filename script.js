@@ -726,7 +726,7 @@ function renderActivityFeed(entries,profiles){
       symbol="✦";
       const poolName=details.pool_slug==="legendary"?"Ruleta Legendaria":"Ruleta Fiesta";
       const spins=Number(details.spins_granted||1);
-      message="ha canjeado "+cardName+" y ha desbloqueado "+spins+" giro(s) para "+poolName;
+      message="ha canjeado "+cardName+" y ha desbloqueado "+spins+" "+(spins===1?"giro":"giros")+" para "+poolName;
     }else if(entry.activity_type==="transfer"){
       symbol="⇢";message="ha enviado "+cardName+" a "+targetName;
     }else if(entry.activity_type==="evolution"){
@@ -995,7 +995,8 @@ async function confirmCardAction(){
       const unlock=Array.isArray(data.roulette_unlocks)?data.roulette_unlocks[0]:null;
       if(unlock){
         const poolName=unlock.pool_slug==="legendary"?"Ruleta Legendaria":"Ruleta Fiesta";
-        notify("¡"+card.name+" canjeada! Has desbloqueado "+Number(unlock.spins_granted||1)+" giro(s) en "+poolName+".");
+        const granted=Number(unlock.spins_granted||1);
+        notify("¡"+card.name+" canjeada! Has desbloqueado "+granted+" "+(granted===1?"giro":"giros")+" en "+poolName+".");
       }else{
         const remaining=Number(data.remaining_uses??0);
         notify(remaining>0
@@ -2293,7 +2294,7 @@ function updateSpecialRouletteAccessUI(){
     setText(item.hintId,!currentAuthUser
       ?"Inicia sesión con Discord para ver tus accesos."
       :count>0
-        ?"Tienes "+count+" giro(s) disponible(s). El acceso se consume al recibir un premio."
+        ?"Tienes "+count+" "+(count===1?"giro disponible":"giros disponibles")+". El acceso se consume al recibir un premio."
         :"Canjea "+item.ticket+" en tu baraja para conseguir 1 giro.");
   });
 }
