@@ -107,6 +107,7 @@ Supabase Auth Site URL and allowed redirect URL:
 - `20261113033628_add_card_use_counts_and_single_card_evolution`
 - `20261113042149_start_tramos_activity_feed_and_spin_credits`
 - `20261113042841_remove_duplicate_card_activity_feed_index`
+- `20261113043124_grant_authenticated_tramo_engine_execution`
 
 The server-side `start_new_tramo`, `draw_random_card`, `play_card` and `evolve_card` runtimes are implemented and transaction-tested. The Beta 0.3 baraja now exposes use/transfer actions, remaining-use counters and a one-card evolution dialog when a rule is configured. Card art remains attached through each catalog row's `image_path`; evolved results return their own image path. Special roulette draws are still pending.
 
