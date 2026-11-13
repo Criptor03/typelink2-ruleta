@@ -11,6 +11,13 @@ Primera estructura de la plataforma TypeLink 2 con identidad visual inspirada en
 - Diseño adaptable a escritorio y móvil.
 - Apartados informativos para las funciones que aún no están conectadas.
 
+## Inicio de sesión (Beta 0.3 en progreso)
+- Cliente Supabase JS fijado a la versión 2.119.0.
+- Inicio y cierre de sesión OAuth con Discord desde la cabecera.
+- Se usa la clave publishable pública de Supabase; nunca una clave secret/service_role.
+- El inicio de sesión depende de que Discord esté habilitado como proveedor en el proyecto Supabase de São Paulo y que sus credenciales estén guardadas allí.
+- La baraja continúa siendo local/demo hasta implementar las operaciones seguras de entrega de cartas.
+
 ## Limitaciones actuales
 - No hay inicio de sesión con Discord todavía.
 - No hay base de datos compartida: la baraja sigue siendo local al navegador.
