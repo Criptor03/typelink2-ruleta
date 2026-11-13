@@ -298,6 +298,7 @@ button[hidden]{display:none!important}
 .admin-image-preview-wrap{width:112px;aspect-ratio:3/4;border:1px solid #cbd3da;background:#e9eef1;display:grid;place-items:center;overflow:hidden}
 .admin-image-preview-wrap img{width:100%;height:100%;object-fit:contain}
 .admin-image-preview-wrap #adminCardImageEmpty{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;color:#84909a;padding:8px}
+.admin-image-preview-wrap #adminCardImageEmpty[hidden],.admin-image-preview-wrap img[hidden]{display:none!important}
 .admin-image-preview-wrap #adminCardImageEmpty span{font-size:26px}
 .admin-image-preview-wrap #adminCardImageEmpty b{font-size:7px;letter-spacing:.7px}
 .admin-image-preview-wrap #adminCardImageEmpty small{font-size:6px}
