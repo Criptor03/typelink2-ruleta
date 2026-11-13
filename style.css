@@ -483,3 +483,26 @@ button[hidden]{display:none!important}
 .admin-trainer-activity-copy{min-width:0;display:flex;flex-direction:column;gap:3px}
 .admin-trainer-activity-copy strong{font:800 14px 'Barlow Condensed';color:#2c3b46}
 .admin-trainer-activity-copy small,.admin-trainer-activity-copy span{font-size:8px;color:#78858e;line-height:1.5}
+
+/* Admin trainer adjustment, rewards and individual inventory removal */
+.admin-trainer-tools-panel{border-left:3px solid #8799a5}
+.admin-trainer-tool-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:end}
+.admin-trainer-tool-form .admin-field{min-width:0}
+.admin-trainer-tool-form .secondary-button{min-width:155px}
+.admin-trainer-gift-form{grid-template-columns:minmax(0,1.5fr) minmax(105px,.55fr) auto}
+.admin-trainer-gift-form .primary-button{min-width:155px;white-space:nowrap}
+.admin-trainer-tool-note{font-size:8px;line-height:1.65;color:#7a8790;margin:10px 0 0}
+.admin-trainer-card-item{grid-template-columns:60px minmax(0,1fr) auto}
+.admin-trainer-card-remove{align-self:center;border:1px solid #d7b4b6;background:#fff;color:#a04449;padding:8px 9px;font-size:7px;font-weight:900;letter-spacing:.6px;cursor:pointer}
+.admin-trainer-card-remove:hover{background:#a04449;color:#fff;border-color:#a04449}
+.admin-trainer-card-remove:focus-visible,.admin-danger-button:focus-visible{outline:3px solid #c8a75e;outline-offset:2px}
+@media(max-width:900px){
+  .admin-trainer-gift-form{grid-template-columns:minmax(0,1fr) 105px}
+  .admin-trainer-gift-form .primary-button{grid-column:1/-1;width:100%}
+}
+@media(max-width:560px){
+  .admin-trainer-tool-form,.admin-trainer-gift-form{grid-template-columns:1fr}
+  .admin-trainer-tool-form .secondary-button,.admin-trainer-gift-form .primary-button{width:100%;grid-column:auto}
+  .admin-trainer-card-item{grid-template-columns:54px minmax(0,1fr)}
+  .admin-trainer-card-remove{grid-column:2;justify-self:start}
+}
