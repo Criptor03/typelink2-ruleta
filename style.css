@@ -339,3 +339,58 @@ button[hidden]{display:none!important}
   .admin-card-form-actions>div{width:100%}
   .admin-card-form-actions .secondary-button,.admin-card-form-actions .primary-button{flex:1;min-width:0}
 }
+
+/* TypeLink card artwork uses the master 403 x 603 aspect ratio. */
+.card-art,
+.deck-thumb,
+.admin-card-item-image img,
+.admin-image-preview-wrap img,
+.card-action-preview-item img,
+.activity-card-image,
+.activity-card-thumbs img,
+.incoming-effect-image,
+.spin-reward-image {
+  object-fit: contain!important;
+}
+.card-art{aspect-ratio:403/603!important;height:auto!important}
+.deck-thumb{width:31px;height:auto!important;aspect-ratio:403/603;flex:none;background:#e6ebef}
+.full-deck-list .deck-thumb{width:42px;height:auto!important}
+.admin-card-item-image{aspect-ratio:403/603!important;height:auto}
+.admin-card-item-image img{width:100%;height:100%;object-fit:contain!important}
+.admin-image-preview-wrap{aspect-ratio:403/603!important;height:auto}
+.card-action-preview-item img{width:58px;height:auto!important;aspect-ratio:403/603}
+.activity-card-image{width:52px;height:auto!important;aspect-ratio:403/603}
+.activity-card-thumbs img{width:45px;height:auto!important;aspect-ratio:403/603}
+.incoming-effect-image{width:54px;height:auto!important;aspect-ratio:403/603}
+@media(max-width:560px){
+  .incoming-effect-image{width:46px;height:auto!important}
+}
+
+/* Admin catalog delete controls */
+.admin-card-item-actions{grid-column:2;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.admin-card-item-actions .admin-card-edit{grid-column:auto}
+.admin-card-delete{border:1px solid #d5b6b7;background:#fff;color:#a34045;padding:7px 10px;font-size:7px;font-weight:900;letter-spacing:1px;cursor:pointer}
+.admin-card-delete:hover{background:#a34045;border-color:#a34045;color:#fff}
+.admin-field input[readonly]{background:#eef1f3;border-color:#cbd3da;color:#65727c;cursor:default}
+.admin-field input[readonly]:focus{box-shadow:none;border-color:#cbd3da}
+
+/* Large reward reveal after a successful roulette spin */
+.spin-reward-modal[hidden]{display:none!important}
+.spin-reward-modal{position:fixed;inset:0;z-index:100;background:#0b1118d9;display:grid;place-items:center;padding:18px;overflow-y:auto}
+.spin-reward-dialog{width:min(560px,100%);max-height:calc(100vh - 36px);overflow:auto;background:#f7f9fa;border:1px solid #9aa7b0;box-shadow:0 24px 80px #0008;padding:22px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.spin-reward-eyebrow{font-size:8px;font-weight:900;letter-spacing:1.8px;color:#73808a}
+.spin-reward-dialog h2{font:900 clamp(24px,4vw,34px)/1 'Barlow Condensed';letter-spacing:.8px;color:#1c2933;margin:9px 0 15px}
+.spin-reward-art-frame{width:100%;display:flex;justify-content:center;align-items:center;min-height:0;padding:0 0 12px}
+.spin-reward-art-frame img{display:block;width:auto;height:min(62vh,603px);max-width:min(100%,403px);aspect-ratio:403/603;object-fit:contain;background:#e8edf1;border:1px solid #bbc5cc;box-shadow:0 10px 28px #17212b25}
+.spin-reward-card-copy{display:flex;flex-direction:column;align-items:center;gap:5px;margin:2px 0 15px}
+.spin-reward-card-copy strong{font:900 25px 'Barlow Condensed';color:#202d38}
+.spin-reward-card-copy span{font-size:8px;font-weight:900;letter-spacing:1.5px;color:#8e733f}
+.spin-reward-card-copy p{max-width:440px;font-size:10px;line-height:1.65;color:#6d7a84;margin:3px 0 0}
+.spin-reward-accept{width:min(100%,360px);padding:14px 18px;border:1px solid #18232d;background:#17212b;color:#fff;font-size:10px;font-weight:900;letter-spacing:1.3px;cursor:pointer}
+.spin-reward-accept:hover{background:#354653}
+.spin-reward-accept:focus-visible{outline:3px solid #c8a75e;outline-offset:3px}
+@media(max-width:560px){
+  .spin-reward-modal{padding:10px}
+  .spin-reward-dialog{padding:14px;max-height:calc(100vh - 20px)}
+  .spin-reward-art-frame img{height:min(55vh,603px);max-width:100%}
+}
