@@ -95,8 +95,10 @@ begin
       v_operation := 'add';
       v_effect_value := nullif(v_effect->>'effect_value','')::numeric;
       v_parameters := '{}'::jsonb;
-      v_duration := 'instant';
-      v_duration_value := null;
+      -- One charge lets play_card pass its duration validation; the player_effects insert trigger
+      -- applies the credits immediately and expires the temporary effect row.
+      v_duration := 'charges';
+      v_duration_value := 1;
       v_unit := 'hours';
       if v_effect_value is null or v_effect_value <> trunc(v_effect_value) or v_effect_value < 1 or v_effect_value > 100 then
         raise exception 'Los giros extra deben ser un número entero entre 1 y 100.' using errcode = '22023';
