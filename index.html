@@ -280,9 +280,9 @@
                   <label class="admin-field">NOMBRE DE LA CARTA
                     <input id="adminCardName" type="text" maxlength="80" required placeholder="Ej. Cambio Táctico">
                   </label>
-                  <label class="admin-field">IDENTIFICADOR INTERNO
+                  <label class="admin-field">CÓDIGO INTERNO DE LA CARTA
                     <input id="adminCardSlug" type="text" maxlength="64" required placeholder="cambio-tactico">
-                    <small>Se genera desde el nombre. No cambia una vez creada la carta.</small>
+                    <small>Es el código técnico que conecta esta carta con inventarios, ruletas y reglas. Se genera desde el nombre y queda bloqueado después de crearla para no romper esas conexiones. El nombre visible sí puedes cambiarlo.</small>
                   </label>
                   <label class="admin-field">CATEGORÍA
                     <select id="adminCardCategory">
@@ -359,6 +359,21 @@
       <button class="modal-close" id="closePublicProfile" type="button" aria-label="Cerrar">×</button>
       <div class="public-profile-heading"><div class="profile-avatar-large" id="publicPlayerAvatar">TL</div><div><span class="eyebrow">PERFIL DE ENTRENADOR</span><h2 id="publicPlayerName">Entrenador</h2><p id="publicPlayerJoined">Participante TypeLink 2</p></div></div>
       <div class="public-profile-section"><div class="panel-topline"><b>BA R A J A PÚBLICA</b><span id="publicPlayerCardCount">0 CARTAS</span></div><div id="publicPlayerCards" class="public-card-list"><div class="deck-empty">Este entrenador todavía no tiene cartas.</div></div></div>
+    </div>
+  </div>
+  <div class="spin-reward-modal" id="spinRewardModal" hidden>
+    <div class="spin-reward-dialog panel" role="dialog" aria-modal="true" aria-labelledby="spinRewardTitle">
+      <div class="spin-reward-eyebrow">POKÉMON TYPELINK 2 · RESULTADO DE RULETA</div>
+      <h2 id="spinRewardTitle">¡TE HA TOCADO UNA CARTA!</h2>
+      <div class="spin-reward-art-frame">
+        <img id="spinRewardImage" src="" alt="Carta obtenida en la ruleta">
+      </div>
+      <div class="spin-reward-card-copy">
+        <strong id="spinRewardName">Carta TypeLink</strong>
+        <span id="spinRewardRarity">COMÚN</span>
+        <p id="spinRewardDescription"></p>
+      </div>
+      <button class="spin-reward-accept" id="spinRewardAccept" type="button">ACEPTAR Y CONTINUAR ↗</button>
     </div>
   </div>
   <div class="card-action-modal" id="cardActionModal" hidden>
