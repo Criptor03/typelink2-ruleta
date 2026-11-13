@@ -1,36 +1,41 @@
-# Pokémon TypeLink 2 — Plataforma (Beta 0.2)
+# Pokémon TypeLink 2 — Plataforma (Beta 0.3)
 
-Primera estructura de la plataforma TypeLink 2 con identidad visual inspirada en Pokémon Blanco y Negro y la región de Teselia.
+Plataforma web de TypeLink 2 con identidad visual inspirada en Pokémon Blanco y Negro y la región de Teselia.
 
 ## Incluye
-- Navegación entre Inicio, Ruleta, Jugadores, Mi baraja, Mi equipo Pokémon, Notificaciones y Administración.
-- Ruleta animada funcional conservada de la Beta 0.1.
-- Cartas normales con límite de cinco.
-- Cartas de tramo acumulables mediante una simulación local.
-- Inventario persistente en el navegador mediante localStorage.
+- Navegación: Inicio, Ruleta, Jugadores, Mi perfil, Mi baraja, Mi equipo Pokémon, Notificaciones y Administración.
+- Inicio de sesión OAuth con Discord mediante Supabase Auth.
+- Perfil de entrenador creado automáticamente desde la identidad autenticada de Discord.
+- Nombre público de entrenador editable y avatar asociado a Discord.
+- Directorio de jugadores registrados y perfiles públicos.
+- Barajas persistentes en Supabase, visibles para los participantes autenticados.
+- Ruleta que solicita una carta aleatoria al backend y guarda la recompensa en la base de datos.
+- Límite de cinco cartas normales aplicado dentro de una función transaccional del servidor.
+- Dos cartas de tramo entregadas mediante una función segura; se acumulan y no consumen espacios normales.
+- Actualizaciones Realtime preparadas para barajas, perfiles y notificaciones.
 - Diseño adaptable a escritorio y móvil.
-- Apartados informativos para las funciones que aún no están conectadas.
-
-## Inicio de sesión (Beta 0.3 en progreso)
-- Cliente Supabase JS fijado a la versión 2.119.0.
-- Inicio y cierre de sesión OAuth con Discord desde la cabecera.
-- Se usa la clave publishable pública de Supabase; nunca una clave secret/service_role.
-- El inicio de sesión depende de que Discord esté habilitado como proveedor en el proyecto Supabase de São Paulo y que sus credenciales estén guardadas allí.
-- La baraja continúa siendo local/demo hasta implementar las operaciones seguras de entrega de cartas.
-
-## Limitaciones actuales
-- No hay inicio de sesión con Discord todavía.
-- No hay base de datos compartida: la baraja sigue siendo local al navegador.
-- Jugadores, notificaciones y administración son apartados de estructura, no funciones conectadas.
-- La importación de partidas DeSmuME y TypeLink Sync aún no están implementados.
-- Las cartas son ilustraciones provisionales.
-
-## Publicación
-El sitio se publica mediante GitHub Pages desde la rama `main`, carpeta raíz.
-
-https://github.com/Criptor03/typelink2-ruleta
-
 
 ## Backend Supabase
+Proyecto activo: `typelink2-platform-saopaulo` (`uytdmfrynuzofkyedhve`, región `sa-east-1`).
 
-El proyecto activo está en São Paulo: `typelink2-platform-saopaulo` (`uytdmfrynuzofkyedhve`). Consulta [`docs/architecture.md`](docs/architecture.md) para el esquema, seguridad y configuración de autenticación. No guardes claves secretas en este repositorio.
+Consulta [`docs/architecture.md`](docs/architecture.md) para el esquema, políticas RLS, funciones y configuración OAuth.
+
+## Seguridad
+- Las tablas públicas de la API tienen RLS activado.
+- El navegador utiliza únicamente la clave publishable de Supabase.
+- No se deben guardar claves secretas de Supabase ni el Client Secret de Discord en este repositorio.
+- La entrega de cartas se realiza mediante funciones SQL autorizadas únicamente al rol `authenticated`; el servidor valida la sesión y el límite de cartas.
+- Los participantes pueden leer perfiles y barajas públicas, pero no pueden insertar ni modificar directamente las cartas de inventario.
+- Las notificaciones son privadas para su destinatario.
+
+## Pendiente
+- Sustituir las ocho cartas provisionales por el catálogo y las imágenes definitivas de TypeLink 2.
+- Conectar importador de partidas Pokémon Blanco/Negro y TypeLink Sync.
+- Construir envío de cartas entre jugadores y notificaciones correspondientes.
+- Añadir autorización de administradores y herramientas del evento.
+- Conectar el bot de Discord para operaciones administrativas y `/tramo` cuando se definan las reglas finales.
+
+## Publicación
+GitHub Pages desde la rama `main`, carpeta raíz:
+
+https://criptor03.github.io/typelink2-ruleta/
