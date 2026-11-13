@@ -1952,8 +1952,12 @@ async function saveAdminMechanics(){
     await loadAdminMechanics();
     const cardId=adminSelectedMechanicsCardId;
     openAdminMechanicsEditor(cardId);
-    status.textContent="Guardado: "+result.effects_saved+" efecto(s) · "+(result.evolution_enabled?"evolución configurada":"sin evolución");
-    notify("Mecánicas de «"+result.card_name+"» guardadas correctamente.");
+    await loadAdminCatalog();
+    await loadAdminRoulettePools();
+    status.textContent="Guardado: "+result.effects_saved+" efecto(s) · "+(result.evolution_enabled?"evolución configurada · excluida de ruletas":"sin evolución nueva");
+    notify(result.evolution_enabled
+      ?"Evolución guardada. La carta ha sido excluida de todas las ruletas."
+      :"Mecánicas de «"+result.card_name+"» guardadas correctamente.");
     if(currentAuthUser){
       await loadCloudInventory();
       await loadProfileMechanics();
@@ -2013,7 +2017,23 @@ function renderAdminCatalog(){
     const slug=document.createElement("code");slug.textContent=card.slug||"";
     const status=document.createElement("span");status.className="admin-card-status "+(card.is_active?"is-active":"is-inactive");
     status.textContent=card.is_active?"ACTIVA":"DESACTIVADA";
-    copy.append(title,meta,slug,status);
+    const rouletteStatus=document.createElement("span");rouletteStatus.className="admin-card-roulette-status";
+    const assignedPools=Array.isArray(card.roulette_pools)?card.roulette_pools:[];
+    if(card.has_active_evolution){
+      rouletteStatus.classList.add("is-excluded");
+      rouletteStatus.textContent="EXCLUIDA · TIENE EVOLUCIÓN";
+    }else if(card.roulette_eligible===false){
+      rouletteStatus.classList.add("is-excluded");
+      rouletteStatus.textContent="NO APARECE EN RULETAS";
+    }else if(assignedPools.length){
+      rouletteStatus.classList.add("is-included");
+      const labels=assignedPools.map(slug=>({normal:"Normal",legendary:"Legendaria",fiesta:"Fiesta"}[slug]||slug));
+      rouletteStatus.textContent="INCLUIDA EN: "+labels.join(" · ");
+    }else{
+      rouletteStatus.classList.add("is-pending");
+      rouletteStatus.textContent="HABILITADA · AÚN NO AÑADIDA A UNA RULETA";
+    }
+    copy.append(title,meta,slug,status,rouletteStatus);
     const actions=document.createElement("div");actions.className="admin-card-item-actions";
     const edit=document.createElement("button");edit.className="admin-card-edit";edit.type="button";edit.textContent="EDITAR";
     edit.addEventListener("click",()=>openAdminCardEditor(card));
@@ -2081,6 +2101,14 @@ function openAdminCardEditor(card){
   document.getElementById("adminCardCounts").checked=card?.counts_toward_normal_limit!==false;
   if(card?.category!=="normal")document.getElementById("adminCardCounts").disabled=true;
   document.getElementById("adminCardActive").checked=card?Boolean(card.is_active):true;
+  const rouletteEligibleInput=document.getElementById("adminCardRouletteEligible");
+  const rouletteHelp=document.getElementById("adminCardRouletteHelp");
+  const hasActiveEvolution=Boolean(card?.has_active_evolution);
+  rouletteEligibleInput.checked=card?card.roulette_eligible!==false&&!hasActiveEvolution:true;
+  rouletteEligibleInput.disabled=hasActiveEvolution;
+  rouletteHelp.textContent=hasActiveEvolution
+    ?"Esta carta tiene una evolución activa, por eso queda excluida automáticamente de todas las ruletas."
+    :"Activa esta opción para permitir que la carta se añada a una ruleta. La inclusión concreta se configura en Administración → Ruletas.";
   document.getElementById("adminCardImageFile").value="";
   document.getElementById("adminCardImageHelp").textContent=adminEditingImagePath?"Ilustración actual vinculada. Puedes reemplazarla con otro PNG.":"PNG hasta 5 MB. La imagen se subirá al almacenamiento de TypeLink al guardar.";
   document.getElementById("adminCardFormStatus").textContent="Completa los datos de la carta.";
@@ -2138,6 +2166,7 @@ async function saveAdminCard(event){
       target_scope:document.getElementById("adminCardScope").value,
       disposition:document.getElementById("adminCardDisposition").value,
       counts_toward_normal_limit:document.getElementById("adminCardCounts").checked,
+      roulette_eligible:document.getElementById("adminCardRouletteEligible").checked,
       is_active:document.getElementById("adminCardActive").checked
     };
     const {data,error}=await authClient.rpc("admin_save_card",{p_card:payload});
