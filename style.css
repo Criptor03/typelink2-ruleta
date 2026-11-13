@@ -281,6 +281,10 @@ button[hidden]{display:none!important}
 .admin-card-status{padding:4px 6px;font-size:7px;font-weight:900;letter-spacing:.8px;border:1px solid}
 .admin-card-status.is-active{color:#477d5a;border-color:#9ab8a1;background:#eff6f0}
 .admin-card-status.is-inactive{color:#96733c;border-color:#d5bd91;background:#f7f1e6}
+.admin-card-roulette-status{font-size:7px;font-weight:900;letter-spacing:.55px;line-height:1.5;padding:3px 0;color:#647681}
+.admin-card-roulette-status.is-included{color:#477d5a}
+.admin-card-roulette-status.is-excluded{color:#a15b4f}
+.admin-card-roulette-status.is-pending{color:#8a744a}
 .admin-card-edit{grid-column:2;justify-self:start;border:1px solid #c7d0d7;background:#fff;color:#344653;padding:7px 10px;font-size:7px;font-weight:900;letter-spacing:1px;cursor:pointer}
 .admin-card-edit:hover{background:#17212b;color:#fff;border-color:#17212b}
 .admin-catalog-loading{grid-column:1/-1;text-align:center;background:#f9fafb;border:1px solid #cbd3da;padding:29px;color:#75828c;font-size:10px}
@@ -310,6 +314,7 @@ button[hidden]{display:none!important}
 .admin-card-flags{display:flex;gap:17px;flex-wrap:wrap;padding:15px 0;border-top:1px solid #d9dfe4;margin-top:16px}
 .admin-card-flags label{display:flex;align-items:center;gap:7px;font-size:9px;color:#596873}
 .admin-card-flags input{accent-color:#293b49}
+.admin-card-roulette-help{display:block;margin:-5px 0 13px;color:#74818b;font-size:8px;line-height:1.6}
 .admin-card-form-note{display:flex;gap:11px;padding:11px 13px;background:#eef1f3;border-left:3px solid #8a9aa5;font-size:8px;line-height:1.6;color:#74818b}
 .admin-card-form-note b{white-space:nowrap;font-size:7px;letter-spacing:.7px;color:#384b59}
 .admin-card-form-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:17px}
