@@ -21,6 +21,7 @@
         <button class="nav-link active" data-page="home"><span class="nav-icon">⌂</span><span>Inicio</span></button>
         <button class="nav-link" data-page="roulette"><span class="nav-icon">◉</span><span>Ruleta</span><span class="nav-count" id="navDeckCount">0/5</span></button>
         <button class="nav-link" data-page="players"><span class="nav-icon">♙</span><span>Jugadores</span></button>
+        <button class="nav-link" data-page="activity"><span class="nav-icon">▣</span><span>Muro de cartas</span></button>
         <button class="nav-link" data-page="profile"><span class="nav-icon">◎</span><span>Mi perfil</span></button>
         <button class="nav-link" data-page="deck"><span class="nav-icon">▤</span><span>Mi baraja</span></button>
         <button class="nav-link" data-page="pokemon"><span class="nav-icon">✦</span><span>Mi equipo Pokémon</span></button>
@@ -122,14 +123,14 @@
             <div class="wheel-panel panel">
               <div class="panel-heading"><div><span class="section-kicker">SORTEO DE CARTAS</span><h2>Ruleta de cartas</h2></div><span class="live-pill"><i></i> LISTA</span></div>
               <div class="wheel-wrap"><div class="pointer"></div><canvas id="wheel" width="700" height="700" aria-label="Ruleta con cartas disponibles"></canvas><div class="wheel-center"><span>TYPE</span><strong>LINK</strong><small>2</small></div></div>
-              <div class="wheel-actions"><button id="spinButton" class="spin-button"><span>GIRAR RULETA</span><b>✦</b></button><p id="spinHint" class="hint">Cada giro entrega una carta normal aleatoria.</p></div>
+              <div class="wheel-actions"><button id="spinButton" class="spin-button"><span>GIRAR RULETA</span><b>✦</b></button><p id="spinHint" class="hint">Primero inicia un tramo para recibir tus giros.</p><div class="spin-budget" id="spinBudget">SIN GIROS DISPONIBLES</div></div>
             </div>
             <aside class="side-column">
               <div class="result-panel panel"><div class="panel-heading compact"><div><span class="section-kicker">RESULTADO</span><h2>Tu recompensa</h2></div></div><div id="resultCard" class="result-card empty"><div class="card-placeholder"><span>✦</span><strong>¿QUÉ TE<br>TOCARÁ?</strong><small>GIRA LA RULETA</small></div></div><p id="resultMessage" class="result-message">Tu próxima carta te espera.</p></div>
               <div class="panel quick-deck-panel"><div class="panel-heading compact"><div><span class="section-kicker">TU INVENTARIO</span><h2>Mi baraja</h2></div><span id="deckCount" class="counter">0/5</span></div><div class="capacity"><span id="capacityFill"></span></div><div id="deckList" class="deck-list"><div class="deck-empty">Todavía no tienes cartas.<br><span>¡Haz tu primer giro!</span></div></div><button class="inline-link deck-open-link" data-page="deck">ABRIR BARAJA COMPLETA ↗</button></div>
             </aside>
           </section>
-          <div class="tramo-tool panel"><div><span class="eyebrow">CARTAS ESPECIALES</span><h3>Cartas de tramo</h3><p>Entrega dos cartas acumulables por tramo. No consumen espacios de las cinco cartas normales.</p></div><button id="tramoButton" class="secondary-button">RECIBIR /TRAMO <b>＋2</b></button></div>
+          <div class="tramo-tool panel"><div><span class="eyebrow">PROGRESIÓN DE ENTRENADOR</span><h3>Avanzar de tramo</h3><p id="tramoProgressHint">Al avanzar recibirás 2 cartas de tramo y 3 giros de la ruleta normal. Necesitas 3 espacios libres.</p><small id="tramoProgressCount" class="tramo-progress-count">TRAMO 0 · 0 GIROS DISPONIBLES</small></div><button id="tramoButton" class="secondary-button">AVANZAR DE TRAMO</button></div>
           <div class="demo-note"><strong>Inventario conectado:</strong> los giros y las cartas de tramo se guardan en tu cuenta. Debes iniciar sesión para obtener cartas.</div>
         </section>
 
@@ -168,7 +169,7 @@
         <section class="page-view" id="page-deck" hidden>
           <div class="page-heading"><div><div class="eyebrow">04 / INVENTARIO</div><h1>MI <em>BARAJA</em></h1><p>Tus cartas normales y las cartas acumulables de cada tramo.</p></div><span class="page-stamp">CARD<br>COLLECTION</span></div>
           <div class="deck-overview panel"><div class="deck-overview-top"><div><span class="eyebrow">CARTAS NORMALES</span><h2 id="deckCountFull">0 / 5</h2></div><div class="deck-capacity-large"><span id="capacityFillFull"></span></div></div><div id="deckListFull" class="full-deck-list"><div class="deck-empty">Todavía no tienes cartas. Ve a la ruleta para conseguir la primera.</div></div></div>
-          <div class="deck-overview panel route-overview"><div class="deck-overview-top"><div><span class="eyebrow">CARTAS DE TRAMO</span><h2><span id="routeCountFull">0</span> <small>DISPONIBLES</small></h2></div><span class="route-symbol">Ⅱ</span></div><div id="routeListFull" class="full-deck-list"><div class="deck-empty">Todavía no has iniciado un tramo.</div></div><div class="route-demo-actions"><button class="secondary-button" id="tramoButtonFull">RECIBIR /TRAMO · 2 CARTAS</button><p>Las cartas de tramo no cuentan para el límite de cinco cartas normales y se acumulan en tu cuenta.</p></div></div>
+          <div class="deck-overview panel route-overview"><div class="deck-overview-top"><div><span class="eyebrow">CARTAS DE TRAMO</span><h2><span id="routeCountFull">0</span> <small>DISPONIBLES</small></h2></div><span class="route-symbol">Ⅱ</span></div><div id="routeListFull" class="full-deck-list"><div class="deck-empty">Todavía no has iniciado un tramo.</div></div><div class="route-demo-actions"><button class="secondary-button" id="tramoButtonFull">AVANZAR DE TRAMO</button><p>Al avanzar recibirás exactamente 2 cartas de tramo y 3 giros normales, siempre que tengas 3 espacios libres y no queden giros pendientes.</p></div></div>
           <div class="deck-overview panel special-overview"><div class="deck-overview-top"><div><span class="eyebrow">CARTAS ESPECIALES</span><h2><span id="specialCountFull">0</span> <small>DISPONIBLES</small></h2></div><span class="route-symbol">✦</span></div><div id="specialListFull" class="full-deck-list"><div class="deck-empty">Todavía no tienes cartas Fiesta u otras cartas especiales.</div></div><p class="deck-section-note">Las cartas especiales y sus usos aparecerán aquí.</p></div>
           <div class="deck-rules-note"><b>USOS Y EVOLUCIONES</b><span>Cada carta muestra sus usos restantes. Las evoluciones transforman una carta en otra; no se fusionan cartas.</span></div>
           <button id="resetButton" class="text-button reset-button">Reiniciar datos de demostración local</button>
@@ -178,6 +179,12 @@
         <section class="page-view" id="page-pokemon" hidden>
           <div class="page-heading"><div><div class="eyebrow">05 / REGISTRO DE PARTIDA</div><h1>MI EQUIPO <em>POKÉMON</em></h1><p>Tu equipo, tus cajas, tus movimientos y tus objetos.</p></div><span class="page-stamp">POKÉMON<br>BLACK / WHITE</span></div>
           <div class="sync-preview panel"><div class="sync-icon">✦</div><div class="eyebrow">TYPELINK SYNC</div><h2>Conecta tu aventura en Teselia.</h2><p>Estamos preparando la lectura de partidas de Pokémon Blanco y Negro desde DeSmuME. La idea es que puedas autorizar tu archivo de guardado una vez y que la web detecte futuras actualizaciones después de guardar dentro del juego.</p><div class="sync-steps"><span><b>01</b> Seleccionar archivo .dsv</span><span><b>02</b> Analizar equipo y cajas</span><span><b>03</b> Mostrar datos en tu perfil</span></div><div class="coming-soon">IMPORTADOR EN DESARROLLO · TODAVÍA NO SE SUBE NI PROCESA NINGÚN ARCHIVO</div></div>
+        </section>
+
+        <section class="page-view" id="page-activity" hidden>
+          <div class="page-heading"><div><div class="eyebrow">06 / COMUNIDAD</div><h1>MURO DE <em>CARTAS</em></h1><p>Los movimientos de todos los entrenadores, en directo.</p></div><span class="page-stamp">COMMUNITY<br>FEED</span></div>
+          <div class="activity-intro panel"><div><span class="eyebrow">ACTIVIDAD EN VIVO</span><h2>La comunidad TypeLink</h2><p>Aquí aparecerán los giros de ruleta, los avances de tramo, las cartas utilizadas, los envíos a otros entrenadores y las evoluciones.</p></div><span class="activity-live-tag"><i></i> EN DIRECTO</span></div>
+          <div id="activityFeed" class="activity-feed"><div class="activity-empty panel">Inicia sesión para ver los movimientos de la comunidad.</div></div>
         </section>
 
         <section class="page-view" id="page-notifications" hidden>
