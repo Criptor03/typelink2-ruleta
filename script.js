@@ -1559,7 +1559,7 @@ function updateAdminRouletteProbabilities(){
     const percent=include&&enabled&&row.dataset.catalogActive==="true"&&total>0
       ?(weight/total*100).toFixed(1)+"%"
       :"—";
-    setText(row.querySelector('[data-role="probability"]'),percent);
+    row.querySelector('[data-role="probability"]').textContent=percent;
     row.classList.toggle("is-included",include);
     row.classList.toggle("is-disabled",include&&(!enabled||row.dataset.catalogActive!=="true"));
   });
@@ -1661,6 +1661,7 @@ async function saveAdminRoulettePool(){
     const result=Array.isArray(data)?data[0]:data;
     if(!result?.success)throw new Error("El servidor no confirmó la configuración.");
     await loadAdminRoulettePools();
+    if(adminSelectedRouletteSlug==="normal")await loadPublicNormalCards();
     const savedPool=adminRoulettePools.find(pool=>pool.slug===adminSelectedRouletteSlug);
     if(savedPool)openAdminRouletteEditor(savedPool.slug);
     notify(adminRouletteName(adminSelectedRouletteSlug)+" guardada correctamente.");
