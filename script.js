@@ -76,6 +76,8 @@ let adminTrainerItems = [];
 let adminSelectedTrainerId = null;
 let adminSelectedTrainerName = "";
 let adminTrainerDetail = null;
+let adminRoulettePools = [];
+let adminSelectedRouletteSlug = null;
 let spinRewardResolver = null;
 
 
@@ -140,10 +142,14 @@ function formatDate(dateValue){
 }
 
 function drawWheel(){
-  const size=canvas.width,center=size/2,radius=size/2-10,slice=TAU/CARDS.length;
+  const size=canvas.width,center=size/2,radius=size/2-10;
   ctx.clearRect(0,0,size,size);
+  const totalWeight=CARDS.reduce((sum,card)=>sum+Math.max(1,Number(card.weight||1)),0);
+  let accumulatedWeight=0;
   CARDS.forEach((card,i)=>{
-    const start=rotation-Math.PI/2+i*slice,end=start+slice;
+    const slice=totalWeight>0?TAU*Math.max(1,Number(card.weight||1))/totalWeight:0;
+    const start=rotation-Math.PI/2+(accumulatedWeight/totalWeight)*TAU,end=start+slice;
+    accumulatedWeight+=Math.max(1,Number(card.weight||1));
     ctx.beginPath();ctx.moveTo(center,center);ctx.arc(center,center,radius,start,end);ctx.closePath();
     ctx.fillStyle=i%2===0?"#e5e9ec":"#283541";ctx.fill();
     ctx.strokeStyle="#8f9aa3";ctx.lineWidth=3;ctx.stroke();
@@ -1039,17 +1045,23 @@ function showAdminOverview(){
   const overview=document.getElementById("adminOverview");
   const catalogWorkspace=document.getElementById("adminCatalogWorkspace");
   const trainersWorkspace=document.getElementById("adminTrainersWorkspace");
+  const rouletteWorkspace=document.getElementById("adminRouletteWorkspace");
   if(overview)overview.hidden=false;
   if(catalogWorkspace)catalogWorkspace.hidden=true;
   if(trainersWorkspace)trainersWorkspace.hidden=true;
+  if(rouletteWorkspace)rouletteWorkspace.hidden=true;
   const list=document.getElementById("adminCatalogListView");
   const editor=document.getElementById("adminCardEditorView");
   const trainerList=document.getElementById("adminTrainersListView");
   const trainerDetail=document.getElementById("adminTrainerDetailView");
+  const rouletteList=document.getElementById("adminRouletteListView");
+  const rouletteEditor=document.getElementById("adminRouletteEditorView");
   if(list)list.hidden=false;
   if(editor)editor.hidden=true;
   if(trainerList)trainerList.hidden=false;
   if(trainerDetail)trainerDetail.hidden=true;
+  if(rouletteList)rouletteList.hidden=false;
+  if(rouletteEditor)rouletteEditor.hidden=true;
 }
 function showAdminCatalogList(){
   const list=document.getElementById("adminCatalogListView");
@@ -1454,6 +1466,215 @@ async function clearAdminTrainerCards(){
   }
 }
 
+function showAdminRouletteList(){
+  const list=document.getElementById("adminRouletteListView");
+  const editor=document.getElementById("adminRouletteEditorView");
+  if(list)list.hidden=false;
+  if(editor)editor.hidden=true;
+}
+function adminRouletteName(slug){
+  return ({normal:"Ruleta normal",legendary:"Ruleta legendaria",fiesta:"Ruleta Fiesta"})[slug]||"Ruleta";
+}
+function adminRouletteSubtitle(slug){
+  return ({
+    normal:"Cartas normales comunes, raras y épicas",
+    legendary:"Cartas de rareza legendaria",
+    fiesta:"Cartas de categoría Fiesta"
+  })[slug]||"Configuración de cartas";
+}
+async function loadAdminRoulettePools(){
+  const grid=document.getElementById("adminRoulettePoolGrid");
+  if(grid){grid.replaceChildren();const loading=document.createElement("div");loading.className="admin-catalog-loading";loading.textContent="Cargando configuración de las ruletas...";grid.append(loading);}
+  if(!isAdmin||!authClient){notify("Acceso reservado al administrador.");return;}
+  try{
+    const {data,error}=await authClient.rpc("admin_list_roulette_pools");
+    if(error)throw error;
+    adminRoulettePools=Array.isArray(data)?data:[];
+    renderAdminRoulettePoolGrid();
+  }catch(error){
+    console.error("No se pudieron cargar las ruletas:",error);
+    if(grid){grid.replaceChildren();const message=document.createElement("div");message.className="admin-catalog-loading is-error";message.textContent="No se pudieron cargar las ruletas: "+(error.message||"error desconocido");grid.append(message);}
+  }
+}
+function renderAdminRoulettePoolGrid(){
+  const grid=document.getElementById("adminRoulettePoolGrid");
+  if(!grid)return;
+  grid.replaceChildren();
+  const descriptions={normal:"◉",legendary:"✦",fiesta:"★"};
+  adminRoulettePools.forEach(pool=>{
+    const members=Array.isArray(pool.cards)?pool.cards:[];
+    const activeMembers=members.filter(card=>card.is_active&&card.catalog_active).length;
+    const button=document.createElement("button");button.type="button";button.className="admin-roulette-pool-card panel";
+    const icon=document.createElement("span");icon.className="admin-roulette-pool-icon "+pool.slug;icon.textContent=descriptions[pool.slug]||"◉";
+    const title=document.createElement("strong");title.textContent=pool.name||adminRouletteName(pool.slug);
+    const subtitle=document.createElement("small");subtitle.textContent=adminRouletteSubtitle(pool.slug);
+    const counts=document.createElement("span");counts.className="admin-roulette-pool-count";
+    counts.textContent=members.length+" cartas · "+activeMembers+" habilitadas";
+    const status=document.createElement("b");status.className="admin-roulette-pool-status "+(pool.is_active?"is-active":"is-inactive");
+    status.textContent=pool.is_active?"ACTIVA":"DESACTIVADA";
+    const open=document.createElement("span");open.className="admin-roulette-pool-open";open.textContent="EDITAR RULETA ↗";
+    button.append(icon,title,subtitle,counts,status,open);
+    button.addEventListener("click",()=>openAdminRouletteEditor(pool.slug));
+    grid.append(button);
+  });
+  if(!adminRoulettePools.length){
+    const empty=document.createElement("div");empty.className="admin-catalog-loading";empty.textContent="No encontramos las tres ruletas configuradas.";grid.append(empty);
+  }
+}
+function openAdminRouletteEditor(slug){
+  if(!isAdmin)return;
+  const pool=adminRoulettePools.find(item=>item.slug===slug);
+  if(!pool){notify("No encontramos esa ruleta.");return;}
+  adminSelectedRouletteSlug=slug;
+  document.getElementById("adminRouletteListView").hidden=true;
+  document.getElementById("adminRouletteEditorView").hidden=false;
+  setText("adminRouletteEditorKind",adminRouletteName(slug).toUpperCase());
+  setText("adminRouletteEditorName",pool.name||adminRouletteName(slug));
+  setText("adminRouletteEditorHelp",adminRouletteSubtitle(slug)+". Selecciona qué cartas pueden salir y ajusta su peso.");
+  document.getElementById("adminRouletteDescription").value=pool.description||"";
+  document.getElementById("adminRouletteIsActive").checked=Boolean(pool.is_active);
+  const status=document.getElementById("adminRouletteSaveStatus");
+  status.textContent="Los cambios todavía no se han guardado.";
+  status.classList.remove("is-error");
+  renderAdminRouletteCards(pool);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function updateAdminRouletteProbabilities(){
+  const grid=document.getElementById("adminRouletteCardsGrid");
+  if(!grid)return;
+  const rows=[...grid.querySelectorAll(".admin-roulette-card-row")];
+  const active=rows.filter(row=>
+    row.querySelector('[data-role="include"]').checked&&
+    row.querySelector('[data-role="member-active"]').checked&&
+    row.dataset.catalogActive==="true"
+  );
+  const total=active.reduce((sum,row)=>sum+Number(row.querySelector('[data-role="weight"]').value||0),0);
+  let included=rows.filter(row=>row.querySelector('[data-role="include"]').checked).length;
+  setText("adminRouletteCardSummary",included+" cartas seleccionadas");
+  setText("adminRouletteWeightSummary","Peso activo total: "+total);
+  rows.forEach(row=>{
+    const include=row.querySelector('[data-role="include"]').checked;
+    const enabled=row.querySelector('[data-role="member-active"]').checked;
+    const weight=Number(row.querySelector('[data-role="weight"]').value||0);
+    const percent=include&&enabled&&row.dataset.catalogActive==="true"&&total>0
+      ?(weight/total*100).toFixed(1)+"%"
+      :"—";
+    setText(row.querySelector('[data-role="probability"]'),percent);
+    row.classList.toggle("is-included",include);
+    row.classList.toggle("is-disabled",include&&(!enabled||row.dataset.catalogActive!=="true"));
+  });
+}
+function renderAdminRouletteCards(pool){
+  const grid=document.getElementById("adminRouletteCardsGrid");
+  if(!grid)return;
+  grid.replaceChildren();
+  const eligible=Array.isArray(pool.eligible_cards)?pool.eligible_cards:[];
+  const memberMap=new Map((pool.cards||[]).map(card=>[card.id,card]));
+  if(!eligible.length){
+    const empty=document.createElement("div");empty.className="admin-catalog-loading";
+    empty.textContent=pool.slug==="legendary"
+      ?"Todavía no hay cartas de rareza legendaria en el catálogo."
+      :pool.slug==="fiesta"
+        ?"Todavía no hay cartas de categoría Fiesta en el catálogo."
+        :"No hay cartas normales comunes, raras o épicas en el catálogo.";
+    grid.append(empty);
+    updateAdminRouletteProbabilities();
+    return;
+  }
+  eligible.forEach(card=>{
+    const member=memberMap.get(card.id);
+    const row=document.createElement("article");row.className="admin-roulette-card-row";
+    row.dataset.cardId=card.id;
+    row.dataset.catalogActive=card.is_active?"true":"false";
+    const imageWrap=document.createElement("div");imageWrap.className="admin-roulette-card-image";
+    if(card.image_path){
+      const image=document.createElement("img");image.src=card.image_path;image.alt=card.name||"Carta";
+      image.onerror=()=>{image.remove();const fallback=document.createElement("span");fallback.textContent="▧";imageWrap.append(fallback);};
+      imageWrap.append(image);
+    }else{
+      const fallback=document.createElement("span");fallback.textContent="▧";imageWrap.append(fallback);
+    }
+    const info=document.createElement("div");info.className="admin-roulette-card-info";
+    const title=document.createElement("strong");title.textContent=card.name||"Carta";
+    const meta=document.createElement("small");meta.textContent=adminCategoryLabel(card.category)+" · "+adminRarityLabel(card.rarity);
+    const catalog=document.createElement("span");catalog.className="admin-roulette-catalog-state";
+    catalog.textContent=card.is_active?"ACTIVA EN CATÁLOGO":"DESACTIVADA EN CATÁLOGO";
+    info.append(title,meta,catalog);
+
+    const includeLabel=document.createElement("label");includeLabel.className="admin-roulette-include";
+    const include=document.createElement("input");include.type="checkbox";include.dataset.role="include";include.checked=Boolean(member);
+    const includeText=document.createElement("span");includeText.textContent="INCLUIR";
+    includeLabel.append(include,includeText);
+
+    const weightLabel=document.createElement("label");weightLabel.className="admin-roulette-weight";
+    const weightText=document.createElement("span");weightText.textContent="PESO";
+    const weight=document.createElement("input");weight.type="number";weight.min="1";weight.max="10000";weight.step="1";weight.value=String(member?.weight||1);weight.dataset.role="weight";weight.setAttribute("aria-label","Peso para "+card.name);
+    weightLabel.append(weightText,weight);
+
+    const activeLabel=document.createElement("label");activeLabel.className="admin-roulette-member-active";
+    const active=document.createElement("input");active.type="checkbox";active.dataset.role="member-active";
+    active.checked=member?Boolean(member.is_active&&card.is_active):Boolean(card.is_active);
+    active.disabled=!card.is_active;
+    const activeText=document.createElement("span");activeText.textContent="HABILITADA";
+    activeLabel.append(active,activeText);
+
+    const probability=document.createElement("b");probability.className="admin-roulette-probability";probability.dataset.role="probability";probability.textContent="—";
+    row.append(imageWrap,info,includeLabel,weightLabel,activeLabel,probability);
+    grid.append(row);
+  });
+  updateAdminRouletteProbabilities();
+}
+async function saveAdminRoulettePool(){
+  if(!isAdmin||!authClient||!adminSelectedRouletteSlug){notify("No hay una ruleta seleccionada.");return;}
+  const grid=document.getElementById("adminRouletteCardsGrid");
+  const rows=[...grid.querySelectorAll(".admin-roulette-card-row")];
+  const cards=[];
+  for(const row of rows){
+    if(!row.querySelector('[data-role="include"]').checked)continue;
+    const weight=Number(row.querySelector('[data-role="weight"]').value);
+    if(!Number.isInteger(weight)||weight<1||weight>10000){
+      notify("Cada peso debe ser un número entero entre 1 y 10000.");return;
+    }
+    cards.push({
+      card_id:row.dataset.cardId,
+      weight,
+      is_active:row.querySelector('[data-role="member-active"]').checked
+    });
+  }
+  const isActive=document.getElementById("adminRouletteIsActive").checked;
+  if(isActive&&!cards.some(card=>card.is_active)){
+    notify("Para activar la ruleta, incluye al menos una carta habilitada.");return;
+  }
+  const button=document.getElementById("adminRouletteSave");
+  const status=document.getElementById("adminRouletteSaveStatus");
+  button.disabled=true;button.textContent="GUARDANDO...";
+  status.textContent="Guardando cartas, pesos y estado de la ruleta...";
+  status.classList.remove("is-error");
+  try{
+    const {data,error}=await authClient.rpc("admin_save_roulette_pool",{
+      p_pool_slug:adminSelectedRouletteSlug,
+      p_is_active:isActive,
+      p_description:document.getElementById("adminRouletteDescription").value,
+      p_cards:cards
+    });
+    if(error)throw error;
+    const result=Array.isArray(data)?data[0]:data;
+    if(!result?.success)throw new Error("El servidor no confirmó la configuración.");
+    await loadAdminRoulettePools();
+    const savedPool=adminRoulettePools.find(pool=>pool.slug===adminSelectedRouletteSlug);
+    if(savedPool)openAdminRouletteEditor(savedPool.slug);
+    notify(adminRouletteName(adminSelectedRouletteSlug)+" guardada correctamente.");
+    status.textContent="Guardada: "+result.cards_saved+" cartas · "+result.active_cards+" habilitadas.";
+  }catch(error){
+    console.error("No se pudo guardar la ruleta:",error);
+    status.textContent=error.message||"No se pudo guardar la ruleta.";
+    status.classList.add("is-error");
+    notify("No se pudo guardar la ruleta: "+(error.message||"error desconocido"));
+  }finally{
+    button.disabled=false;button.textContent="GUARDAR RULETA ↗";
+  }
+}
+
 function adminCategoryLabel(category){
   return ({normal:"Normal",tramo:"Tramo",fiesta:"Fiesta"})[category]||category||"—";
 }
@@ -1687,18 +1908,18 @@ async function deleteAdminCard(card){
 
 async function loadPublicNormalCards(){
   if(!authClient||!currentAuthUser)return;
-  const {data,error}=await authClient.from("card_catalog")
-    .select("id,slug,name,rarity,description,image_path")
-    .eq("category","normal").eq("is_active",true).order("name",{ascending:true});
-  if(error){console.warn("No se pudo actualizar la ruleta con el catálogo:",error.message);return;}
+  const {data,error}=await authClient.rpc("get_active_roulette_cards",{p_pool_slug:"normal"});
+  if(error){console.warn("No se pudo cargar la ruleta normal configurada:",error.message);return;}
   const rarityLabels={common:"Común",rare:"Rara",epic:"Épica",legendary:"Legendaria"};
   const rarityColors={common:"#8d9a9f",rare:"#6f8dbb",epic:"#bd7a4e",legendary:"#d4ae5b"};
-  CARDS.splice(0,CARDS.length,...(data||[]).map(card=>({
+  const cards=Array.isArray(data)?data:[];
+  CARDS.splice(0,CARDS.length,...cards.map(card=>({
     id:card.slug,slug:card.slug,name:card.name,rarity:rarityLabels[card.rarity]||card.rarity,
     color:rarityColors[card.rarity]||"#8d9a9f",description:card.description,
-    art:card.image_path||("assets/"+card.slug+".svg"),image_path:card.image_path
+    art:card.image_path||("assets/"+card.slug+".svg"),image_path:card.image_path,
+    weight:Number(card.weight||1)
   })));
-  (data||[]).forEach(card=>{
+  cards.forEach(card=>{
     const image=new Image();
     image.src=card.image_path||("assets/"+card.slug+".svg");
     image.onload=()=>drawWheel();
@@ -1753,9 +1974,11 @@ async function activateUserSession(user){
 function startWheelAnimation(card){
   return new Promise(resolve=>{
     const index=Math.max(0,CARDS.findIndex(item=>item.slug===card.slug));
-    const slice=TAU/CARDS.length;
+    const totalWeight=CARDS.reduce((sum,item)=>sum+Math.max(1,Number(item.weight||1)),0);
+    const prefixWeight=CARDS.slice(0,index).reduce((sum,item)=>sum+Math.max(1,Number(item.weight||1)),0);
+    const selectedWeight=Math.max(1,Number(CARDS[index]?.weight||card.weight||1));
+    const desiredNorm=((TAU-((prefixWeight+selectedWeight/2)/Math.max(1,totalWeight))*TAU)%TAU+TAU)%TAU;
     const currentNorm=((rotation%TAU)+TAU)%TAU;
-    const desiredNorm=((TAU-(index+.5)*slice)%TAU+TAU)%TAU;
     const delta=(desiredNorm-currentNorm+TAU)%TAU;
     const start=rotation,target=start+TAU*5+delta;
     const duration=4200,startTime=performance.now();
@@ -1780,9 +2003,18 @@ async function spin(){
     if(error)throw error;
     const result=Array.isArray(data)?data[0]:data;
     if(!result||!result.slug)throw new Error("El servidor no devolvió una carta válida.");
-    const card=CARDS.find(item=>item.slug===result.slug)||{
-      slug:result.slug,name:result.name,rarity:result.rarity,image_path:result.image_path,description:result.description
-    };
+    await loadPublicNormalCards();
+    let card=CARDS.find(item=>item.slug===result.slug);
+    if(!card){
+      card={
+        id:result.slug,slug:result.slug,name:result.name,rarity:result.rarity,
+        image_path:result.image_path,description:result.description,
+        art:result.image_path||("assets/"+result.slug+".svg"),
+        weight:Number(result.roulette_weight||1)
+      };
+      CARDS.push(card);
+      const fallbackImage=new Image();fallbackImage.src=card.art;fallbackImage.onload=()=>drawWheel();cardArtImages[card.slug]=fallbackImage;
+    }
     notify("¡Carta obtenida! La ruleta está girando...");
     await startWheelAnimation(card);
     await loadCloudInventory();
@@ -1916,6 +2148,25 @@ document.getElementById("openAdminCatalog").addEventListener("click",async()=>{
   window.scrollTo({top:0,behavior:"smooth"});
 });
 document.getElementById("adminCatalogBack").addEventListener("click",showAdminOverview);
+document.getElementById("openAdminRoulettes").addEventListener("click",async()=>{
+  if(!isAdmin){notify("Acceso reservado al administrador.");return;}
+  document.getElementById("adminOverview").hidden=true;
+  document.getElementById("adminCatalogWorkspace").hidden=true;
+  document.getElementById("adminTrainersWorkspace").hidden=true;
+  document.getElementById("adminRouletteWorkspace").hidden=false;
+  showAdminRouletteList();
+  await loadAdminRoulettePools();
+  window.scrollTo({top:0,behavior:"smooth"});
+});
+document.getElementById("adminRoulettesBack").addEventListener("click",showAdminOverview);
+document.getElementById("adminRouletteEditorBack").addEventListener("click",showAdminRouletteList);
+document.getElementById("adminRouletteSave").addEventListener("click",saveAdminRoulettePool);
+document.getElementById("adminRouletteCardsGrid").addEventListener("input",event=>{
+  if(event.target.matches('[data-role="weight"]'))updateAdminRouletteProbabilities();
+});
+document.getElementById("adminRouletteCardsGrid").addEventListener("change",event=>{
+  if(event.target.matches('[data-role="include"],[data-role="member-active"],[data-role="weight"]'))updateAdminRouletteProbabilities();
+});
 document.getElementById("openAdminTrainers").addEventListener("click",async()=>{
   if(!isAdmin){notify("Acceso reservado al administrador.");return;}
   document.getElementById("adminOverview").hidden=true;
