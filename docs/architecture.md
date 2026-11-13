@@ -30,9 +30,11 @@ The earlier project `typelink2-platform` in `us-west-2` is retained temporarily 
 
 ## Card-award functions
 
-- `public.draw_random_card()`: SECURITY DEFINER RPC callable only by authenticated users. It checks `auth.uid()`, takes a per-user transaction advisory lock, checks the five-card normal limit, selects an active normal card, and inserts the reward in the same transaction.
-- `public.issue_tramo_cards()`: SECURITY DEFINER RPC callable only by authenticated users. It takes the same per-user lock and inserts two active tramo cards with a per-player tramo number. Tramo cards do not count toward the normal-card limit.
-- Both functions revoke EXECUTE from `PUBLIC` and `anon`; EXECUTE is granted only to `authenticated`. The Supabase security advisor flags authenticated-callable SECURITY DEFINER functions as a generic warning. In this case this is intentional: they are the trusted award boundary, validate the caller using `auth.uid()`, use a fixed empty search path and qualified table names, and do not accept a caller-supplied player ID or card ID. Review their definitions before changing grants.
+- `public.draw_random_card()` and `public.issue_tramo_cards()` are SECURITY INVOKER RPC wrappers callable only by `authenticated`.
+- Their privileged core logic lives in the non-Data-API `app_private` schema as SECURITY DEFINER functions. Those core functions validate `auth.uid()`, use a fixed empty search path and qualified table names, and do not accept caller-supplied player IDs or card IDs.
+- `draw_random_card` takes a per-user transaction advisory lock, checks the five-card normal limit, selects an active normal card, and inserts the reward in the same transaction.
+- `issue_tramo_cards` takes the same lock and inserts two active tramo cards with a per-player tramo number. Tramo cards do not count toward the normal-card limit.
+- EXECUTE is revoked from `PUBLIC` and `anon`; the public wrappers and their private core functions are executable only by `authenticated`.
 
 ## Security
 
