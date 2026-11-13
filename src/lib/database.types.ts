@@ -648,6 +648,38 @@ export type Database = {
           },
         ]
       }
+      player_tramo_progress: {
+        Row: {
+          bonus_spins_remaining: number
+          current_tramo: number
+          owner_id: string
+          spins_remaining: number
+          updated_at: string
+        }
+        Insert: {
+          bonus_spins_remaining?: number
+          current_tramo?: number
+          owner_id: string
+          spins_remaining?: number
+          updated_at?: string
+        }
+        Update: {
+          bonus_spins_remaining?: number
+          current_tramo?: number
+          owner_id?: string
+          spins_remaining?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_tramo_progress_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       player_save_snapshots: {
         Row: {
           bag: Json
@@ -729,6 +761,7 @@ export type Database = {
     Functions: {
       draw_random_card: { Args: never; Returns: Json }
       issue_tramo_cards: { Args: never; Returns: Json }
+      start_new_tramo: { Args: never; Returns: Json }
       play_card: {
         Args: { p_card_instance_id: string; p_target_id?: string | null }
         Returns: Json
