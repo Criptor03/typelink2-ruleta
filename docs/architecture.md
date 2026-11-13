@@ -6,66 +6,66 @@
 - Project ref: `uytdmfrynuzofkyedhve`
 - Project URL: `https://uytdmfrynuzofkyedhve.supabase.co`
 - Region: `sa-east-1` (South America, São Paulo)
-- Plan at creation: Free; the quoted project cost was USD $0/month.
+- Plan at creation: Free; quoted project cost was USD $0/month.
 - Status: ACTIVE_HEALTHY
 
-The earlier project `typelink2-platform` in `us-west-2` is retained temporarily as an empty backup/reference. Do not connect the frontend to it. Do not delete it until the São Paulo project and app integration are verified.
+The earlier project `typelink2-platform` in `us-west-2` is retained temporarily as an empty backup/reference. The frontend uses only the São Paulo project.
 
-## Current database foundation
+## Authentication
 
-The following tables are provisioned in the `public` schema:
+- Discord OAuth is configured in Supabase Auth.
+- The public frontend uses `@supabase/supabase-js` and the project's publishable key.
+- The app redirects to GitHub Pages after OAuth and persists the Auth session in the browser.
+- A database trigger creates or refreshes a `profiles` row from the authenticated user's Discord metadata.
+- Never commit the Discord Client Secret, Supabase secret key, or legacy service-role key.
 
-- `profiles`: public trainer profile linked one-to-one with `auth.users`. A database trigger creates the profile when an Auth user signs up. Users can update only their own display name and avatar.
-- `card_catalog`: definitions of normal and tramo cards. Catalog rows are not active by default.
-- `player_cards`: individual card instances owned by players. Duplicate copies are allowed. Client-side writes are not granted; awards and changes must go through trusted server-side logic.
-- `player_save_snapshots`: current parsed save summary, including trainer data, party, boxes, and bag. Client-side writes are not granted; a verified importer will update it.
-- `notifications`: private notifications; recipients can read their own notifications and mark them as read.
-- `event_settings`: singleton event configuration. Defaults: current tramo 0, normal card limit 5, and 2 cards per tramo.
+## Database tables
+
+- `profiles`: public trainer identity linked one-to-one with `auth.users`. The owner may update their display name and avatar; authenticated participants can view profiles.
+- `card_catalog`: eight active provisional card definitions (six normal and two tramo). These are placeholders awaiting the approved final TypeLink 2 catalogue.
+- `player_cards`: individual card instances owned by players. Duplicates are allowed. Authenticated participants can read public inventories; clients cannot insert/update/delete inventory rows directly.
+- `player_save_snapshots`: parsed Pokémon trainer data, party, boxes, and bag. Public to authenticated participants; only a trusted importer/server should write snapshots.
+- `notifications`: private notifications; recipients can read their own and mark them as read.
+- `event_settings`: singleton configuration. Defaults: current tramo 0, normal-card limit 5, and 2 cards per tramo.
+
+## Card-award functions
+
+- `public.draw_random_card()`: SECURITY DEFINER RPC callable only by authenticated users. It checks `auth.uid()`, takes a per-user transaction advisory lock, checks the five-card normal limit, selects an active normal card, and inserts the reward in the same transaction.
+- `public.issue_tramo_cards()`: SECURITY DEFINER RPC callable only by authenticated users. It takes the same per-user lock and inserts two active tramo cards with a per-player tramo number. Tramo cards do not count toward the normal-card limit.
+- Both functions revoke EXECUTE from `PUBLIC` and `anon`; EXECUTE is granted only to `authenticated`. The Supabase security advisor flags authenticated-callable SECURITY DEFINER functions as a generic warning. In this case this is intentional: they are the trusted award boundary, validate the caller using `auth.uid()`, use a fixed empty search path and qualified table names, and do not accept a caller-supplied player ID or card ID. Review their definitions before changing grants.
 
 ## Security
 
 - Row Level Security is enabled on all six public tables.
-- Security policies allow authenticated participants to view profiles, active card definitions, public player inventories, public Pokémon snapshots, and event settings.
+- Profiles, active card definitions, public player inventories, public Pokémon snapshots, and event settings are readable by authenticated event participants.
 - Notifications are restricted to their recipient.
-- Player inventories and Pokémon snapshots cannot be written directly from an untrusted browser client.
+- Player inventory and Pokémon snapshot writes are not granted directly to browser clients.
 - The `app_private` schema is not exposed through the Data API.
-- No Supabase secret/service-role key may be placed in this public GitHub repository or browser code. Only a publishable key may be used by the frontend, together with RLS.
+- The frontend key is a publishable key intended for browser use with RLS; no secret/service-role key belongs in the frontend.
 
 ## Realtime
 
-The following tables are included in the `supabase_realtime` publication:
+The following tables are included in `supabase_realtime`:
 
+- `profiles`
 - `player_cards`
 - `player_save_snapshots`
 - `notifications`
 
-Row Level Security remains the access control boundary for realtime subscribers.
+Realtime subscribers remain subject to RLS. The frontend currently subscribes to the signed-in player's inventory and the public profile directory.
 
-## Discord OAuth — setup still required
-
-The active Supabase callback URL is:
+## Discord OAuth redirect
 
 `https://uytdmfrynuzofkyedhve.supabase.co/auth/v1/callback`
 
-1. In the Discord Developer Portal, replace the old project's callback URL with the URL above under OAuth2 Redirects.
-2. In the active Supabase project, enable Authentication → Sign In / Providers → Discord.
-3. Enter the Discord Client ID and Client Secret directly in Supabase. Never commit the Client Secret to GitHub or send it in chat.
-4. Configure the Supabase Auth Site URL and allowed redirect URL to:
-   `https://criptor03.github.io/typelink2-ruleta/`
+Supabase Auth Site URL and allowed redirect URL:
 
-## Frontend Discord authentication
-
-- The public frontend uses `@supabase/supabase-js` pinned to `2.119.0`.
-- `supabase-config.js` contains only the Supabase project URL and publishable key, which are intended for browser use when RLS is enabled.
-- The frontend initiates Discord OAuth with `identify email` scopes and redirects back to the GitHub Pages site URL.
-- The browser stores and refreshes the Supabase Auth session.
-- Never place the Discord Client Secret, Supabase secret key, or legacy service-role key in this repository.
-- The OAuth provider's enabled status and credentials must be checked in the Supabase dashboard; the GitHub code alone cannot verify those dashboard settings.
+`https://criptor03.github.io/typelink2-ruleta/`
 
 ## Not implemented yet
 
-- Discord OAuth credentials and frontend login flow.
-- Server-side roulette award logic enforcing the 5-card normal limit.
-- Admin authorization and tramo issuance.
-- Verified Pokémon Black/White DeSmuME save parser.
-- Browser-assisted .dsv monitoring and synchronization client.
+- Pokémon Black/White DeSmuME `.dsv` parser and browser-assisted save monitoring.
+- Sending/applying cards to another participant and related notifications.
+- Admin authorization and staff-only controls.
+- Final approved card art and descriptions.
+- Production moderation, rate limiting and event-operational safeguards.
