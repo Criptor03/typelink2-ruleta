@@ -72,6 +72,10 @@ let adminEditingCardId = null;
 let adminEditingImagePath = null;
 let adminPendingImageFile = null;
 let adminImageObjectUrl = null;
+let adminTrainerItems = [];
+let adminSelectedTrainerId = null;
+let adminSelectedTrainerName = "";
+let adminTrainerDetail = null;
 let spinRewardResolver = null;
 
 
@@ -1027,13 +1031,19 @@ function renderAdminAccess(){
 
 function showAdminOverview(){
   const overview=document.getElementById("adminOverview");
-  const workspace=document.getElementById("adminCatalogWorkspace");
+  const catalogWorkspace=document.getElementById("adminCatalogWorkspace");
+  const trainersWorkspace=document.getElementById("adminTrainersWorkspace");
   if(overview)overview.hidden=false;
-  if(workspace)workspace.hidden=true;
+  if(catalogWorkspace)catalogWorkspace.hidden=true;
+  if(trainersWorkspace)trainersWorkspace.hidden=true;
   const list=document.getElementById("adminCatalogListView");
   const editor=document.getElementById("adminCardEditorView");
+  const trainerList=document.getElementById("adminTrainersListView");
+  const trainerDetail=document.getElementById("adminTrainerDetailView");
   if(list)list.hidden=false;
   if(editor)editor.hidden=true;
+  if(trainerList)trainerList.hidden=false;
+  if(trainerDetail)trainerDetail.hidden=true;
 }
 function showAdminCatalogList(){
   const list=document.getElementById("adminCatalogListView");
@@ -1041,6 +1051,215 @@ function showAdminCatalogList(){
   if(list)list.hidden=false;
   if(editor)editor.hidden=true;
 }
+function showAdminTrainerList(){
+  const list=document.getElementById("adminTrainersListView");
+  const detail=document.getElementById("adminTrainerDetailView");
+  if(list)list.hidden=false;
+  if(detail)detail.hidden=true;
+}
+function renderAdminTrainers(){
+  const grid=document.getElementById("adminTrainersGrid");
+  if(!grid)return;
+  const search=(document.getElementById("adminTrainersSearch")?.value||"").trim().toLowerCase();
+  const filtered=adminTrainerItems.filter(trainer=>
+    !search||String(trainer.display_name||"").toLowerCase().includes(search)
+  );
+  setText("adminTrainersTotal",adminTrainerItems.length);
+  setText("adminTrainersCardsTotal",adminTrainerItems.reduce((sum,trainer)=>sum+Number(trainer.cards_total||0),0));
+  setText("adminTrainersNormalTotal",adminTrainerItems.reduce((sum,trainer)=>sum+Number(trainer.normal_available||0),0));
+  grid.replaceChildren();
+  if(!filtered.length){
+    const empty=document.createElement("div");empty.className="admin-catalog-loading";
+    empty.textContent=adminTrainerItems.length?"No hay entrenadores que coincidan con la búsqueda.":"Todavía no hay entrenadores registrados.";
+    grid.append(empty);return;
+  }
+  filtered.forEach(trainer=>{
+    const article=document.createElement("article");article.className="admin-trainer-row panel";
+    const avatar=document.createElement("div");avatar.className="admin-trainer-avatar small";
+    applyAvatar(avatar,trainer.avatar_url,initials(trainer.display_name||"TL"));
+    const identity=document.createElement("div");identity.className="admin-trainer-row-identity";
+    const name=document.createElement("strong");name.textContent=trainer.display_name||"Entrenador";
+    const since=document.createElement("small");since.textContent="Registrado el "+formatDate(trainer.created_at);
+    identity.append(name,since);
+    const meta=document.createElement("div");meta.className="admin-trainer-row-stats";
+    const tramo=document.createElement("span");tramo.textContent="TRAMO "+Number(trainer.current_tramo||0);
+    const cards=document.createElement("span");cards.textContent=Number(trainer.cards_available||0)+" DISPONIBLES / "+Number(trainer.cards_total||0)+" TOTAL";
+    const spins=document.createElement("span");spins.textContent=Number(trainer.spins_remaining||0)+" GIROS · "+Number(trainer.bonus_spins_remaining||0)+" EXTRA";
+    meta.append(tramo,cards,spins);
+    const button=document.createElement("button");button.type="button";button.className="player-view-button admin-trainer-open";button.textContent="VER ENTRENADOR ↗";
+    button.addEventListener("click",()=>openAdminTrainerDetail(trainer.id));
+    article.append(avatar,identity,meta,button);grid.append(article);
+  });
+}
+async function loadAdminTrainers(){
+  const grid=document.getElementById("adminTrainersGrid");
+  if(grid){grid.replaceChildren();const loading=document.createElement("div");loading.className="admin-catalog-loading";loading.textContent="Cargando participantes y progreso...";grid.append(loading);}
+  if(!authClient||!currentAuthUser||!isAdmin){notify("No tienes permiso para consultar los entrenadores.");return;}
+  try{
+    const {data,error}=await authClient.rpc("admin_list_trainers");
+    if(error)throw error;
+    adminTrainerItems=Array.isArray(data)?data:[];
+    renderAdminTrainers();
+  }catch(error){
+    console.error("No se pudo cargar la gestión de entrenadores:",error);
+    if(grid){grid.replaceChildren();const message=document.createElement("div");message.className="admin-catalog-loading is-error";message.textContent="No se pudo cargar la lista: "+(error.message||"error desconocido");grid.append(message);}
+  }
+}
+function adminTrainerDurationLabel(effect){
+  if(effect.duration_type==="timed")return "Temporal · "+(effect.duration_value||"—")+" "+(effect.duration_unit||"horas");
+  if(effect.duration_type==="charges")return "Por cargas · "+(effect.remaining_uses??effect.duration_value??"—")+" restantes";
+  if(effect.duration_type==="tramo_end")return "Hasta el final del tramo";
+  if(effect.duration_type==="next_tramo_end")return "Hasta el final del próximo tramo";
+  if(effect.duration_type==="permanent")return "Permanente";
+  return effect.duration_type||"Duración no indicada";
+}
+function renderAdminTrainerDetail(data){
+  if(!data)return;
+  const trainer=data.trainer||{};
+  const progress=data.progress||{};
+  const stats=data.stats||{};
+  adminSelectedTrainerId=trainer.id||adminSelectedTrainerId;
+  adminSelectedTrainerName=trainer.display_name||"Entrenador";
+  setText("adminTrainerName",adminSelectedTrainerName);
+  setText("adminTrainerSince","Entrenador desde "+formatDate(trainer.created_at));
+  setText("adminTrainerUpdated","Última actualización: "+formatDate(progress.updated_at||trainer.updated_at));
+  applyAvatar(document.getElementById("adminTrainerAvatar"),trainer.avatar_url,initials(adminSelectedTrainerName));
+  setText("adminTrainerTramo",Number(progress.current_tramo||0));
+  setText("adminTrainerSpins",Number(progress.spins_remaining||0));
+  setText("adminTrainerBonusSpins",Number(progress.bonus_spins_remaining||0));
+  setText("adminTrainerCardCount",Number(stats.cards_total||0));
+  setText("adminTrainerInventoryCount",Number(stats.cards_total||0)+" CARTAS");
+  const note="Límite de baraja normal: "+Number(stats.normal_available||0)+" / "+Number(data.normal_card_limit||5)+
+    " · Cartas de tramo: "+Number(stats.tramo_available||0)+
+    " · Fiesta: "+Number(stats.fiesta_available||0)+
+    ". El vaciado de inventario no cambia estos avances ni los giros.";
+  setText("adminTrainerProgressNote",note);
+
+  const inventory=document.getElementById("adminTrainerInventory");
+  inventory.replaceChildren();
+  const cards=Array.isArray(data.inventory)?data.inventory:[];
+  if(!cards.length){
+    const empty=document.createElement("div");empty.className="admin-catalog-loading";
+    empty.textContent="Este entrenador no tiene cartas en su inventario.";
+    inventory.append(empty);
+  }else{
+    cards.forEach(item=>{
+      const card=item.card||{};
+      const row=document.createElement("article");row.className="admin-trainer-card-item";
+      const imageWrap=document.createElement("div");imageWrap.className="admin-trainer-card-image";
+      if(card.image_path){
+        const image=document.createElement("img");image.src=card.image_path;image.alt=card.name||"Carta";
+        image.onerror=()=>{image.remove();const fallback=document.createElement("span");fallback.textContent="▧";imageWrap.append(fallback);};
+        imageWrap.append(image);
+      }else{
+        const fallback=document.createElement("span");fallback.textContent="▧";imageWrap.append(fallback);
+      }
+      const body=document.createElement("div");body.className="admin-trainer-card-body";
+      const title=document.createElement("strong");title.textContent=card.name||"Carta sin nombre";
+      const state=item.status==="available"&&Number(item.remaining_uses)>0?"DISPONIBLE":"USADA";
+      const category=adminCategoryLabel(card.category);
+      const rarity=adminRarityLabel(card.rarity);
+      const meta=document.createElement("small");meta.textContent=category+" · "+rarity+" · "+state;
+      const uses=document.createElement("span");
+      uses.textContent=(item.remaining_uses??0)+"/"+(card.uses_per_card??1)+" USOS"+
+        (item.tramo_number!=null?" · OBTENIDA EN TRAMO "+item.tramo_number:"");
+      const source=document.createElement("span");source.textContent="ORIGEN: "+(item.source||"—")+" · "+formatDate(item.obtained_at);
+      body.append(title,meta,uses,source);
+      row.append(imageWrap,body);inventory.append(row);
+    });
+  }
+
+  const typesWrap=document.getElementById("adminTrainerTypes");
+  typesWrap.replaceChildren();
+  const typeMap=Object.fromEntries((data.types||[]).map(item=>[item.type_slug,item.is_enabled]));
+  let enabledCount=0;
+  POKEMON_TYPES.forEach(type=>{
+    const enabled=typeMap[type.slug]!==false;
+    if(enabled)enabledCount++;
+    const chip=document.createElement("div");chip.className="admin-trainer-type"+(enabled?" enabled":" disabled");
+    const dot=document.createElement("i");dot.style.backgroundColor=type.color;
+    const name=document.createElement("strong");name.textContent=type.name;
+    const state=document.createElement("small");state.textContent=enabled?"HABILITADO":"BLOQUEADO";
+    chip.append(dot,name,state);typesWrap.append(chip);
+  });
+  setText("adminTrainerTypesCount",enabledCount+" / 18 ACTIVOS");
+
+  const effectsWrap=document.getElementById("adminTrainerEffects");
+  effectsWrap.replaceChildren();
+  const effects=Array.isArray(data.effects)?data.effects:[];
+  setText("adminTrainerEffectsCount",effects.length+" ACTIVOS");
+  if(!effects.length){
+    const empty=document.createElement("div");empty.className="profile-module-empty";
+    empty.textContent="Este entrenador no tiene efectos activos recibidos.";
+    effectsWrap.append(empty);
+  }else{
+    effects.forEach(effect=>{
+      const row=document.createElement("article");row.className="admin-trainer-effect-item";
+      const copy=document.createElement("div");copy.className="admin-trainer-effect-copy";
+      const title=document.createElement("strong");title.textContent=effect.source_card_name||effect.effect_key||"Efecto activo";
+      const detail=document.createElement("small");detail.textContent=(effect.effect_key||"efecto")+" · "+(effect.operation||"")+
+        (effect.effect_value!=null?" "+effect.effect_value:"");
+      const source=document.createElement("span");source.textContent="Aplicado por: "+(effect.applied_by_name||"evento")+" · "+adminTrainerDurationLabel(effect);
+      copy.append(title,detail,source);
+      if(effect.source_card_image){
+        const image=document.createElement("img");image.src=effect.source_card_image;image.alt=effect.source_card_name||"Carta fuente";image.className="admin-trainer-effect-image";row.append(image);
+      }
+      row.append(copy);effectsWrap.append(row);
+    });
+  }
+}
+async function openAdminTrainerDetail(playerId){
+  if(!isAdmin||!authClient||!playerId){notify("No tienes permiso para abrir este entrenador.");return;}
+  const list=document.getElementById("adminTrainersListView");
+  const detail=document.getElementById("adminTrainerDetailView");
+  if(list)list.hidden=true;
+  if(detail){detail.hidden=false;detail.scrollIntoView({behavior:"smooth",block:"start"});}
+  const inventory=document.getElementById("adminTrainerInventory");
+  if(inventory){inventory.replaceChildren();const loading=document.createElement("div");loading.className="admin-catalog-loading";loading.textContent="Cargando ficha del entrenador...";inventory.append(loading);}
+  try{
+    const {data,error}=await authClient.rpc("admin_get_trainer",{p_player_id:playerId});
+    if(error)throw error;
+    if(!data?.trainer?.id)throw new Error("Supabase no devolvió la ficha del entrenador.");
+    adminTrainerDetail=data;
+    renderAdminTrainerDetail(data);
+  }catch(error){
+    console.error("No se pudo abrir la ficha del entrenador:",error);
+    notify("No se pudo abrir el entrenador: "+(error.message||"error desconocido"));
+    showAdminTrainerList();
+  }
+}
+async function clearAdminTrainerCards(){
+  if(!isAdmin||!authClient||!adminSelectedTrainerId){notify("No hay un entrenador seleccionado.");return;}
+  const warning="Vas a borrar TODAS las cartas de "+adminSelectedTrainerName+".\n\n"+
+    "Se eliminarán cartas normales, de tramo, Fiesta y copias usadas.\n"+
+    "Se conservarán su tramo, giros, tipos, efectos activos recibidos y el historial del muro.\n\n"+
+    "Esta acción no se puede deshacer. ¿Deseas continuar?";
+  if(!window.confirm(warning))return;
+  const confirmation=window.prompt("Para confirmar el vaciado, escribe exactamente VACIAR.");
+  if(confirmation!=="VACIAR"){notify("Vaciado cancelado. No se modificó el inventario.");return;}
+  const button=document.getElementById("adminClearTrainerCardsButton");
+  button.disabled=true;button.textContent="VACIANDO INVENTARIO...";
+  try{
+    const {data,error}=await authClient.rpc("admin_clear_trainer_cards",{p_player_id:adminSelectedTrainerId});
+    if(error)throw error;
+    const result=Array.isArray(data)?data[0]:data;
+    if(!result?.success)throw new Error("El servidor no confirmó el vaciado.");
+    notify("Inventario de "+(result.trainer_name||adminSelectedTrainerName)+" vaciado: "+Number(result.deleted_count||0)+" cartas eliminadas.");
+    await loadAdminTrainers();
+    await openAdminTrainerDetail(adminSelectedTrainerId);
+    if(currentAuthUser?.id===adminSelectedTrainerId){
+      await loadCloudInventory();
+      await loadProfileMechanics();
+    }
+    await loadPlayers();
+  }catch(error){
+    console.error("No se pudo vaciar el inventario del entrenador:",error);
+    notify("No se pudo vaciar el inventario: "+(error.message||"error desconocido"));
+  }finally{
+    button.disabled=false;button.textContent="VACIAR TODAS SUS CARTAS";
+  }
+}
+
 function adminCategoryLabel(category){
   return ({normal:"Normal",tramo:"Tramo",fiesta:"Fiesta"})[category]||category||"—";
 }
@@ -1503,6 +1722,19 @@ document.getElementById("openAdminCatalog").addEventListener("click",async()=>{
   window.scrollTo({top:0,behavior:"smooth"});
 });
 document.getElementById("adminCatalogBack").addEventListener("click",showAdminOverview);
+document.getElementById("openAdminTrainers").addEventListener("click",async()=>{
+  if(!isAdmin){notify("Acceso reservado al administrador.");return;}
+  document.getElementById("adminOverview").hidden=true;
+  document.getElementById("adminCatalogWorkspace").hidden=true;
+  document.getElementById("adminTrainersWorkspace").hidden=false;
+  showAdminTrainerList();
+  await loadAdminTrainers();
+  window.scrollTo({top:0,behavior:"smooth"});
+});
+document.getElementById("adminTrainersBack").addEventListener("click",showAdminOverview);
+document.getElementById("adminTrainerDetailBack").addEventListener("click",showAdminTrainerList);
+document.getElementById("adminTrainersSearch").addEventListener("input",renderAdminTrainers);
+document.getElementById("adminClearTrainerCardsButton").addEventListener("click",clearAdminTrainerCards);
 document.getElementById("adminCreateCard").addEventListener("click",()=>openAdminCardEditor(null));
 document.getElementById("adminCardCancel").addEventListener("click",showAdminCatalogList);
 document.getElementById("adminCardForm").addEventListener("submit",saveAdminCard);
