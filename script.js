@@ -1933,6 +1933,11 @@ async function saveAdminMechanics(){
     name:document.getElementById("adminEvolutionName").value,
     description:document.getElementById("adminEvolutionDescription").value
   }:{enabled:false};
+  const targetScope=document.getElementById("adminMechanicsTargetScope").value;
+  if(effects.some(effect=>effect.effect_key==="unlock_roulette")&&targetScope!=="self"){
+    notify("Desbloquear una ruleta solo puede afectar a quien utiliza la carta. Selecciona «A quien la utiliza».");
+    return;
+  }
   const button=document.getElementById("adminSaveMechanics");
   const status=document.getElementById("adminMechanicsSaveStatus");
   button.disabled=true;button.textContent="GUARDANDO...";
@@ -1941,7 +1946,7 @@ async function saveAdminMechanics(){
   try{
     const {data,error}=await authClient.rpc("admin_save_card_mechanics",{
       p_card_id:adminSelectedMechanicsCardId,
-      p_target_scope:document.getElementById("adminMechanicsTargetScope").value,
+      p_target_scope:targetScope,
       p_disposition:document.getElementById("adminMechanicsDisposition").value,
       p_effects:effects,
       p_evolution:evolution
@@ -2028,10 +2033,10 @@ function renderAdminCatalog(){
     }else if(assignedPools.length){
       rouletteStatus.classList.add("is-included");
       const labels=assignedPools.map(slug=>({normal:"Normal",legendary:"Legendaria",fiesta:"Fiesta"}[slug]||slug));
-      rouletteStatus.textContent="INCLUIDA EN: "+labels.join(" · ");
+      rouletteStatus.textContent="CONFIGURADA EN: "+labels.join(" · ");
     }else{
       rouletteStatus.classList.add("is-pending");
-      rouletteStatus.textContent="HABILITADA · AÚN NO AÑADIDA A UNA RULETA";
+      rouletteStatus.textContent="HABILITADA · AÚN SIN ASIGNAR";
     }
     copy.append(title,meta,slug,status,rouletteStatus);
     const actions=document.createElement("div");actions.className="admin-card-item-actions";
@@ -2177,6 +2182,7 @@ async function saveAdminCard(event){
     if(adminImageObjectUrl){URL.revokeObjectURL(adminImageObjectUrl);adminImageObjectUrl=null;}
     notify(adminEditingCardId?"Carta actualizada correctamente.":"Nueva carta creada correctamente.");
     await loadAdminCatalog();
+    await loadAdminRoulettePools();
     await loadPublicNormalCards();
     showAdminCatalogList();
   }catch(error){
