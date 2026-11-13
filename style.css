@@ -667,3 +667,36 @@ button[hidden]{display:none!important}
   .admin-mechanics-evolution-toggle{align-items:flex-start;line-height:1.5}
   .admin-mechanics-section .admin-trainer-section-heading{align-items:flex-start;flex-direction:column}
 }
+
+/* Special roulette access tickets */
+.special-roulette-access{margin-top:15px;padding:19px 20px;background:#edf1f4;border:1px solid #cbd4da}
+.special-roulette-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:15px}
+.special-roulette-heading h2{font:800 25px 'Barlow Condensed';margin:4px 0;color:#293843}
+.special-roulette-heading p{font-size:9px;line-height:1.6;color:#78858e;margin:0;max-width:600px}
+.special-roulette-seal{display:grid;place-items:center;flex:none;width:40px;height:40px;border:1px solid #9ba9b2;background:#f8fafb;color:#8d7444;font-size:22px}
+.special-roulette-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.special-roulette-card{min-width:0;padding:15px;border:1px solid #cbd4da;background:#fbfcfd}
+.special-roulette-card.legendary{border-top:3px solid #b89a5b}
+.special-roulette-card.fiesta{border-top:3px solid #a66c77}
+.special-roulette-card-top{display:flex;align-items:center;gap:8px}
+.special-roulette-icon{display:grid;place-items:center;width:27px;height:27px;background:#eef1f3;border:1px solid #d3d9de;color:#8d7444;font-size:16px}
+.special-roulette-card.fiesta .special-roulette-icon{color:#a15c68}
+.special-roulette-kind{font-size:7px;font-weight:900;letter-spacing:1px;color:#82909a}
+.special-roulette-card h3{font:900 22px 'Barlow Condensed';color:#293843;margin:10px 0 4px}
+.special-roulette-card>p{min-height:30px;font-size:9px;line-height:1.6;color:#76838c;margin:0 0 10px}
+.special-roulette-card>p strong{color:#394c58}
+.special-roulette-credit{display:flex;align-items:baseline;gap:7px;padding:8px 0;border-top:1px solid #e0e5e8}
+.special-roulette-credit strong{font:900 27px 'Barlow Condensed';color:#344855;font-variant-numeric:tabular-nums}
+.special-roulette-credit span{font-size:7px;font-weight:900;letter-spacing:.8px;color:#82909a}
+.special-roulette-button{width:100%;padding:11px 12px;border:1px solid #344653;background:#202d38;color:#fff;font-size:8px;font-weight:900;letter-spacing:1px;cursor:pointer}
+.special-roulette-card.fiesta .special-roulette-button{background:#7d4954;border-color:#7d4954}
+.special-roulette-button:hover:not(:disabled){filter:brightness(1.12);transform:translateY(-1px)}
+.special-roulette-button:disabled{opacity:.42;cursor:not-allowed}
+.special-roulette-card>small{display:block;min-height:24px;margin-top:8px;font-size:8px;line-height:1.5;color:#79868f}
+.special-roulette-footnote{margin:12px 0 0;padding-top:10px;border-top:1px solid #d7dfe4;font-size:8px;line-height:1.6;color:#89949c}
+@media(max-width:650px){
+  .special-roulette-grid{grid-template-columns:1fr}
+  .special-roulette-access{padding:14px}
+  .special-roulette-heading h2{font-size:22px}
+  .special-roulette-card{padding:12px}
+}
