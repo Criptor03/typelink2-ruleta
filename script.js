@@ -72,6 +72,7 @@ let adminEditingCardId = null;
 let adminEditingImagePath = null;
 let adminPendingImageFile = null;
 let adminImageObjectUrl = null;
+let spinRewardResolver = null;
 
 
 CARDS.forEach(card=>{
@@ -289,6 +290,27 @@ function showResult(card){
   const rarity=document.createElement("div");rarity.className="card-rarity";rarity.textContent=card.rarity||"Carta TypeLink";
   box.replaceChildren(image,name,rarity);
   setText("resultMessage","¡"+card.name+" se ha unido a tu baraja!");
+}
+function showSpinReward(card){
+  const modal=document.getElementById("spinRewardModal");
+  const image=document.getElementById("spinRewardImage");
+  image.src=cardImage(card)||"";
+  image.alt=card.name||"Carta obtenida";
+  setText("spinRewardName",card.name||"Carta TypeLink");
+  setText("spinRewardRarity",String(card.rarity||"Carta TypeLink").toUpperCase());
+  setText("spinRewardDescription",card.description||"Una nueva carta se ha unido a tu baraja.");
+  modal.hidden=false;
+  document.getElementById("spinRewardAccept").focus();
+  return new Promise(resolve=>{spinRewardResolver=resolve;});
+}
+function closeSpinReward(){
+  const modal=document.getElementById("spinRewardModal");
+  if(modal)modal.hidden=true;
+  if(spinRewardResolver){
+    const resolve=spinRewardResolver;
+    spinRewardResolver=null;
+    resolve();
+  }
 }
 function clearResult(){
   const box=document.getElementById("resultCard");
@@ -1066,9 +1088,14 @@ function renderAdminCatalog(){
     const status=document.createElement("span");status.className="admin-card-status "+(card.is_active?"is-active":"is-inactive");
     status.textContent=card.is_active?"ACTIVA":"DESACTIVADA";
     copy.append(title,meta,slug,status);
-    const edit=document.createElement("button");edit.className="admin-card-edit";edit.type="button";edit.textContent="EDITAR ↗";
+    const actions=document.createElement("div");actions.className="admin-card-item-actions";
+    const edit=document.createElement("button");edit.className="admin-card-edit";edit.type="button";edit.textContent="EDITAR";
     edit.addEventListener("click",()=>openAdminCardEditor(card));
-    article.append(imageWrap,copy,edit);grid.append(article);
+    const remove=document.createElement("button");remove.className="admin-card-delete";remove.type="button";remove.textContent="BORRAR";
+    remove.title="Borrar solo si la carta no tiene copias en inventarios ni reglas de evolución";
+    remove.addEventListener("click",()=>deleteAdminCard(card));
+    actions.append(edit,remove);
+    article.append(imageWrap,copy,actions);grid.append(article);
   });
 }
 async function loadAdminCatalog(){
@@ -1116,7 +1143,8 @@ function openAdminCardEditor(card){
   document.getElementById("adminCardName").value=card?.name||"";
   const slugInput=document.getElementById("adminCardSlug");
   slugInput.value=card?.slug||"";
-  slugInput.disabled=Boolean(card);
+  slugInput.disabled=false;
+  slugInput.readOnly=Boolean(card);
   slugInput.dataset.touched=card?"true":"false";
   document.getElementById("adminCardCategory").value=card?.category||"normal";
   updateAdminCardRarity(card?.rarity||"common");
@@ -1205,6 +1233,45 @@ async function saveAdminCard(event){
     saveButton.disabled=false;saveButton.textContent="GUARDAR CARTA ↗";
   }
 }
+function getCardArtStoragePath(imagePath){
+  if(!imagePath||!authClient)return null;
+  try{
+    const parsed=new URL(imagePath);
+    const expectedOrigin=new URL(window.TYPELINK_SUPABASE_CONFIG.url).origin;
+    const prefix="/storage/v1/object/public/typelink-card-art/";
+    if(parsed.origin!==expectedOrigin||!parsed.pathname.startsWith(prefix))return null;
+    return decodeURIComponent(parsed.pathname.slice(prefix.length));
+  }catch{return null;}
+}
+async function deleteAdminCard(card){
+  if(!isAdmin||!authClient||!card?.id){notify("No tienes permiso para borrar cartas.");return;}
+  const confirmed=window.confirm(
+    "¿Borrar definitivamente «"+card.name+"»?\n\n"+
+    "Se eliminará del catálogo y de las ruletas. Si tiene copias en inventarios o reglas de evolución, el servidor bloqueará el borrado para proteger el historial.\n\n"+
+    "Cuando una carta ya fue entregada a un jugador, debes desactivarla en lugar de borrarla."
+  );
+  if(!confirmed)return;
+  try{
+    const {data,error}=await authClient.rpc("admin_delete_card",{p_card_id:card.id});
+    if(error)throw error;
+    const result=Array.isArray(data)?data[0]:data;
+    if(!result?.success)throw new Error("Supabase no confirmó el borrado de la carta.");
+    let artworkRemoved=true;
+    const storagePath=getCardArtStoragePath(card.image_path);
+    if(storagePath){
+      const {error:removeError}=await authClient.storage.from("typelink-card-art").remove([storagePath]);
+      if(removeError){artworkRemoved=false;console.warn("La carta se borró, pero no se pudo retirar el PNG:",removeError.message);}
+    }
+    adminCatalogItems=adminCatalogItems.filter(item=>item.id!==card.id);
+    renderAdminCatalog();
+    await loadPublicNormalCards();
+    notify(artworkRemoved?"«"+card.name+"» se ha borrado del catálogo.":"La carta se borró; su PNG quedó pendiente de limpieza.");
+  }catch(error){
+    console.error("No se pudo borrar la carta:",error);
+    notify(error.message||"No se pudo borrar la carta.");
+  }
+}
+
 async function loadPublicNormalCards(){
   if(!authClient||!currentAuthUser)return;
   const {data,error}=await authClient.from("card_catalog")
@@ -1307,6 +1374,7 @@ async function spin(){
     await startWheelAnimation(card);
     await loadCloudInventory();
     showResult(card);
+    await showSpinReward(card);
     notify("¡"+card.name+" se ha guardado en tu baraja!");
   }catch(error){
     console.error("No se pudo completar el giro:",error);
@@ -1438,6 +1506,7 @@ document.getElementById("adminCatalogBack").addEventListener("click",showAdminOv
 document.getElementById("adminCreateCard").addEventListener("click",()=>openAdminCardEditor(null));
 document.getElementById("adminCardCancel").addEventListener("click",showAdminCatalogList);
 document.getElementById("adminCardForm").addEventListener("submit",saveAdminCard);
+document.getElementById("spinRewardAccept").addEventListener("click",closeSpinReward);
 document.getElementById("adminCatalogSearch").addEventListener("input",renderAdminCatalog);
 document.getElementById("adminCatalogFilter").addEventListener("change",renderAdminCatalog);
 document.getElementById("adminCardCategory").addEventListener("change",()=>updateAdminCardRarity());
