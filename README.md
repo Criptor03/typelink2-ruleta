@@ -54,3 +54,10 @@ Cada avance de tramo entrega 2 cartas de tramo y 3 giros normales, solo cuando h
 - `20261113042841_remove_duplicate_card_activity_feed_index`
 
 - `20261113043124_grant_authenticated_tramo_engine_execution`
+
+
+### Perfil del entrenador
+El perfil incluye un registro persistente de los 18 tipos Pokémon (habilitado/bloqueado) y un panel de cartas lanzadas por otros entrenadores que mantienen efectos activos. Los efectos con límite de tramo se limpian al llegar a su frontera; los permanentes, temporales y por cargas conservan su duración.
+
+### Migración reciente
+- `20261113175916_add_trainer_type_tracker_and_incoming_effects`
