@@ -35,6 +35,7 @@ let demoDeck = loadDeck();
 let demoRouteState = loadRouteState();
 let rotation = 0;
 let spinning = false;
+let normalCardLimit = 5;
 const cardArtImages = {};
 
 CARDS.forEach(card=>{
@@ -180,15 +181,15 @@ function renderDeck(){
   renderRouteItems(route,document.getElementById("routeListFull"),true);
   renderCardItems(special,document.getElementById("specialListFull"),"Todavía no tienes cartas Fiesta u otras cartas especiales.",true);
 
-  setText("deckCount",normalCount+"/5");
-  setText("deckCountFull",normalCount+" / 5");
+  setText("deckCount",normalCount+"/"+normalCardLimit);
+  setText("deckCountFull",normalCount+" / "+normalCardLimit);
   setText("routeCountFull",route.length);
   setText("specialCountFull",special.length);
-  setText("navDeckCount",normalCount+"/5");
-  setText("homeDeckCount",normalCount+"/5");
+  setText("navDeckCount",normalCount+"/"+normalCardLimit);
+  setText("homeDeckCount",normalCount+"/"+normalCardLimit);
   setText("homeRouteCount",route.length);
 
-  const width=(Math.min(normalCount,5)/5*100)+"%";
+  const width=(normalCardLimit>0?Math.min(normalCount,normalCardLimit)/normalCardLimit*100:0)+"%";
   const fillIds=["capacityFill","capacityFillFull","homeCapacityFill"];
   fillIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.width=width;});
   setText("homeDeckHint",normalCount?("Tienes "+normalCount+" de 5 cartas normales disponibles."):"Tu baraja todavía está vacía. Haz tu primer giro.");
@@ -198,12 +199,12 @@ function renderDeck(){
   const resetButton=document.getElementById("resetButton");
   if(resetButton)resetButton.hidden=cloudMode;
 
-  spinButton.disabled=spinning||!currentAuthUser||normalCount>=5;
+  spinButton.disabled=spinning||!currentAuthUser||normalCount>=normalCardLimit;
   spinButton.querySelector("span").textContent=
-    !currentAuthUser?"INICIA SESIÓN":normalCount>=5?"BARAJA COMPLETA":spinning?"CONECTANDO...":"GIRAR RULETA";
+    !currentAuthUser?"INICIA SESIÓN":normalCount>=normalCardLimit?"BARAJA COMPLETA":spinning?"CONECTANDO...":"GIRAR RULETA";
   setText("spinHint",!currentAuthUser
     ?"Inicia sesión con Discord para obtener cartas."
-    :normalCount>=5?"Has alcanzado el límite de 5 cartas normales."
+    :normalCount>=normalCardLimit?("Has alcanzado el límite de "+normalCardLimit+" cartas normales.")
     :"La carta ganadora se guardará en tu cuenta.");
 
   const routeButtons=["tramoButton","tramoButtonFull"];
@@ -673,7 +674,7 @@ function startWheelAnimation(card){
 async function spin(){
   if(spinning)return;
   if(!currentAuthUser||!authClient){notify("Inicia sesión con Discord para obtener cartas.");return;}
-  if(activeNormalCards().length>=5){notify("Tu baraja ya tiene cinco cartas normales.");return;}
+  if(activeNormalCards().length>=normalCardLimit){notify("Tu baraja ya tiene el límite de "+normalCardLimit+" cartas normales.");return;}
   spinning=true;renderDeck();
   try{
     // The server selects and awards the card in one protected transaction.
