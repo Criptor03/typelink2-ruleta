@@ -52,3 +52,5 @@ Cada avance de tramo entrega 2 cartas de tramo y 3 giros normales, solo cuando h
 ### Migraciones recientes
 - `20261113042149_start_tramos_activity_feed_and_spin_credits`
 - `20261113042841_remove_duplicate_card_activity_feed_index`
+
+- `20261113043124_grant_authenticated_tramo_engine_execution`
