@@ -14,6 +14,7 @@ Plataforma web de TypeLink 2 con identidad visual inspirada en Pokémon Blanco y
 - Dos cartas de tramo entregadas mediante una función segura; se acumulan y no consumen espacios normales.
 - Actualizaciones Realtime preparadas para barajas, perfiles y notificaciones.
 - Motor universal de cartas con `play_card()` en el servidor: valida objetivos, aplica efectos configurados, registra acciones y consume, conserva o transfiere cartas según su definición.
+- El catálogo conserva `image_path` para mantener cada carta vinculada a su ilustración; las imágenes provisionales actuales se sustituirán por el arte definitivo sin rehacer las mecánicas.
 - Diseño adaptable a escritorio y móvil.
 
 ## Backend Supabase
