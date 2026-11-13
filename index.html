@@ -287,6 +287,41 @@
               </div>
               <div class="admin-trainer-progress-note" id="adminTrainerProgressNote">El progreso del entrenador se conserva al vaciar su inventario.</div>
 
+              <section class="admin-trainer-section panel admin-trainer-tools-panel">
+                <div class="admin-trainer-section-heading">
+                  <div><span class="eyebrow">AJUSTES ADMINISTRATIVOS</span><h3>Corregir progreso</h3></div>
+                  <span class="type-count">SOLO ADMINISTRACIÓN</span>
+                </div>
+                <div class="admin-trainer-tool-form">
+                  <label class="admin-field" for="adminTrainerTramoInput">TRAMO ACTUAL DEL ENTRENADOR
+                    <input id="adminTrainerTramoInput" type="number" min="0" max="999" step="1" value="0">
+                    <small>Solo cambia el número de tramo. No modifica sus cartas, giros ni cargas disponibles.</small>
+                  </label>
+                  <button class="secondary-button" type="button" id="adminTrainerSaveTramo">GUARDAR TRAMO</button>
+                </div>
+              </section>
+
+              <section class="admin-trainer-section panel admin-trainer-tools-panel">
+                <div class="admin-trainer-section-heading">
+                  <div><span class="eyebrow">RECOMPENSA / REGALO</span><h3>Entregar cartas al entrenador</h3></div>
+                  <span class="type-count">REGISTRO ADMINISTRATIVO</span>
+                </div>
+                <div class="admin-trainer-tool-form admin-trainer-gift-form">
+                  <label class="admin-field" for="adminTrainerGiftCard">CARTA DEL CATÁLOGO
+                    <select id="adminTrainerGiftCard">
+                      <option value="">Cargando cartas...</option>
+                    </select>
+                    <small>Puedes entregar cartas normales, de tramo o Fiesta.</small>
+                  </label>
+                  <label class="admin-field admin-gift-quantity" for="adminTrainerGiftQuantity">CANTIDAD
+                    <input id="adminTrainerGiftQuantity" type="number" min="1" max="20" step="1" value="1">
+                    <small>Entre 1 y 20 copias por operación.</small>
+                  </label>
+                  <button class="primary-button" type="button" id="adminTrainerGrantCard">ENTREGAR CARTA ↗</button>
+                </div>
+                <p class="admin-trainer-tool-note">Las copias entregadas reciben los usos definidos en el catálogo, quedan marcadas como regalo administrativo y aparecen en el historial. Esta herramienta permite superar el límite normal de baraja como recompensa especial.</p>
+              </section>
+
               <section class="admin-trainer-section panel">
                 <div class="admin-trainer-section-heading">
                   <div><span class="eyebrow">ACCESOS ESPECIALES</span><h3>Ruletas desbloqueadas</h3></div>
