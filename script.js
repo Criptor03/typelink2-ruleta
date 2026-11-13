@@ -78,6 +78,8 @@ let adminSelectedTrainerName = "";
 let adminTrainerDetail = null;
 let adminRoulettePools = [];
 let adminSelectedRouletteSlug = null;
+let adminMechanicsItems = [];
+let adminSelectedMechanicsCardId = null;
 let spinRewardResolver = null;
 
 
@@ -609,7 +611,7 @@ function mapInventoryRow(row){
 async function loadCardEngineConfig(){
   if(!authClient||!currentAuthUser)return;
   const [rulesResult,effectsResult,settingsResult,playerEffectsResult,progressResult]=await Promise.all([
-    authClient.from("card_evolution_rules").select("id,slug,name,description,source_card_id,result_card_id,same_tramo_only").eq("is_active",true),
+    authClient.from("card_evolution_rules").select("id,slug,name,description,source_card_id,result_card_id,same_tramo_only,trigger_type").eq("is_active",true).eq("trigger_type","manual"),
     authClient.from("card_effects").select("id,card_id,effect_key,operation,effect_value,parameters,duration_type,duration_value,duration_unit").eq("is_active",true),
     authClient.from("event_settings").select("normal_card_limit,current_tramo").eq("singleton",true).single(),
     authClient.from("player_effects").select("effect_value,expires_at,expires_after_tramo")
@@ -1046,22 +1048,28 @@ function showAdminOverview(){
   const catalogWorkspace=document.getElementById("adminCatalogWorkspace");
   const trainersWorkspace=document.getElementById("adminTrainersWorkspace");
   const rouletteWorkspace=document.getElementById("adminRouletteWorkspace");
+  const mechanicsWorkspace=document.getElementById("adminMechanicsWorkspace");
   if(overview)overview.hidden=false;
   if(catalogWorkspace)catalogWorkspace.hidden=true;
   if(trainersWorkspace)trainersWorkspace.hidden=true;
   if(rouletteWorkspace)rouletteWorkspace.hidden=true;
+  if(mechanicsWorkspace)mechanicsWorkspace.hidden=true;
   const list=document.getElementById("adminCatalogListView");
   const editor=document.getElementById("adminCardEditorView");
   const trainerList=document.getElementById("adminTrainersListView");
   const trainerDetail=document.getElementById("adminTrainerDetailView");
   const rouletteList=document.getElementById("adminRouletteListView");
   const rouletteEditor=document.getElementById("adminRouletteEditorView");
+  const mechanicsList=document.getElementById("adminMechanicsListView");
+  const mechanicsEditor=document.getElementById("adminMechanicsEditorView");
   if(list)list.hidden=false;
   if(editor)editor.hidden=true;
   if(trainerList)trainerList.hidden=false;
   if(trainerDetail)trainerDetail.hidden=true;
   if(rouletteList)rouletteList.hidden=false;
   if(rouletteEditor)rouletteEditor.hidden=true;
+  if(mechanicsList)mechanicsList.hidden=false;
+  if(mechanicsEditor)mechanicsEditor.hidden=true;
 }
 function showAdminCatalogList(){
   const list=document.getElementById("adminCatalogListView");
@@ -1676,6 +1684,261 @@ async function saveAdminRoulettePool(){
   }
 }
 
+function adminMechanicsEffectLabel(effect){
+  if(effect.effect_key==="normal_card_limit"){
+    const value=Number(effect.effect_value||0);
+    return (value>0?"+":"")+value+" espacios de baraja";
+  }
+  if(effect.effect_key==="unlock_roulette"){
+    const pool=effect.parameters?.pool_slug==="fiesta"?"Fiesta":"Legendaria";
+    return "Desbloquea ruleta "+pool;
+  }
+  return effect.effect_key||"Efecto";
+}
+function renderAdminMechanicsList(){
+  const grid=document.getElementById("adminMechanicsGrid");
+  if(!grid)return;
+  const search=(document.getElementById("adminMechanicsSearch")?.value||"").trim().toLowerCase();
+  const category=document.getElementById("adminMechanicsCategory")?.value||"all";
+  const filtered=adminMechanicsItems.filter(item=>{
+    const card=item.card||{};
+    const nameMatch=!search||String(card.name||"").toLowerCase().includes(search)||String(card.slug||"").toLowerCase().includes(search);
+    return nameMatch&&(category==="all"||card.category===category);
+  });
+  setText("adminMechanicsCardsTotal",adminMechanicsItems.length);
+  setText("adminMechanicsEffectsTotal",adminMechanicsItems.filter(item=>(item.effects||[]).some(effect=>effect.is_active)).length);
+  setText("adminMechanicsEvolutionsTotal",adminMechanicsItems.filter(item=>item.evolution?.is_active).length);
+  grid.replaceChildren();
+  if(!filtered.length){
+    const empty=document.createElement("div");empty.className="admin-catalog-loading";
+    empty.textContent=adminMechanicsItems.length?"No hay cartas que coincidan con la búsqueda.":"No hay cartas en el catálogo.";
+    grid.append(empty);return;
+  }
+  filtered.forEach(item=>{
+    const card=item.card||{};
+    const article=document.createElement("article");article.className="admin-mechanics-card panel";
+    const art=document.createElement("div");art.className="admin-mechanics-list-art";
+    if(card.image_path){const image=document.createElement("img");image.src=card.image_path;image.alt=card.name||"Carta";image.onerror=()=>image.remove();art.append(image);}
+    else art.textContent="▧";
+    const body=document.createElement("div");body.className="admin-mechanics-list-copy";
+    const name=document.createElement("strong");name.textContent=card.name||"Carta";
+    const meta=document.createElement("small");meta.textContent=adminCategoryLabel(card.category)+" · "+adminRarityLabel(card.rarity);
+    const effectCount=(item.effects||[]).filter(effect=>effect.is_active).length;
+    const effect=document.createElement("span");effect.textContent=effectCount?effectCount+" efecto(s) activo(s)":"Sin efectos activos";
+    const evolution=document.createElement("span");
+    if(item.evolution?.is_active){
+      evolution.textContent=item.evolution.trigger_type==="tramo_advance"?"Evoluciona al avanzar de tramo":"Evolución manual configurada";
+      evolution.className="is-configured";
+    }else{evolution.textContent="Sin evolución configurada";}
+    body.append(name,meta,effect,evolution);
+    const button=document.createElement("button");button.type="button";button.className="admin-card-edit";button.textContent="CONFIGURAR ↗";
+    button.addEventListener("click",()=>openAdminMechanicsEditor(card.id));
+    article.append(art,body,button);grid.append(article);
+  });
+}
+async function loadAdminMechanics(){
+  const grid=document.getElementById("adminMechanicsGrid");
+  if(grid){grid.replaceChildren();const loading=document.createElement("div");loading.className="admin-catalog-loading";loading.textContent="Cargando catálogo, efectos y evoluciones...";grid.append(loading);}
+  if(!isAdmin||!authClient){notify("Acceso reservado al administrador.");return;}
+  try{
+    const {data,error}=await authClient.rpc("admin_list_card_mechanics");
+    if(error)throw error;
+    adminMechanicsItems=Array.isArray(data)?data:[];
+    renderAdminMechanicsList();
+  }catch(error){
+    console.error("No se pudieron cargar las mecánicas de las cartas:",error);
+    if(grid){grid.replaceChildren();const message=document.createElement("div");message.className="admin-catalog-loading is-error";message.textContent="No se pudieron cargar las mecánicas: "+(error.message||"error desconocido");grid.append(message);}
+  }
+}
+function updateAdminEvolutionMethodNote(){
+  const trigger=document.getElementById("adminEvolutionTrigger")?.value;
+  setText("adminEvolutionMethodNote",trigger==="tramo_advance"
+    ?"La carta se transformará automáticamente cuando su entrenador avance al siguiente tramo. La copia anterior quedará registrada como usada y recibirá la carta resultado con sus usos configurados."
+    :"La evolución manual aparecerá como botón en la baraja del entrenador. El jugador decidirá cuándo utilizarla.");
+}
+function createAdminEffectRow(effect={}){
+  const row=document.createElement("article");row.className="admin-mechanics-effect-row";
+  const top=document.createElement("div");top.className="admin-mechanics-effect-top";
+  const typeLabel=document.createElement("label");typeLabel.className="admin-field";
+  typeLabel.textContent="TIPO DE EFECTO";
+  const type=document.createElement("select");type.dataset.role="effect-key";
+  type.innerHTML='<option value="normal_card_limit">Modificar límite de baraja</option><option value="unlock_roulette">Desbloquear ruleta</option>';
+  type.value=effect.effect_key==="unlock_roulette"?"unlock_roulette":"normal_card_limit";
+  typeLabel.append(type);
+  const activeLabel=document.createElement("label");activeLabel.className="admin-mechanics-check-row";
+  const active=document.createElement("input");active.type="checkbox";active.dataset.role="is-active";active.checked=effect.is_active!==false;
+  activeLabel.append(active,document.createTextNode(" EFECTO ACTIVO"));
+  const remove=document.createElement("button");remove.type="button";remove.className="admin-card-delete";remove.textContent="QUITAR";
+  remove.addEventListener("click",()=>{row.remove();renderAdminEffectsEmptyState();});
+  top.append(typeLabel,activeLabel,remove);
+
+  const limitFields=document.createElement("div");limitFields.className="admin-mechanics-effect-fields";limitFields.dataset.role="limit-fields";
+  const valueLabel=document.createElement("label");valueLabel.className="admin-field";valueLabel.textContent="CAMBIO DE ESPACIOS (+/-)";
+  const value=document.createElement("input");value.type="number";value.min="-10";value.max="10";value.step="1";value.value=String(effect.effect_value??1);value.dataset.role="effect-value";valueLabel.append(value);
+  const durationLabel=document.createElement("label");durationLabel.className="admin-field";durationLabel.textContent="DURACIÓN";
+  const duration=document.createElement("select");duration.dataset.role="duration-type";
+  duration.innerHTML='<option value="tramo_end">Hasta finalizar este tramo</option><option value="next_tramo_end">Hasta finalizar el próximo tramo</option><option value="timed">Por tiempo</option><option value="permanent">Permanente</option>';
+  duration.value=["tramo_end","next_tramo_end","timed","permanent"].includes(effect.duration_type)?effect.duration_type:"tramo_end";durationLabel.append(duration);
+  const timedWrap=document.createElement("div");timedWrap.className="admin-mechanics-timed-fields";timedWrap.dataset.role="timed-fields";
+  const amountLabel=document.createElement("label");amountLabel.className="admin-field";amountLabel.textContent="DURACIÓN";
+  const amount=document.createElement("input");amount.type="number";amount.min="1";amount.max="100000";amount.step="1";amount.value=String(effect.duration_value??1);amount.dataset.role="duration-value";amountLabel.append(amount);
+  const unitLabel=document.createElement("label");unitLabel.className="admin-field";unitLabel.textContent="UNIDAD";
+  const unit=document.createElement("select");unit.dataset.role="duration-unit";
+  unit.innerHTML='<option value="minutes">Minutos</option><option value="hours">Horas</option><option value="days">Días</option><option value="seconds">Segundos</option>';
+  unit.value=effect.duration_unit||"hours";unitLabel.append(unit);
+  timedWrap.append(amountLabel,unitLabel);
+  limitFields.append(valueLabel,durationLabel,timedWrap);
+
+  const unlockFields=document.createElement("div");unlockFields.className="admin-mechanics-effect-fields";unlockFields.dataset-role="unlock-fields";
+  const poolLabel=document.createElement("label");poolLabel.className="admin-field";poolLabel.textContent="RULETA A DESBLOQUEAR";
+  const pool=document.createElement("select");pool.dataset-role="pool-slug";
+  pool.innerHTML='<option value="legendary">Ruleta Legendaria</option><option value="fiesta">Ruleta Fiesta</option>';
+  pool.value=effect.parameters?.pool_slug==="fiesta"?"fiesta":"legendary";poolLabel.append(pool);
+  const spinsLabel=document.createElement("label");spinsLabel.className="admin-field";spinsLabel.textContent="GIROS QUE CONCEDE";
+  const spins=document.createElement("input");spins.type="number";spins.min="1";spins.max="100";spins.step="1";spins.value=String(effect.parameters?.spins_granted??1);spins.dataset.role="spins-granted";spinsLabel.append(spins);
+  const instantNote=document.createElement("p");instantNote.className="admin-mechanics-inline-note";instantNote.textContent="El acceso se concede al canjear la carta y no tiene duración temporal.";
+  unlockFields.append(poolLabel,spinsLabel,instantNote);
+
+  function sync(){
+    const unlock=type.value==="unlock_roulette";
+    limitFields.hidden=unlock;unlockFields.hidden=!unlock;
+    timedWrap.hidden=unlock||duration.value!=="timed";
+    if(type.dataset.changed==="true"){
+      const target=document.getElementById("adminMechanicsTargetScope");
+      const disposition=document.getElementById("adminMechanicsDisposition");
+      target.value=unlock?"none":"self";disposition.value="consume";
+    }
+  }
+  type.addEventListener("change",()=>{type.dataset.changed="true";sync();});
+  duration.addEventListener("change",sync);
+  row.append(top,limitFields,unlockFields);
+  row._sync=sync;
+  sync();
+  return row;
+}
+function renderAdminEffectsEmptyState(){
+  const list=document.getElementById("adminMechanicsEffectsList");
+  if(list&&!list.querySelector(".admin-mechanics-effect-row")){
+    const empty=document.createElement("div");empty.className="profile-module-empty";
+    empty.textContent="Esta carta no tiene efectos configurados. Puedes añadir uno.";
+    list.replaceChildren(empty);
+  }
+}
+function openAdminMechanicsEditor(cardId){
+  if(!isAdmin)return;
+  const item=adminMechanicsItems.find(entry=>entry.card?.id===cardId);
+  if(!item){notify("No encontramos esta carta.");return;}
+  adminSelectedMechanicsCardId=cardId;
+  const card=item.card||{};
+  document.getElementById("adminMechanicsListView").hidden=true;
+  document.getElementById("adminMechanicsEditorView").hidden=false;
+  setText("adminMechanicsCardName",card.name||"Carta");
+  setText("adminMechanicsCardSlug",card.slug||"");
+  setText("adminMechanicsCardMeta",adminCategoryLabel(card.category)+" · "+adminRarityLabel(card.rarity)+" · "+Number(card.uses_per_card||1)+" uso(s)");
+  const art=document.getElementById("adminMechanicsCardArt");art.replaceChildren();
+  if(card.image_path){const image=document.createElement("img");image.src=card.image_path;image.alt=card.name||"Carta";image.onerror=()=>image.remove();art.append(image);}
+  else{const empty=document.createElement("span");empty.textContent="▧";art.append(empty);}
+  document.getElementById("adminMechanicsTargetScope").value=card.target_scope||"self";
+  document.getElementById("adminMechanicsDisposition").value=card.disposition||"consume";
+
+  const effectsList=document.getElementById("adminMechanicsEffectsList");effectsList.replaceChildren();
+  (item.effects||[]).forEach(effect=>effectsList.append(createAdminEffectRow(effect)));
+  renderAdminEffectsEmptyState();
+
+  const evolution=item.evolution;
+  const enabled=Boolean(evolution&&evolution.is_active);
+  document.getElementById("adminEvolutionEnabled").checked=enabled;
+  document.getElementById("adminEvolutionFields").hidden=!enabled;
+  document.getElementById("adminEvolutionDisabledNote").hidden=enabled;
+  const resultSelect=document.getElementById("adminEvolutionResultCard");
+  resultSelect.replaceChildren();
+  const placeholder=document.createElement("option");placeholder.value="";placeholder.textContent="Selecciona la carta a la que evoluciona...";resultSelect.append(placeholder);
+  adminMechanicsItems.forEach(entry=>{
+    const candidate=entry.card||{};
+    if(candidate.id===cardId||candidate.is_active===false)return;
+    const option=document.createElement("option");option.value=candidate.id;
+    option.textContent=candidate.name+" · "+adminCategoryLabel(candidate.category)+" · "+adminRarityLabel(candidate.rarity);
+    resultSelect.append(option);
+  });
+  resultSelect.value=evolution?.result_card_id||"";
+  document.getElementById("adminEvolutionTrigger").value=evolution?.trigger_type||"manual";
+  document.getElementById("adminEvolutionSameTramo").checked=Boolean(evolution?.same_tramo_only);
+  document.getElementById("adminEvolutionName").value=evolution?.name||"";
+  document.getElementById("adminEvolutionDescription").value=evolution?.description||"";
+  updateAdminEvolutionMethodNote();
+  setText("adminMechanicsSaveStatus","Los cambios todavía no se han guardado.");
+  document.getElementById("adminMechanicsSaveStatus").classList.remove("is-error");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+async function saveAdminMechanics(){
+  if(!isAdmin||!authClient||!adminSelectedMechanicsCardId){notify("No hay una carta seleccionada.");return;}
+  const rows=[...document.querySelectorAll("#adminMechanicsEffectsList .admin-mechanics-effect-row")];
+  if(rows.length>10){notify("Puedes configurar hasta 10 efectos por carta.");return;}
+  const effects=rows.map(row=>{
+    const key=row.querySelector('[data-role="effect-key"]').value;
+    if(key==="unlock_roulette"){
+      return {
+        effect_key:key,
+        parameters:{
+          pool_slug:row.querySelector('[data-role="pool-slug"]').value,
+          spins_granted:Number(row.querySelector('[data-role="spins-granted"]').value)
+        },
+        is_active:row.querySelector('[data-role="is-active"]').checked
+      };
+    }
+    const duration=row.querySelector('[data-role="duration-type"]').value;
+    return {
+      effect_key:key,
+      effect_value:Number(row.querySelector('[data-role="effect-value"]').value),
+      duration_type:duration,
+      duration_value:duration==="timed"?Number(row.querySelector('[data-role="duration-value"]').value):null,
+      duration_unit:duration==="timed"?row.querySelector('[data-role="duration-unit"]').value:"hours",
+      is_active:row.querySelector('[data-role="is-active"]').checked
+    };
+  });
+  const evolutionEnabled=document.getElementById("adminEvolutionEnabled").checked;
+  const evolution=evolutionEnabled?{
+    enabled:true,
+    result_card_id:document.getElementById("adminEvolutionResultCard").value,
+    trigger_type:document.getElementById("adminEvolutionTrigger").value,
+    same_tramo_only:document.getElementById("adminEvolutionSameTramo").checked,
+    name:document.getElementById("adminEvolutionName").value,
+    description:document.getElementById("adminEvolutionDescription").value
+  }:{enabled:false};
+  const button=document.getElementById("adminSaveMechanics");
+  const status=document.getElementById("adminMechanicsSaveStatus");
+  button.disabled=true;button.textContent="GUARDANDO...";
+  status.textContent="Guardando efectos y evolución en el servidor...";
+  status.classList.remove("is-error");
+  try{
+    const {data,error}=await authClient.rpc("admin_save_card_mechanics",{
+      p_card_id:adminSelectedMechanicsCardId,
+      p_target_scope:document.getElementById("adminMechanicsTargetScope").value,
+      p_disposition:document.getElementById("adminMechanicsDisposition").value,
+      p_effects:effects,
+      p_evolution:evolution
+    });
+    if(error)throw error;
+    const result=Array.isArray(data)?data[0]:data;
+    if(!result?.success)throw new Error("El servidor no confirmó las mecánicas.");
+    await loadAdminMechanics();
+    const cardId=adminSelectedMechanicsCardId;
+    openAdminMechanicsEditor(cardId);
+    status.textContent="Guardado: "+result.effects_saved+" efecto(s) · "+(result.evolution_enabled?"evolución configurada":"sin evolución");
+    notify("Mecánicas de «"+result.card_name+"» guardadas correctamente.");
+    if(currentAuthUser){
+      await loadCloudInventory();
+      await loadProfileMechanics();
+    }
+  }catch(error){
+    console.error("No se pudieron guardar las mecánicas:",error);
+    status.textContent=error.message||"No se pudieron guardar las mecánicas.";
+    status.classList.add("is-error");
+    notify("No se pudieron guardar las mecánicas: "+(error.message||"error desconocido"));
+  }finally{
+    button.disabled=false;button.textContent="GUARDAR MECÁNICAS ↗";
+  }
+}
 function adminCategoryLabel(category){
   return ({normal:"Normal",tramo:"Tramo",fiesta:"Fiesta"})[category]||category||"—";
 }
@@ -2038,13 +2301,8 @@ async function spin(){
 async function startNewTramo(){
   if(spinning)return;
   if(!currentAuthUser||!authClient){notify("Inicia sesión con Discord para avanzar de tramo.");return;}
-  const count=activeNormalCards().length;
-  const freeSlots=normalCardLimit-count;
   if(tramoSpinsRemaining+bonusTramoSpinsRemaining>0){
     notify("Utiliza los giros pendientes antes de avanzar de tramo.");return;
-  }
-  if(freeSlots<3){
-    notify("Te quedan cartas por utilizar, así que no puedes avanzar de tramo hasta tener suficiente espacio.");return;
   }
   spinning=true;renderDeck();
   try{
@@ -2053,8 +2311,10 @@ async function startNewTramo(){
     await loadCloudInventory();
     await loadProfileMechanics();
     const cardCount=Array.isArray(data?.cards)?data.cards.length:2;
+    const evolvedCount=Number(data?.automatic_evolutions_count||0);
     const tramo=data?.tramo_number||currentTramo;
-    notify("¡Tramo "+tramo+" iniciado! Recibiste "+cardCount+" cartas de tramo y 3 giros normales.");
+    notify("¡Tramo "+tramo+" iniciado! Recibiste "+cardCount+" cartas de tramo y 3 giros normales."+
+      (evolvedCount>0?" Además, evolucionaron automáticamente "+evolvedCount+" carta(s).":""));
   }catch(error){
     console.error("No se pudo avanzar de tramo:",error);
     notify("No se pudo avanzar de tramo: "+(error.message||"error desconocido"));
@@ -2149,6 +2409,38 @@ document.getElementById("openAdminCatalog").addEventListener("click",async()=>{
   window.scrollTo({top:0,behavior:"smooth"});
 });
 document.getElementById("adminCatalogBack").addEventListener("click",showAdminOverview);
+document.getElementById("openAdminMechanics").addEventListener("click",async()=>{
+  if(!isAdmin){notify("Acceso reservado al administrador.");return;}
+  document.getElementById("adminOverview").hidden=true;
+  document.getElementById("adminCatalogWorkspace").hidden=true;
+  document.getElementById("adminTrainersWorkspace").hidden=true;
+  document.getElementById("adminRouletteWorkspace").hidden=true;
+  document.getElementById("adminMechanicsWorkspace").hidden=false;
+  document.getElementById("adminMechanicsListView").hidden=false;
+  document.getElementById("adminMechanicsEditorView").hidden=true;
+  await loadAdminMechanics();
+  window.scrollTo({top:0,behavior:"smooth"});
+});
+document.getElementById("adminMechanicsBack").addEventListener("click",showAdminOverview);
+document.getElementById("adminMechanicsEditorBack").addEventListener("click",()=>{
+  document.getElementById("adminMechanicsListView").hidden=false;
+  document.getElementById("adminMechanicsEditorView").hidden=true;
+});
+document.getElementById("adminMechanicsSearch").addEventListener("input",renderAdminMechanicsList);
+document.getElementById("adminMechanicsCategory").addEventListener("change",renderAdminMechanicsList);
+document.getElementById("adminAddEffect").addEventListener("click",()=>{
+  const list=document.getElementById("adminMechanicsEffectsList");
+  if(list.querySelectorAll(".admin-mechanics-effect-row").length>=10){notify("Puedes configurar hasta 10 efectos por carta.");return;}
+  const empty=list.querySelector(".profile-module-empty");if(empty)empty.remove();
+  list.append(createAdminEffectRow());
+});
+document.getElementById("adminEvolutionEnabled").addEventListener("change",event=>{
+  document.getElementById("adminEvolutionFields").hidden=!event.target.checked;
+  document.getElementById("adminEvolutionDisabledNote").hidden=event.target.checked;
+});
+document.getElementById("adminEvolutionTrigger").addEventListener("change",updateAdminEvolutionMethodNote);
+document.getElementById("adminSaveMechanics").addEventListener("click",saveAdminMechanics);
+
 document.getElementById("openAdminRoulettes").addEventListener("click",async()=>{
   if(!isAdmin){notify("Acceso reservado al administrador.");return;}
   document.getElementById("adminOverview").hidden=true;
