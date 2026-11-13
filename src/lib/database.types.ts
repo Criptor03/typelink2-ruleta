@@ -249,7 +249,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      draw_random_card: { Args: never; Returns: Json }
+      issue_tramo_cards: { Args: never; Returns: Json }
     }
     Enums: {
       [_ in never]: never
