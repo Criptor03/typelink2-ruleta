@@ -313,58 +313,45 @@ function mapInventoryRow(row){
 
 async function loadCardEngineConfig(){
   if(!authClient||!currentAuthUser)return;
-  const [rulesResult,effectsResult]=await Promise.all([
-    authClient.from("card_evolution_rules")
-      .select("id,slug,name,description,source_card_id,result_card_id,same_tramo_only")
-      .eq("is_active",true),
-    authClient.from("card_effects")
-      .select("id,card_id,effect_key,operation,effect_value,parameters,duration_type,duration_value,duration_unit")
-      .eq("is_active",true)
+  const [rulesResult,effectsResult,settingsResult,playerEffectsResult]=await Promise.all([
+    authClient.from("card_evolution_rules").select("id,slug,name,description,source_card_id,result_card_id,same_tramo_only").eq("is_active",true),
+    authClient.from("card_effects").select("id,card_id,effect_key,operation,effect_value,parameters,duration_type,duration_value,duration_unit").eq("is_active",true),
+    authClient.from("event_settings").select("normal_card_limit,current_tramo").eq("singleton",true).single(),
+    authClient.from("player_effects").select("effect_value,expires_at,expires_after_tramo")
+      .eq("owner_id",currentAuthUser.id).eq("effect_key","normal_card_limit").eq("operation","add").eq("status","active")
   ]);
-
   evolutionRulesBySource=Object.create(null);
   cardEffectsById=Object.create(null);
-
-  if(effectsResult.error){
-    console.warn("No se pudieron cargar los efectos del catálogo:",effectsResult.error.message);
-  }else{
-    (effectsResult.data||[]).forEach(effect=>{
-      (cardEffectsById[effect.card_id] ||= []).push(effect);
-    });
-  }
-
+  if(effectsResult.error)console.warn("No se pudieron cargar los efectos:",effectsResult.error.message);
+  else (effectsResult.data||[]).forEach(effect=>{(cardEffectsById[effect.card_id] ||= []).push(effect);});
+  if(!settingsResult.error&&settingsResult.data){
+    const base=Number(settingsResult.data.normal_card_limit)||5;
+    const tramo=Number(settingsResult.data.current_tramo)||0;
+    const bonus=(playerEffectsResult.data||[]).reduce((sum,effect)=>{
+      const timeOk=!effect.expires_at||new Date(effect.expires_at).getTime()>Date.now();
+      const tramoOk=effect.expires_after_tramo==null||Number(effect.expires_after_tramo)>=tramo;
+      return sum+(timeOk&&tramoOk?(Number(effect.effect_value)||0):0);
+    },0);
+    normalCardLimit=Math.max(0,base+bonus);
+  }else normalCardLimit=5;
   if(rulesResult.error){
     console.warn("No se pudieron cargar las evoluciones:",rulesResult.error.message);
-    return;
+    renderDeck();return;
   }
   const rules=rulesResult.data||[];
   const resultIds=[...new Set(rules.map(rule=>rule.result_card_id))];
   let resultCards=[];
   if(resultIds.length){
-    const {data,error}=await authClient.from("card_catalog")
-      .select("id,slug,name,category,rarity,description,image_path,uses_per_card")
-      .in("id",resultIds);
-    if(error)console.warn("No se pudieron cargar las cartas evolucionadas:",error.message);
-    else resultCards=data||[];
+    const result=await authClient.from("card_catalog")
+      .select("id,slug,name,category,rarity,description,image_path,uses_per_card").in("id",resultIds);
+    if(result.error)console.warn("No se pudieron cargar las cartas evolucionadas:",result.error.message);
+    else resultCards=result.data||[];
   }
   const resultMap=Object.fromEntries(resultCards.map(card=>[card.id,card]));
   rules.forEach(rule=>{
     const resultCard=resultMap[rule.result_card_id];
     if(resultCard)evolutionRulesBySource[rule.source_card_id]={...rule,resultCard};
   });
-}
-
-async function loadMyProfile(){
-  if(!authClient||!currentAuthUser)return;
-  const {data,error}=await authClient.from("profiles")
-    .select("id,display_name,avatar_url,created_at")
-    .eq("id",currentAuthUser.id).single();
-  if(error){
-    console.error("No se pudo cargar el perfil TypeLink:",error.message);
-    notify("Tu sesión funciona, pero no pudimos cargar el perfil.");
-    return;
-  }
-  renderProfile(data);
 }
 
 async function loadCloudInventory(){
