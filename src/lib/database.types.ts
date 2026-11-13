@@ -64,6 +64,7 @@ export type Database = {
           card_id: string
           created_at: string
           duration_type: string
+          duration_unit: string
           duration_value: number | null
           effect_key: string
           effect_value: number | null
@@ -77,6 +78,7 @@ export type Database = {
           card_id: string
           created_at?: string
           duration_type?: string
+          duration_unit?: string
           duration_value?: number | null
           effect_key: string
           effect_value?: number | null
@@ -90,6 +92,7 @@ export type Database = {
           card_id?: string
           created_at?: string
           duration_type?: string
+          duration_unit?: string
           duration_value?: number | null
           effect_key?: string
           effect_value?: number | null
@@ -236,6 +239,7 @@ export type Database = {
           applied_by: string | null
           created_at: string
           duration_type: string
+          duration_unit: string
           duration_value: number | null
           effect_key: string
           effect_value: number | null
@@ -254,6 +258,7 @@ export type Database = {
           applied_by?: string | null
           created_at?: string
           duration_type: string
+          duration_unit?: string
           duration_value?: number | null
           effect_key: string
           effect_value?: number | null
@@ -272,6 +277,7 @@ export type Database = {
           applied_by?: string | null
           created_at?: string
           duration_type?: string
+          duration_unit?: string
           duration_value?: number | null
           effect_key?: string
           effect_value?: number | null
@@ -433,6 +439,78 @@ export type Database = {
           slug?: string
         }
         Relationships: []
+      }
+      event_effects: {
+        Row: {
+          applied_by: string | null
+          created_at: string
+          duration_type: string
+          duration_unit: string
+          duration_value: number | null
+          effect_key: string
+          effect_value: number | null
+          expires_after_tramo: number | null
+          expires_at: string | null
+          id: string
+          operation: string
+          parameters: Json
+          remaining_uses: number | null
+          source_card_instance_id: string | null
+          starts_at: string
+          status: string
+        }
+        Insert: {
+          applied_by?: string | null
+          created_at?: string
+          duration_type: string
+          duration_unit?: string
+          duration_value?: number | null
+          effect_key: string
+          effect_value?: number | null
+          expires_after_tramo?: number | null
+          expires_at?: string | null
+          id?: string
+          operation: string
+          parameters?: Json
+          remaining_uses?: number | null
+          source_card_instance_id?: string | null
+          starts_at?: string
+          status?: string
+        }
+        Update: {
+          applied_by?: string | null
+          created_at?: string
+          duration_type?: string
+          duration_unit?: string
+          duration_value?: number | null
+          effect_key?: string
+          effect_value?: number | null
+          expires_after_tramo?: number | null
+          expires_at?: string | null
+          id?: string
+          operation?: string
+          parameters?: Json
+          remaining_uses?: number | null
+          source_card_instance_id?: string | null
+          starts_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_effects_applied_by_fkey"
+            columns: ["applied_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_effects_source_card_instance_id_fkey"
+            columns: ["source_card_instance_id"]
+            isOneToOne: false
+            referencedRelation: "player_cards"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       event_settings: {
         Row: {
@@ -635,6 +713,10 @@ export type Database = {
     Functions: {
       draw_random_card: { Args: never; Returns: Json }
       issue_tramo_cards: { Args: never; Returns: Json }
+      play_card: {
+        Args: { p_card_instance_id: string; p_target_id?: string | null }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
