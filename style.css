@@ -394,3 +394,80 @@ button[hidden]{display:none!important}
   .spin-reward-dialog{padding:14px;max-height:calc(100vh - 20px)}
   .spin-reward-art-frame img{height:min(55vh,603px);max-width:100%}
 }
+
+/* Admin trainer directory and trainer inventory inspector */
+.admin-trainers-workspace{margin-top:2px}
+.admin-trainer-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+.admin-trainers-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.admin-trainer-row{display:grid;grid-template-columns:50px minmax(0,1fr);gap:10px;align-items:center;padding:13px}
+.admin-trainer-avatar{width:58px;height:58px;flex:none;border:1px solid #cbd3da;background-color:#17212b;background-size:cover;background-position:center;color:#fff;display:grid;place-items:center;font:900 18px 'Barlow Condensed'}
+.admin-trainer-avatar.small{width:48px;height:48px;font-size:15px}
+.admin-trainer-row-identity{min-width:0;display:flex;flex-direction:column;gap:4px}
+.admin-trainer-row-identity strong{font:800 17px 'Barlow Condensed';color:#263541;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.admin-trainer-row-identity small{font-size:8px;color:#78858e}
+.admin-trainer-row-stats{grid-column:2;display:flex;flex-wrap:wrap;gap:6px 12px}
+.admin-trainer-row-stats span{font-size:7px;font-weight:900;letter-spacing:.55px;color:#64737e}
+.admin-trainer-open{grid-column:2;justify-self:start;margin-top:2px}
+.admin-trainer-detail-heading{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:17px 19px;margin:12px 0;background:#f9fafb;border:1px solid #cbd3da}
+.admin-trainer-identity{display:flex;align-items:center;gap:14px;min-width:0}
+.admin-trainer-identity>div:last-child{min-width:0}
+.admin-trainer-identity h3{font:900 26px 'Barlow Condensed';margin:4px 0;color:#263541;overflow-wrap:anywhere}
+.admin-trainer-identity p{margin:0 0 4px;font-size:9px;color:#73818b}
+.admin-trainer-identity small{font-size:8px;color:#929da5}
+.admin-danger-button{flex:none;border:1px solid #c58d91;background:#fff;color:#a23e45;padding:12px 14px;font-size:8px;font-weight:900;letter-spacing:.8px;cursor:pointer;transition:.15s}
+.admin-danger-button:hover{background:#a23e45;color:#fff;border-color:#a23e45}
+.admin-danger-button:disabled{opacity:.55;cursor:wait}
+.admin-trainer-detail-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.admin-trainer-detail-stats .panel{padding:13px 15px;display:flex;flex-direction:column;gap:6px}
+.admin-trainer-detail-stats strong{font:900 25px 'Barlow Condensed';color:#263541}
+.admin-trainer-progress-note{margin:9px 0 14px;padding:10px 13px;background:#e9eef1;border-left:3px solid #738694;font-size:8px;line-height:1.6;color:#687781}
+.admin-trainer-section{padding:17px 18px;margin:11px 0}
+.admin-trainer-section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}
+.admin-trainer-section-heading h3{font:800 22px 'Barlow Condensed';margin:4px 0 0;color:#293843}
+.admin-trainer-inventory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.admin-trainer-card-item{display:grid;grid-template-columns:60px minmax(0,1fr);gap:10px;align-items:center;padding:9px;background:#f2f5f6;border:1px solid #d8dfe3;min-width:0}
+.admin-trainer-card-image{width:60px;aspect-ratio:403/603;background:#e4e9ed;border:1px solid #cbd3da;display:grid;place-items:center;overflow:hidden;color:#82909a;font-size:21px}
+.admin-trainer-card-image img{width:100%;height:100%;object-fit:contain}
+.admin-trainer-card-body{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.admin-trainer-card-body strong{font:800 15px 'Barlow Condensed';color:#293843;overflow-wrap:anywhere}
+.admin-trainer-card-body small{font-size:7px;line-height:1.5;color:#61717c}
+.admin-trainer-card-body span{font-size:7px;line-height:1.5;color:#85919a}
+.admin-trainer-types-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px}
+.admin-trainer-type{display:grid;grid-template-columns:10px minmax(0,1fr);gap:6px;align-items:center;padding:8px 7px;background:#eff5f0;border:1px solid #b8cdbd;min-width:0}
+.admin-trainer-type.disabled{background:#eceff1;border-color:#cbd3d8;border-style:dashed;opacity:.75}
+.admin-trainer-type i{width:9px;height:9px;border-radius:50%}
+.admin-trainer-type strong{font:800 12px 'Barlow Condensed';overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#344550}
+.admin-trainer-type small{grid-column:2;font-size:6px;font-weight:900;letter-spacing:.5px;color:#6d7b84}
+.admin-trainer-effects-list{display:flex;flex-direction:column;gap:8px}
+.admin-trainer-effect-item{display:grid;grid-template-columns:44px minmax(0,1fr);gap:10px;align-items:center;padding:9px;background:#f2f5f6;border:1px solid #d8dfe3}
+.admin-trainer-effect-image{width:44px;aspect-ratio:403/603;object-fit:contain;background:#e5e9ed;border:1px solid #cbd3da}
+.admin-trainer-effect-copy{display:flex;flex-direction:column;gap:4px;min-width:0}
+.admin-trainer-effect-copy strong{font:800 15px 'Barlow Condensed';color:#293843}
+.admin-trainer-effect-copy small,.admin-trainer-effect-copy span{font-size:8px;line-height:1.5;color:#74818b}
+.admin-trainer-reset-note{display:flex;gap:12px;padding:12px 14px;margin-top:13px;background:#f4eeee;border-left:3px solid #a64a4f;color:#785e60;font-size:8px;line-height:1.65}
+.admin-trainer-reset-note b{flex:none;font-size:7px;letter-spacing:.8px;color:#9f3f45}
+.admin-trainer-back{margin:5px 0 0}
+@media(max-width:900px){
+  .admin-trainers-grid,.admin-trainer-inventory-grid{grid-template-columns:1fr}
+  .admin-trainer-types-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:700px){
+  .admin-trainer-detail-heading{align-items:flex-start;flex-direction:column}
+  .admin-danger-button{width:100%}
+  .admin-trainer-detail-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .admin-trainer-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:560px){
+  .admin-trainer-stats .panel{padding:10px}
+  .admin-trainer-stats .eyebrow{font-size:6px;letter-spacing:1px}
+  .admin-trainer-detail-heading{padding:13px}
+  .admin-trainer-identity{gap:10px}
+  .admin-trainer-avatar{width:50px;height:50px}
+  .admin-trainer-identity h3{font-size:22px}
+  .admin-trainer-section{padding:13px 11px}
+  .admin-trainer-section-heading{align-items:flex-start}
+  .admin-trainer-types-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+  .admin-trainer-type{padding:7px 5px;gap:5px}
+  .admin-trainer-type strong{font-size:11px}
+  .admin-trainer-reset-note{align-items:flex-start;flex-direction:column;gap:5px}
+}
