@@ -1167,6 +1167,10 @@ async function saveAdminCard(event){
     if(file){
       status.textContent="Subiendo PNG al almacenamiento seguro...";
       adminEditingImagePath=await uploadAdminCardImage(file,slug);
+      adminPendingImageFile=null;
+      document.getElementById("adminCardImageFile").value="";
+      document.getElementById("adminCardImageHelp").textContent="PNG subido. Se vinculará al guardar la carta.";
+      showAdminCardImage(adminEditingImagePath);
     }
     const payload={
       id:adminEditingCardId,
