@@ -713,6 +713,12 @@ function renderActivityFeed(entries,profiles){
       symbol="⇢";message="ha enviado "+cardName+" a "+targetName;
     }else if(entry.activity_type==="evolution"){
       symbol="⬡";message="ha evolucionado "+(details.source_name||"una carta")+" → "+(details.result_name||"nueva carta");
+    }else if(entry.activity_type==="admin_grant"){
+      symbol="＋";message="ha entregado "+cardName+(Number(details.quantity)>1?" ×"+details.quantity:"")+" a "+targetName;
+    }else if(entry.activity_type==="admin_remove"){
+      symbol="−";message="ha retirado "+cardName+" del inventario de "+targetName;
+    }else if(entry.activity_type==="tramo_adjustment"){
+      symbol="Ⅱ";message="ha ajustado el tramo de "+targetName+" de "+details.old_tramo+" a "+details.new_tramo;
     }else{
       symbol="✦";
       message="ha utilizado "+cardName+(entry.target_id&&entry.target_id!==entry.actor_id?" sobre "+targetName:entry.target_id?" sobre sí mismo":"");
@@ -745,7 +751,7 @@ async function loadActivityFeed(){
   }
   const {data,error}=await authClient.from("card_activity")
     .select("id,actor_id,target_id,activity_type,details,created_at")
-    .in("activity_type",["tramo_award","roulette_spin","play","transfer","evolution"])
+    .in("activity_type",["tramo_award","roulette_spin","play","transfer","evolution","admin_grant","admin_remove","tramo_adjustment"])
     .order("created_at",{ascending:false})
     .limit(60);
   if(error){
@@ -1125,6 +1131,8 @@ function renderAdminTrainerDetail(data){
   setText("adminTrainerUpdated","Última actualización: "+formatDate(progress.updated_at||trainer.updated_at));
   applyAvatar(document.getElementById("adminTrainerAvatar"),trainer.avatar_url,initials(adminSelectedTrainerName));
   setText("adminTrainerTramo",Number(progress.current_tramo||0));
+  const tramoInput=document.getElementById("adminTrainerTramoInput");
+  if(tramoInput)tramoInput.value=Number(progress.current_tramo||0);
   setText("adminTrainerSpins",Number(progress.spins_remaining||0));
   setText("adminTrainerBonusSpins",Number(progress.bonus_spins_remaining||0));
   setText("adminTrainerCardCount",Number(stats.cards_total||0));
@@ -1163,9 +1171,12 @@ function renderAdminTrainerDetail(data){
       const uses=document.createElement("span");
       uses.textContent=(item.remaining_uses??0)+"/"+(card.uses_per_card??1)+" USOS"+
         (item.tramo_number!=null?" · OBTENIDA EN TRAMO "+item.tramo_number:"");
-      const source=document.createElement("span");source.textContent="ORIGEN: "+(item.source||"—")+" · "+formatDate(item.obtained_at);
+      const source=document.createElement("span");source.textContent="ORIGEN: "+(item.source==="admin"?"REGALO ADMINISTRATIVO":item.source||"—")+" · "+formatDate(item.obtained_at);
       body.append(title,meta,uses,source);
-      row.append(imageWrap,body);inventory.append(row);
+      const remove=document.createElement("button");remove.type="button";remove.className="admin-trainer-card-remove";
+      remove.textContent="RETIRAR ESTA COPIA";remove.title="Eliminar solo esta copia del inventario";
+      remove.addEventListener("click",()=>removeAdminTrainerCard(item,card));
+      row.append(imageWrap,body,remove);inventory.append(row);
     });
   }
 
@@ -1239,6 +1250,9 @@ function renderAdminTrainerDetail(data){
   const activityMessages={
     tramo_award:"Avanzó de tramo y recibió cartas de tramo",
     roulette_spin:"Giró la ruleta",
+    admin_grant:"Recibió un regalo administrativo",
+    admin_remove:"Se retiró una carta de su inventario",
+    tramo_adjustment:"Se ajustó su tramo",
     play:"Utilizó una carta",
     transfer:"Transfirió una carta",
     evolution:"Evolucionó una carta",
@@ -1265,7 +1279,9 @@ function renderAdminTrainerDetail(data){
       const cardName=entry.card_name||entry.details?.card_name||entry.details?.name||"";
       const targetName=entry.target_name&&entry.target_name!==entry.actor_name?" · Objetivo: "+entry.target_name:"";
       const tramo=entry.details?.tramo_number?" · Tramo "+entry.details.tramo_number:"";
-      detail.textContent=(cardName?cardName:"")+targetName+tramo;
+      const adjustment=entry.activity_type==="tramo_adjustment"?" · "+entry.details?.old_tramo+" → "+entry.details?.new_tramo:"";
+      const quantity=entry.activity_type==="admin_grant"&&Number(entry.details?.quantity)>1?" · ×"+entry.details.quantity:"";
+      detail.textContent=(cardName?cardName:"")+targetName+tramo+adjustment+quantity;
       const when=document.createElement("span");when.textContent=formatDate(entry.created_at);
       copy.append(title,detail,when);row.append(marker,copy);activityWrap.append(row);
     });
@@ -1291,6 +1307,118 @@ async function openAdminTrainerDetail(playerId){
     showAdminTrainerList();
   }
 }
+async function loadAdminGiftCatalog(){
+  const select=document.getElementById("adminTrainerGiftCard");
+  if(!select)return;
+  select.replaceChildren();
+  const placeholder=document.createElement("option");placeholder.value="";placeholder.textContent="Cargando catálogo...";select.append(placeholder);
+  if(!isAdmin||!authClient)return;
+  try{
+    const {data,error}=await authClient.rpc("admin_list_catalog");
+    if(error)throw error;
+    adminCatalogItems=Array.isArray(data)?data:[];
+    select.replaceChildren();
+    const choose=document.createElement("option");choose.value="";choose.textContent="Selecciona una carta...";select.append(choose);
+    adminCatalogItems.forEach(card=>{
+      const option=document.createElement("option");option.value=card.id;
+      option.textContent=card.name+" · "+adminCategoryLabel(card.category)+" · "+adminRarityLabel(card.rarity)+(card.is_active?"":" · DESACTIVADA");
+      select.append(option);
+    });
+  }catch(error){
+    console.error("No se pudo cargar el catálogo para regalos:",error);
+    select.replaceChildren();
+    const option=document.createElement("option");option.value="";option.textContent="No se pudo cargar el catálogo";select.append(option);
+    notify("No se pudo cargar el catálogo de cartas.");
+  }
+}
+async function saveAdminTrainerTramo(){
+  if(!isAdmin||!authClient||!adminSelectedTrainerId){notify("No hay un entrenador seleccionado.");return;}
+  const input=document.getElementById("adminTrainerTramoInput");
+  const newTramo=Number(input.value);
+  if(!Number.isInteger(newTramo)||newTramo<0||newTramo>999){
+    notify("El tramo debe ser un número entero entre 0 y 999.");return;
+  }
+  const oldTramo=Number(adminTrainerDetail?.progress?.current_tramo||0);
+  if(newTramo===oldTramo){notify("El entrenador ya está en ese tramo.");return;}
+  if(!window.confirm("¿Cambiar el tramo de "+adminSelectedTrainerName+" de "+oldTramo+" a "+newTramo+"?\n\nSus cartas, giros y efectos no se reiniciarán automáticamente."))return;
+  const button=document.getElementById("adminTrainerSaveTramo");
+  button.disabled=true;button.textContent="GUARDANDO...";
+  try{
+    const {data,error}=await authClient.rpc("admin_adjust_trainer_tramo",{
+      p_player_id:adminSelectedTrainerId,p_new_tramo:newTramo
+    });
+    if(error)throw error;
+    const result=Array.isArray(data)?data[0]:data;
+    if(!result?.success)throw new Error("El servidor no confirmó el cambio de tramo.");
+    notify("Tramo ajustado: "+result.old_tramo+" → "+result.new_tramo+". Los giros se conservaron.");
+    await loadAdminTrainers();
+    await openAdminTrainerDetail(adminSelectedTrainerId);
+    if(currentAuthUser?.id===adminSelectedTrainerId)await loadProfileMechanics();
+    await loadActivityFeed();
+  }catch(error){
+    console.error("No se pudo ajustar el tramo:",error);
+    notify("No se pudo ajustar el tramo: "+(error.message||"error desconocido"));
+  }finally{
+    button.disabled=false;button.textContent="GUARDAR TRAMO";
+  }
+}
+async function grantAdminTrainerCard(){
+  if(!isAdmin||!authClient||!adminSelectedTrainerId){notify("No hay un entrenador seleccionado.");return;}
+  const select=document.getElementById("adminTrainerGiftCard");
+  const cardId=select.value;
+  const quantity=Number(document.getElementById("adminTrainerGiftQuantity").value);
+  const card=adminCatalogItems.find(item=>item.id===cardId);
+  if(!card){notify("Selecciona una carta del catálogo.");return;}
+  if(!Number.isInteger(quantity)||quantity<1||quantity>20){notify("La cantidad debe estar entre 1 y 20.");return;}
+  if(!window.confirm("¿Entregar "+quantity+" copia(s) de «"+card.name+"» a "+adminSelectedTrainerName+"?\n\nCada copia recibirá "+card.uses_per_card+" uso(s). La entrega quedará registrada como regalo administrativo."))return;
+  const button=document.getElementById("adminTrainerGrantCard");
+  button.disabled=true;button.textContent="ENTREGANDO...";
+  try{
+    const {data,error}=await authClient.rpc("admin_grant_trainer_card",{
+      p_player_id:adminSelectedTrainerId,p_card_id:cardId,p_quantity:quantity
+    });
+    if(error)throw error;
+    const result=Array.isArray(data)?data[0]:data;
+    if(!result?.success)throw new Error("El servidor no confirmó la entrega.");
+    notify("Entregadas "+result.quantity_added+" copia(s) de «"+result.card_name+"» a "+result.trainer_name+".");
+    document.getElementById("adminTrainerGiftQuantity").value=1;
+    await loadAdminTrainers();
+    await openAdminTrainerDetail(adminSelectedTrainerId);
+    await loadActivityFeed();
+    await loadPlayers();
+    if(currentAuthUser?.id===adminSelectedTrainerId)await loadCloudInventory();
+  }catch(error){
+    console.error("No se pudo entregar la carta:",error);
+    notify("No se pudo entregar la carta: "+(error.message||"error desconocido"));
+  }finally{
+    button.disabled=false;button.textContent="ENTREGAR CARTA ↗";
+  }
+}
+async function removeAdminTrainerCard(item,card){
+  if(!isAdmin||!authClient||!adminSelectedTrainerId||!item?.id){notify("No se pudo identificar la copia que quieres retirar.");return;}
+  const cardName=card?.name||"esta carta";
+  const remaining=Number(item.remaining_uses||0);
+  const previousStatus=item.status==="available"?"disponible":"usada";
+  if(!window.confirm("¿Retirar solo esta copia de «"+cardName+"» del inventario de "+adminSelectedTrainerName+"?\n\nUsos restantes: "+remaining+". Estado: "+previousStatus+".\n\nEl movimiento quedará registrado en el historial. Los efectos o desbloqueos que ya se activaron no se revierten."))return;
+  try{
+    const {data,error}=await authClient.rpc("admin_remove_trainer_card",{
+      p_player_id:adminSelectedTrainerId,p_card_instance_id:item.id
+    });
+    if(error)throw error;
+    const result=Array.isArray(data)?data[0]:data;
+    if(!result?.success)throw new Error("El servidor no confirmó la retirada.");
+    notify("Se retiró una copia de «"+(result.card_name||cardName)+"».");
+    await loadAdminTrainers();
+    await openAdminTrainerDetail(adminSelectedTrainerId);
+    await loadActivityFeed();
+    await loadPlayers();
+    if(currentAuthUser?.id===adminSelectedTrainerId)await loadCloudInventory();
+  }catch(error){
+    console.error("No se pudo retirar la copia:",error);
+    notify("No se pudo retirar la carta: "+(error.message||"error desconocido"));
+  }
+}
+
 async function clearAdminTrainerCards(){
   if(!isAdmin||!authClient||!adminSelectedTrainerId){notify("No hay un entrenador seleccionado.");return;}
   const warning="Vas a borrar TODAS las cartas de "+adminSelectedTrainerName+".\n\n"+
@@ -1791,13 +1919,15 @@ document.getElementById("openAdminTrainers").addEventListener("click",async()=>{
   document.getElementById("adminCatalogWorkspace").hidden=true;
   document.getElementById("adminTrainersWorkspace").hidden=false;
   showAdminTrainerList();
-  await loadAdminTrainers();
+  await Promise.all([loadAdminTrainers(),loadAdminGiftCatalog()]);
   window.scrollTo({top:0,behavior:"smooth"});
 });
 document.getElementById("adminTrainersBack").addEventListener("click",showAdminOverview);
 document.getElementById("adminTrainerDetailBack").addEventListener("click",showAdminTrainerList);
 document.getElementById("adminTrainersSearch").addEventListener("input",renderAdminTrainers);
 document.getElementById("adminClearTrainerCardsButton").addEventListener("click",clearAdminTrainerCards);
+document.getElementById("adminTrainerSaveTramo").addEventListener("click",saveAdminTrainerTramo);
+document.getElementById("adminTrainerGrantCard").addEventListener("click",grantAdminTrainerCard);
 document.getElementById("adminCreateCard").addEventListener("click",()=>openAdminCardEditor(null));
 document.getElementById("adminCardCancel").addEventListener("click",showAdminCatalogList);
 document.getElementById("adminCardForm").addEventListener("submit",saveAdminCard);
