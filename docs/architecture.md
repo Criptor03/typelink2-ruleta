@@ -57,7 +57,7 @@ The earlier project `typelink2-platform` in `us-west-2` is retained temporarily 
 
 ## Security
 
-- Row Level Security is enabled on all sixteen tables in the exposed `public` schema.
+- Row Level Security is enabled on all seventeen tables in the exposed `public` schema.
 - The new engine tables are read-only to authenticated browser clients; card effects, applied player/event effects, recipes, roulette definitions and the activity feed are readable according to their policies.
 - Each trainer can read only their own roulette unlock credits.
 - Player inventory, player effects, evolution recipes, roulette credits and activity records cannot be inserted or modified directly by browser clients; future card actions must go through validated server RPCs.
@@ -108,6 +108,7 @@ Supabase Auth Site URL and allowed redirect URL:
 - `20261113042149_start_tramos_activity_feed_and_spin_credits`
 - `20261113042841_remove_duplicate_card_activity_feed_index`
 - `20261113043124_grant_authenticated_tramo_engine_execution`
+- `${version}_add_trainer_type_tracker_and_incoming_effects`
 
 The server-side `start_new_tramo`, `draw_random_card`, `play_card` and `evolve_card` runtimes are implemented and transaction-tested. The Beta 0.3 baraja now exposes use/transfer actions, remaining-use counters and a one-card evolution dialog when a rule is configured. Card art remains attached through each catalog row's `image_path`; evolved results return their own image path. Special roulette draws are still pending.
 
@@ -119,3 +120,11 @@ The server-side `start_new_tramo`, `draw_random_card`, `play_card` and `evolve_c
 - Special effects can grant bonus spins through the `tramo_spin_credit` effect key. Configure a self-targeting card with operation `add` and an integer `effect_value` (for example, 5 for Fiebre Dorada). The credit is applied immediately, recorded separately from the three standard spins and does not bypass card capacity.
 - The old `issue_tramo_cards` RPC is retained as a compatibility alias to the guarded tramo-advance action; it can no longer grant tramo cards on its own.
 - The community wall reads `card_activity` and receives realtime inserts for tramo awards, roulette spins, card plays, transfers and single-card evolutions. The table is included in the realtime publication and remains protected by its authenticated read policy.
+
+
+## Trainer profile controls
+
+- `player_type_status` stores one enabled/blocked setting for each of the 18 Pokémon types per trainer. All types are enabled by default for existing and new profiles; trainers can toggle and persist their own settings.
+- The profile shows active card effects applied by other trainers, grouped by source card and including card art, trainer name, effect summary and remaining duration/charges.
+- When a trainer advances a tramo, effects whose configured boundary has passed are expired in the same transaction. `tramo_end` effects end at the next tramo; `next_tramo_end` effects remain through the next tramo; timed, charge-based and permanent effects retain their configured duration.
+- The profile's type tracker is a participant-facing record. It does not independently validate Pokémon team composition; a future game-rule handler can enforce type restrictions if required.
