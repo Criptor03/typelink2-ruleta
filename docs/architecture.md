@@ -37,7 +37,7 @@ The earlier project `typelink2-platform` in `us-west-2` is retained temporarily 
 ## Universal card-engine rules
 
 - **Capacity modifiers add together.** The normal deck capacity is `event_settings.normal_card_limit + SUM(active player_effects.effect_value)` for the `normal_card_limit` key and `add` operation. Tramo-limited and timed expiration fields are checked by the backend.
-- **Card disposition is per card.** `card_catalog.disposition` supports `consume`, `transfer`, and `retain`; `target_scope` supports self, opponent, either, all players, event-wide or no player target.
+- **Card disposition is per card.** `card_catalog.disposition` supports `consume`, `transfer`, and `retain`; `target_scope` supports self, opponent, either, all players, event-wide or no player target. Tramo and Fiesta cards are constrained not to occupy normal deck slots; normal-category cards can be configured individually.
 - **Evolution consumes its ingredients.** Recipe tables define the required card types and quantities; the future server RPC will mark the chosen ingredient instances as used and award the result in one transaction.
 - **Roulette access is credit-based.** Special access cards create spin credits in `player_roulette_unlocks`. A credit records which pool it opens, how many spins it grants and how many have been spent. The initial Fiesta access card is intended to grant access to the Fiesta pool.
 - **Effects are data, not executable code.** The database stores known effect keys, operations and JSON parameters. New effect behavior still needs a validated server-side handler; it is not safe to run arbitrary code stored in a card row.
@@ -52,10 +52,11 @@ The earlier project `typelink2-platform` in `us-west-2` is retained temporarily 
 
 ## Security
 
-- Row Level Security is enabled on all six public tables.
-- Profiles, active card definitions, public player inventories, public Pokémon snapshots, and event settings are readable by authenticated event participants.
-- Notifications are restricted to their recipient.
-- Player inventory and Pokémon snapshot writes are not granted directly to browser clients.
+- Row Level Security is enabled on all fourteen tables in the exposed `public` schema.
+- The new engine tables are read-only to authenticated browser clients; card effects, applied effects, recipes, roulette definitions and the activity feed are readable according to their policies.
+- Each trainer can read only their own roulette unlock credits.
+- Player inventory, player effects, evolution recipes, roulette credits and activity records cannot be inserted or modified directly by browser clients; future card actions must go through validated server RPCs.
+- Notifications remain restricted to their recipient.
 - The `app_private` schema is not exposed through the Data API.
 - The frontend key is a publishable key intended for browser use with RLS; no secret/service-role key belongs in the frontend.
 
@@ -93,5 +94,6 @@ Supabase Auth Site URL and allowed redirect URL:
 
 - `20261113024650_add_universal_card_engine`
 - `20261113024803_index_universal_card_engine_foreign_keys`
+- `20261113025249_enforce_non_normal_inventory_limit`
 
 The new engine is a database foundation only: the current Beta 0.3 interface still uses the existing standard roulette and does not yet expose card play, transfers, evolutions or special roulettes.
