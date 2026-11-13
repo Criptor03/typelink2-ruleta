@@ -1,12 +1,15 @@
 # TypeLink 2 — Backend architecture
 
-## Supabase project
+## Active Supabase project
 
-- Project: `typelink2-platform`
-- Project ref: `zguoojvapbhgalbcvhgn`
-- Project URL: `https://zguoojvapbhgalbcvhgn.supabase.co`
-- Current region: `us-west-2` (US West). This differs from the originally preferred São Paulo region; keep in mind before production data is added.
+- Project: `typelink2-platform-saopaulo`
+- Project ref: `uytdmfrynuzofkyedhve`
+- Project URL: `https://uytdmfrynuzofkyedhve.supabase.co`
+- Region: `sa-east-1` (South America, São Paulo)
 - Plan at creation: Free; the quoted project cost was USD $0/month.
+- Status: ACTIVE_HEALTHY
+
+The earlier project `typelink2-platform` in `us-west-2` is retained temporarily as an empty backup/reference. Do not connect the frontend to it. Do not delete it until the São Paulo project and app integration are verified.
 
 ## Current database foundation
 
@@ -25,7 +28,7 @@ The following tables are provisioned in the `public` schema:
 - Security policies allow authenticated participants to view profiles, active card definitions, public player inventories, public Pokémon snapshots, and event settings.
 - Notifications are restricted to their recipient.
 - Player inventories and Pokémon snapshots cannot be written directly from an untrusted browser client.
-- The public `rls_auto_enable()` function has had execute privileges revoked from `PUBLIC`, `anon`, and `authenticated`.
+- The `app_private` schema is not exposed through the Data API.
 - No Supabase secret/service-role key may be placed in this public GitHub repository or browser code. Only a publishable key may be used by the frontend, together with RLS.
 
 ## Realtime
@@ -40,12 +43,14 @@ Row Level Security remains the access control boundary for realtime subscribers.
 
 ## Discord OAuth — setup still required
 
-1. Create a Discord application in the Discord Developer Portal.
-2. Add this Supabase callback URL under OAuth2 Redirects:
-   `https://zguoojvapbhgalbcvhgn.supabase.co/auth/v1/callback`
-3. Copy its Client ID and Client Secret.
-4. Enter those credentials in Supabase Dashboard → Authentication → Sign In / Providers → Discord. Do not commit the Client Secret to GitHub.
-5. Configure the Supabase Auth Site URL and allowed redirect URL to:
+The active Supabase callback URL is:
+
+`https://uytdmfrynuzofkyedhve.supabase.co/auth/v1/callback`
+
+1. In the Discord Developer Portal, replace the old project's callback URL with the URL above under OAuth2 Redirects.
+2. In the active Supabase project, enable Authentication → Sign In / Providers → Discord.
+3. Enter the Discord Client ID and Client Secret directly in Supabase. Never commit the Client Secret to GitHub or send it in chat.
+4. Configure the Supabase Auth Site URL and allowed redirect URL to:
    `https://criptor03.github.io/typelink2-ruleta/`
 
 ## Not implemented yet
