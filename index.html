@@ -21,6 +21,7 @@
         <button class="nav-link active" data-page="home"><span class="nav-icon">⌂</span><span>Inicio</span></button>
         <button class="nav-link" data-page="roulette"><span class="nav-icon">◉</span><span>Ruleta</span><span class="nav-count" id="navDeckCount">0/5</span></button>
         <button class="nav-link" data-page="players"><span class="nav-icon">♙</span><span>Jugadores</span></button>
+        <button class="nav-link" data-page="profile"><span class="nav-icon">◎</span><span>Mi perfil</span></button>
         <button class="nav-link" data-page="deck"><span class="nav-icon">▤</span><span>Mi baraja</span></button>
         <button class="nav-link" data-page="pokemon"><span class="nav-icon">✦</span><span>Mi equipo Pokémon</span></button>
         <button class="nav-link" data-page="notifications"><span class="nav-icon">♧</span><span>Notificaciones</span><span class="nav-dot"></span></button>
@@ -96,10 +97,14 @@
 
           <div class="home-bottom-grid">
             <div class="panel home-status-panel">
-              <div class="panel-topline"><span class="eyebrow">ESTADO DEL ENTRENADOR</span><span class="status-tag">DEMO</span></div>
-              <h3>Tu perfil está esperando.</h3>
-              <p>Cuando conectemos el inicio de sesión con Discord, aquí aparecerán tu identidad, progreso y actividad.</p>
-              <div class="status-placeholder"><span class="profile-placeholder">TL</span><div><b>ENTRENADOR SIN IDENTIFICAR</b><small>Iniciaremos sesión con Discord en una próxima versión.</small></div></div>
+              <div class="panel-topline"><span class="eyebrow">IDENTIDAD DEL ENTRENADOR</span><span class="status-tag" id="homeProfileStatus">SIN SESIÓN</span></div>
+              <h3 id="homeProfileName">Tu perfil te espera.</h3>
+              <p id="homeProfileDescription">Inicia sesión con Discord para registrar tu identidad y guardar tu baraja en la nube.</p>
+              <div class="status-placeholder">
+                <span class="profile-placeholder" id="homeProfileAvatar">TL</span>
+                <div><b id="homeProfileHandle">ENTRENADOR NO IDENTIFICADO</b><small id="homeProfileSince">Conecta tu cuenta de Discord.</small></div>
+              </div>
+              <button class="inline-link profile-open-link" data-page="profile">VER MI PERFIL ↗</button>
             </div>
             <div class="panel home-deck-panel">
               <div class="panel-topline"><span class="eyebrow">RESUMEN DE BARAJA</span><button class="inline-link" data-page="deck">VER BARAJA ↗</button></div>
@@ -108,7 +113,7 @@
               <p id="homeDeckHint">Tu baraja todavía está vacía. Haz tu primer giro.</p>
             </div>
           </div>
-          <div class="demo-banner"><b>AVISO DE BETA</b><span>Esta versión conserva la ruleta funcional. Los perfiles, la conexión con Discord y la importación de partidas todavía no están conectados.</span></div>
+          <div class="demo-banner"><b>AVISO DE BETA</b><span>Tu identidad Discord y tu baraja ya se conectan con Supabase. El catálogo de cartas sigue siendo provisional; la importación de partidas Pokémon llegará en otra etapa.</span></div>
         </section>
 
         <section class="page-view" id="page-roulette" hidden>
@@ -124,20 +129,48 @@
               <div class="panel quick-deck-panel"><div class="panel-heading compact"><div><span class="section-kicker">TU INVENTARIO</span><h2>Mi baraja</h2></div><span id="deckCount" class="counter">0/5</span></div><div class="capacity"><span id="capacityFill"></span></div><div id="deckList" class="deck-list"><div class="deck-empty">Todavía no tienes cartas.<br><span>¡Haz tu primer giro!</span></div></div><button class="inline-link deck-open-link" data-page="deck">ABRIR BARAJA COMPLETA ↗</button></div>
             </aside>
           </section>
-          <div class="tramo-tool panel"><div><span class="eyebrow">CARTAS ESPECIALES</span><h3>Cartas de tramo</h3><p>En esta demo, el botón simula la entrega de dos cartas de tramo. No consumen espacios de las cinco cartas normales.</p></div><button id="tramoButton" class="secondary-button">SIMULAR /TRAMO <b>＋2</b></button></div>
-          <div class="demo-note"><strong>Modo demostración:</strong> los giros y las cartas se guardan solamente en este navegador. La ruleta todavía no está conectada a Discord ni a una base de datos compartida.</div>
+          <div class="tramo-tool panel"><div><span class="eyebrow">CARTAS ESPECIALES</span><h3>Cartas de tramo</h3><p>Entrega dos cartas acumulables por tramo. No consumen espacios de las cinco cartas normales.</p></div><button id="tramoButton" class="secondary-button">RECIBIR /TRAMO <b>＋2</b></button></div>
+          <div class="demo-note"><strong>Inventario conectado:</strong> los giros y las cartas de tramo se guardan en tu cuenta. Debes iniciar sesión para obtener cartas.</div>
         </section>
 
         <section class="page-view" id="page-players" hidden>
           <div class="page-heading"><div><div class="eyebrow">02 / COMUNIDAD</div><h1>LOS <em>ENTRENADORES</em></h1><p>El registro de participantes de Pokémon TypeLink 2.</p></div><span class="page-stamp">TRAINER<br>NETWORK</span></div>
-          <div class="empty-feature panel"><div class="empty-emblem">♙</div><div class="eyebrow">PRÓXIMAMENTE</div><h2>La comunidad de Teselia.</h2><p>Aquí aparecerán los participantes cuando conectemos el inicio de sesión con Discord. Cada entrenador tendrá un perfil público con su baraja y su equipo Pokémon.</p><div class="feature-chips"><span>PERFILES</span><span>BARAJAS PÚBLICAS</span><span>EQUIPOS POKÉMON</span></div></div>
+          <div class="directory-toolbar panel">
+            <div><span class="eyebrow">RED DE ENTRENADORES</span><h2>Participantes registrados</h2></div>
+            <span class="directory-count" id="playersCount">0 ENTRENADORES</span>
+          </div>
+          <div id="playersList" class="players-grid"><div class="empty-feature panel"><div class="empty-emblem">♙</div><h2>Inicia sesión para ver a los entrenadores.</h2><p>Los perfiles públicos están disponibles para los participantes registrados.</p></div></div>
+        </section>
+
+        <section class="page-view" id="page-profile" hidden>
+          <div class="page-heading"><div><div class="eyebrow">03 / IDENTIDAD</div><h1>MI <em>PERFIL</em></h1><p>Tu identidad de entrenador dentro de Pokémon TypeLink 2.</p></div><span class="page-stamp">TRAINER<br>PROFILE</span></div>
+          <div class="profile-editor panel">
+            <div class="profile-identity">
+              <div class="profile-avatar-large" id="profileAvatarLarge">TL</div>
+              <div><span class="eyebrow">CUENTA CONECTADA</span><h2 id="profileDiscordName">Entrenador</h2><p id="profileDiscordHandle">Discord · Sin conectar</p><span class="profile-verified" id="profileVerified">● IDENTIDAD VERIFICADA POR DISCORD</span></div>
+            </div>
+            <div class="profile-form">
+              <label for="profileDisplayName">Nombre público de entrenador</label>
+              <input id="profileDisplayName" type="text" maxlength="28" placeholder="Tu nombre en TypeLink" autocomplete="nickname">
+              <p>Este será el nombre que verán los demás participantes. Tu identidad de Discord seguirá siendo la referencia de inicio de sesión.</p>
+              <button id="saveProfileButton" class="secondary-button">GUARDAR PERFIL</button>
+              <span id="profileSaveStatus" class="profile-save-status">Los cambios se guardan en tu cuenta de TypeLink.</span>
+            </div>
+            <div class="profile-stats">
+              <div><strong id="profileNormalCount">0/5</strong><small>CARTAS NORMALES</small></div>
+              <div><strong id="profileRouteCount">0</strong><small>CARTAS DE TRAMO</small></div>
+              <div><strong id="profileJoinedDate">—</strong><small>ENTRENADOR DESDE</small></div>
+            </div>
+          </div>
+          <div class="profile-info-note"><b>PERFIL PÚBLICO</b><span>Tu nombre, avatar y baraja estarán visibles para los participantes que hayan iniciado sesión. Tus notificaciones seguirán siendo privadas.</span></div>
         </section>
 
         <section class="page-view" id="page-deck" hidden>
           <div class="page-heading"><div><div class="eyebrow">03 / INVENTARIO</div><h1>MI <em>BARAJA</em></h1><p>Tus cartas normales y las cartas acumulables de cada tramo.</p></div><span class="page-stamp">CARD<br>COLLECTION</span></div>
           <div class="deck-overview panel"><div class="deck-overview-top"><div><span class="eyebrow">CARTAS NORMALES</span><h2 id="deckCountFull">0 / 5</h2></div><div class="deck-capacity-large"><span id="capacityFillFull"></span></div></div><div id="deckListFull" class="full-deck-list"><div class="deck-empty">Todavía no tienes cartas. Ve a la ruleta para conseguir la primera.</div></div></div>
-          <div class="deck-overview panel route-overview"><div class="deck-overview-top"><div><span class="eyebrow">CARTAS DE TRAMO</span><h2><span id="routeCountFull">0</span> <small>ACUMULADAS</small></h2></div><span class="route-symbol">Ⅱ</span></div><div id="routeListFull" class="full-deck-list"><div class="deck-empty">Todavía no has iniciado un tramo.</div></div><div class="route-demo-actions"><button class="secondary-button" id="tramoButtonFull">SIMULAR /TRAMO · RECIBIR 2 CARTAS</button><p>Las cartas de tramo no cuentan para el límite de cinco cartas normales.</p></div></div>
-          <button id="resetButton" class="text-button reset-button">Reiniciar datos de demostración</button>
+          <div class="deck-overview panel route-overview"><div class="deck-overview-top"><div><span class="eyebrow">CARTAS DE TRAMO</span><h2><span id="routeCountFull">0</span> <small>ACUMULADAS</small></h2></div><span class="route-symbol">Ⅱ</span></div><div id="routeListFull" class="full-deck-list"><div class="deck-empty">Todavía no has iniciado un tramo.</div></div><div class="route-demo-actions"><button class="secondary-button" id="tramoButtonFull">RECIBIR /TRAMO · 2 CARTAS</button><p>Las cartas de tramo no cuentan para el límite de cinco cartas normales y se acumulan en tu cuenta.</p></div></div>
+          <button id="resetButton" class="text-button reset-button">Reiniciar datos de demostración local</button>
+          <p class="deck-cloud-note" id="deckCloudNote">La baraja todavía no se sincroniza con una cuenta.</p>
         </section>
 
         <section class="page-view" id="page-pokemon" hidden>
@@ -157,6 +190,13 @@
 
         <footer class="app-footer"><span>POKÉMON TYPELINK 2</span><span>TESelia · UNOVA REGION</span><span>BETA 0.2</span></footer>
       </main>
+    </div>
+  </div>
+  <div class="public-profile-modal" id="publicProfileModal" hidden>
+    <div class="public-profile-dialog panel">
+      <button class="modal-close" id="closePublicProfile" type="button" aria-label="Cerrar">×</button>
+      <div class="public-profile-heading"><div class="profile-avatar-large" id="publicPlayerAvatar">TL</div><div><span class="eyebrow">PERFIL DE ENTRENADOR</span><h2 id="publicPlayerName">Entrenador</h2><p id="publicPlayerJoined">Participante TypeLink 2</p></div></div>
+      <div class="public-profile-section"><div class="panel-topline"><b>BA R A J A PÚBLICA</b><span id="publicPlayerCardCount">0 CARTAS</span></div><div id="publicPlayerCards" class="public-card-list"><div class="deck-empty">Este entrenador todavía no tiene cartas.</div></div></div>
     </div>
   </div>
   <div class="mobile-scrim" id="mobileScrim"></div>
