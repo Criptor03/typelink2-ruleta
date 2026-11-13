@@ -23,6 +23,10 @@ let currentProfile = null;
 let activeSessionUserId = null;
 let inventoryChannel = null;
 let profilesChannel = null;
+let activityChannel = null;
+let currentTramo = 0;
+let tramoSpinsRemaining = 0;
+let bonusTramoSpinsRemaining = 0;
 let cloudMode = false;
 let cloudDeck = [];
 let cloudRoute = [];
@@ -140,8 +144,9 @@ function createDeckItem(card,index,route=false,allowActions=false){
       actionButton.className="deck-action-button transfer";actionButton.textContent="TRANSFERIR";
       actionButton.addEventListener("click",()=>openCardAction(card.instance_id,"transfer"));
     }else{
-      actionButton.className="deck-action-button use";actionButton.textContent="USAR";
       const hasEffects=Boolean(cardEffectsById[card.card_id]?.length);
+      actionButton.className="deck-action-button use";
+      actionButton.textContent=hasEffects?"USAR":"PENDIENTE";
       actionButton.disabled=!hasEffects;
       actionButton.title=hasEffects?"Usar esta carta":"Esta carta todavía no tiene un efecto configurado";
       actionButton.addEventListener("click",()=>openCardAction(card.instance_id,"use"));
@@ -190,8 +195,9 @@ function renderDeck(){
   setText("homeRouteCount",route.length);
 
   const width=(normalCardLimit>0?Math.min(normalCount,normalCardLimit)/normalCardLimit*100:0)+"%";
-  const fillIds=["capacityFill","capacityFillFull","homeCapacityFill"];
-  fillIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.width=width;});
+  ["capacityFill","capacityFillFull","homeCapacityFill"].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.style.width=width;
+  });
   setText("homeDeckHint",normalCount?("Tienes "+normalCount+" de "+normalCardLimit+" cartas normales disponibles."):"Tu baraja todavía está vacía. Haz tu primer giro.");
   setText("profileNormalCount",normalCount+"/"+normalCardLimit);
   setText("profileRouteCount",route.length);
@@ -199,21 +205,50 @@ function renderDeck(){
   const resetButton=document.getElementById("resetButton");
   if(resetButton)resetButton.hidden=cloudMode;
 
-  spinButton.disabled=spinning||!currentAuthUser||normalCount>=normalCardLimit;
+  const totalSpins=Math.max(0,tramoSpinsRemaining)+Math.max(0,bonusTramoSpinsRemaining);
+  const freeSlots=Math.max(0,normalCardLimit-normalCount);
+  const pendingSpins=totalSpins>0;
+  spinButton.disabled=spinning||!currentAuthUser||pendingSpins===false||normalCount>=normalCardLimit;
   spinButton.querySelector("span").textContent=
-    !currentAuthUser?"INICIA SESIÓN":normalCount>=normalCardLimit?"BARAJA COMPLETA":spinning?"CONECTANDO...":"GIRAR RULETA";
+    !currentAuthUser?"INICIA SESIÓN":
+    spinning?"CONECTANDO...":
+    normalCount>=normalCardLimit?"BARAJA COMPLETA":
+    totalSpins<=0?"SIN GIROS DISPONIBLES":"GIRAR RULETA";
   setText("spinHint",!currentAuthUser
     ?"Inicia sesión con Discord para obtener cartas."
-    :normalCount>=normalCardLimit?("Has alcanzado el límite de "+normalCardLimit+" cartas normales.")
-    :"La carta ganadora se guardará en tu cuenta.");
+    :normalCount>=normalCardLimit
+      ?"Tu baraja está completa. Utiliza o libera una carta para continuar."
+      :totalSpins<=0
+        ?"No tienes giros disponibles. Avanza de tramo para recibir 3 giros."
+        :"Cada giro consume 1 crédito y entrega una carta normal.");
+  setText("spinBudget",currentAuthUser
+    ?("GIROS DEL TRAMO: "+tramoSpinsRemaining+" · EXTRA: "+bonusTramoSpinsRemaining)
+    :"INICIA SESIÓN PARA VER TUS GIROS");
 
-  const routeButtons=["tramoButton","tramoButtonFull"];
-  routeButtons.forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=spinning||!currentAuthUser;});
+  let tramoHint="";
+  if(!currentAuthUser){
+    tramoHint="Inicia sesión con Discord para avanzar de tramo.";
+  }else if(pendingSpins){
+    tramoHint="Aún tienes "+totalSpins+" giros pendientes. Utilízalos antes de avanzar al siguiente tramo.";
+  }else if(freeSlots<3){
+    tramoHint="Te quedan cartas por utilizar, así que no puedes avanzar de tramo hasta tener suficiente espacio. Libera al menos 3 espacios en tu baraja.";
+  }else{
+    tramoHint="Tienes espacio suficiente. Al avanzar recibirás 2 cartas de tramo y 3 giros de la ruleta normal.";
+  }
+  setText("tramoProgressHint",tramoHint);
+  setText("tramoProgressCount","TRAMO "+currentTramo+" · GIROS "+tramoSpinsRemaining+" NORMALES · "+bonusTramoSpinsRemaining+" EXTRA");
+  ["tramoButton","tramoButtonFull"].forEach(id=>{
+    const button=document.getElementById(id);
+    if(!button)return;
+    button.disabled=spinning||!currentAuthUser||pendingSpins||freeSlots<3;
+    button.textContent=currentTramo>0?"AVANZAR DE TRAMO":"INICIAR PRIMER TRAMO";
+    button.title=tramoHint;
+  });
+
   setText("deckCloudNote",cloudMode
-    ?"Tu baraja está conectada a Supabase. Los usos, acciones y evoluciones se validan en el servidor."
+    ?"Tu baraja está conectada a Supabase. Los usos, acciones, giros y evoluciones se validan en el servidor."
     :"Inicia sesión con Discord para activar tu baraja en la nube.");
 }
-
 function showResult(card){
   const box=document.getElementById("resultCard");
   box.classList.remove("empty");box.classList.add("won");
@@ -313,23 +348,29 @@ function mapInventoryRow(row){
 
 async function loadCardEngineConfig(){
   if(!authClient||!currentAuthUser)return;
-  const [rulesResult,effectsResult,settingsResult,playerEffectsResult]=await Promise.all([
+  const [rulesResult,effectsResult,settingsResult,playerEffectsResult,progressResult]=await Promise.all([
     authClient.from("card_evolution_rules").select("id,slug,name,description,source_card_id,result_card_id,same_tramo_only").eq("is_active",true),
     authClient.from("card_effects").select("id,card_id,effect_key,operation,effect_value,parameters,duration_type,duration_value,duration_unit").eq("is_active",true),
     authClient.from("event_settings").select("normal_card_limit,current_tramo").eq("singleton",true).single(),
     authClient.from("player_effects").select("effect_value,expires_at,expires_after_tramo")
-      .eq("owner_id",currentAuthUser.id).eq("effect_key","normal_card_limit").eq("operation","add").eq("status","active")
+      .eq("owner_id",currentAuthUser.id).eq("effect_key","normal_card_limit").eq("operation","add").eq("status","active"),
+    authClient.from("player_tramo_progress").select("current_tramo,spins_remaining,bonus_spins_remaining")
+      .eq("owner_id",currentAuthUser.id).maybeSingle()
   ]);
   evolutionRulesBySource=Object.create(null);
   cardEffectsById=Object.create(null);
   if(effectsResult.error)console.warn("No se pudieron cargar los efectos:",effectsResult.error.message);
   else (effectsResult.data||[]).forEach(effect=>{(cardEffectsById[effect.card_id] ||= []).push(effect);});
+  if(progressResult.error)console.warn("No se pudo cargar el progreso de tramo:",progressResult.error.message);
+  const progress=progressResult.data||{};
+  currentTramo=Number(progress.current_tramo)||0;
+  tramoSpinsRemaining=Number(progress.spins_remaining)||0;
+  bonusTramoSpinsRemaining=Number(progress.bonus_spins_remaining)||0;
   if(!settingsResult.error&&settingsResult.data){
     const base=Number(settingsResult.data.normal_card_limit)||5;
-    const tramo=Number(settingsResult.data.current_tramo)||0;
     const bonus=(playerEffectsResult.data||[]).reduce((sum,effect)=>{
       const timeOk=!effect.expires_at||new Date(effect.expires_at).getTime()>Date.now();
-      const tramoOk=effect.expires_after_tramo==null||Number(effect.expires_after_tramo)>=tramo;
+      const tramoOk=effect.expires_after_tramo==null||Number(effect.expires_after_tramo)>=currentTramo;
       return sum+(timeOk&&tramoOk?(Number(effect.effect_value)||0):0);
     },0);
     normalCardLimit=Math.max(0,base+bonus);
@@ -372,6 +413,99 @@ async function loadCloudInventory(){
   cloudSpecial=available.filter(item=>item.category!=="normal"&&item.category!=="tramo");
   await loadCardEngineConfig();
   renderDeck();
+}
+
+
+function initials(name){
+  return String(name||"TL").trim().split(/\s+/).slice(0,2).map(part=>part[0]||"").join("").toUpperCase()||"TL";
+}
+function makeActivityPlaceholder(message){
+  const box=document.createElement("div");box.className="activity-empty panel";box.textContent=message;return box;
+}
+function renderActivityFeed(entries,profiles){
+  const container=document.getElementById("activityFeed");
+  if(!container)return;
+  container.replaceChildren();
+  if(!entries.length){
+    container.append(makeActivityPlaceholder("Aún no hay movimientos. Cuando un entrenador avance de tramo, gire la ruleta o juegue una carta, aparecerá aquí."));
+    return;
+  }
+  entries.forEach(entry=>{
+    const details=entry.details&&typeof entry.details==="object"?entry.details:{};
+    const actor=profiles[entry.actor_id]||{};
+    const target=profiles[entry.target_id]||{};
+    const actorName=actor.display_name||"Entrenador";
+    const targetName=target.display_name||"otro entrenador";
+    const item=document.createElement("article");item.className="activity-item panel";
+    const avatar=document.createElement("div");avatar.className="activity-avatar";
+    if(actor.avatar_url){
+      const avatarImage=document.createElement("img");avatarImage.src=actor.avatar_url;avatarImage.alt="";avatar.append(avatarImage);
+    }else avatar.textContent=initials(actorName);
+    const body=document.createElement("div");body.className="activity-body";
+    const header=document.createElement("div");header.className="activity-header";
+    const who=document.createElement("strong");who.textContent=actorName;
+    const when=document.createElement("time");
+    const date=new Date(entry.created_at);
+    when.textContent=Number.isNaN(date.getTime())?"":date.toLocaleString("es-CO",{dateStyle:"medium",timeStyle:"short"});
+    header.append(who,when);
+    const line=document.createElement("p");line.className="activity-message";
+    let symbol="✦",message="";
+    const cardName=details.card_name||details.name||"una carta";
+    if(entry.activity_type==="tramo_award"){
+      symbol="Ⅱ";message="ha avanzado al tramo "+(details.tramo_number||"?")+" y ha recibido 2 cartas de tramo";
+    }else if(entry.activity_type==="roulette_spin"){
+      symbol="◉";message="ha girado la ruleta y ha obtenido "+cardName;
+    }else if(entry.activity_type==="transfer"){
+      symbol="⇢";message="ha enviado "+cardName+" a "+targetName;
+    }else if(entry.activity_type==="evolution"){
+      symbol="⬡";message="ha evolucionado "+(details.source_name||"una carta")+" → "+(details.result_name||"nueva carta");
+    }else{
+      symbol="✦";
+      message="ha utilizado "+cardName+(entry.target_id&&entry.target_id!==entry.actor_id?" sobre "+targetName:entry.target_id?" sobre sí mismo":"");
+    }
+    const mark=document.createElement("span");mark.className="activity-symbol";mark.textContent=symbol;
+    const messageText=document.createElement("span");messageText.textContent=message;
+    line.append(mark,messageText);
+    body.append(header,line);
+    const imagePath=details.image_path||details.result_image_path||details.source_image_path;
+    if(imagePath){
+      const cardImageEl=document.createElement("img");cardImageEl.className="activity-card-image";cardImageEl.src=imagePath;cardImageEl.alt=cardName;body.append(cardImageEl);
+    }
+    if(Array.isArray(details.cards)&&details.cards.length){
+      const cards=document.createElement("div");cards.className="activity-card-thumbs";
+      details.cards.forEach(card=>{
+        if(!card.image_path)return;
+        const image=document.createElement("img");image.src=card.image_path;image.alt=card.name||"Carta de tramo";image.title=card.name||"Carta de tramo";cards.append(image);
+      });
+      if(cards.childElementCount)body.append(cards);
+    }
+    item.append(avatar,body);container.append(item);
+  });
+}
+async function loadActivityFeed(){
+  const container=document.getElementById("activityFeed");
+  if(!container)return;
+  if(!currentAuthUser||!authClient){
+    container.replaceChildren(makeActivityPlaceholder("Inicia sesión con Discord para ver los movimientos de todos los entrenadores."));
+    return;
+  }
+  const {data,error}=await authClient.from("card_activity")
+    .select("id,actor_id,target_id,activity_type,details,created_at")
+    .in("activity_type",["tramo_award","roulette_spin","play","transfer","evolution"])
+    .order("created_at",{ascending:false})
+    .limit(60);
+  if(error){
+    console.error("No se pudo cargar el muro de cartas:",error.message);
+    container.replaceChildren(makeActivityPlaceholder("No pudimos cargar el muro de cartas. Inténtalo de nuevo."));
+    return;
+  }
+  const profileIds=[...new Set((data||[]).flatMap(row=>[row.actor_id,row.target_id]).filter(Boolean))];
+  let profiles={};
+  if(profileIds.length){
+    const result=await authClient.from("profiles").select("id,display_name,avatar_url").in("id",profileIds);
+    if(!result.error)profiles=Object.fromEntries((result.data||[]).map(profile=>[profile.id,profile]));
+  }
+  renderActivityFeed(data||[],profiles);
 }
 
 async function loadPlayers(){
@@ -617,29 +751,35 @@ function setupRealtime(){
   if(!authClient||!currentAuthUser)return;
   if(inventoryChannel)authClient.removeChannel(inventoryChannel);
   if(profilesChannel)authClient.removeChannel(profilesChannel);
+  if(activityChannel)authClient.removeChannel(activityChannel);
   inventoryChannel=authClient.channel("typelink-player-cards-"+currentAuthUser.id)
     .on("postgres_changes",{event:"*",schema:"public",table:"player_cards",filter:"owner_id=eq."+currentAuthUser.id},()=>loadCloudInventory())
     .subscribe();
   profilesChannel=authClient.channel("typelink-public-profiles")
     .on("postgres_changes",{event:"*",schema:"public",table:"profiles"},()=>loadPlayers())
     .subscribe();
+  activityChannel=authClient.channel("typelink-community-activity")
+    .on("postgres_changes",{event:"INSERT",schema:"public",table:"card_activity"},()=>loadActivityFeed())
+    .on("postgres_changes",{event:"*",schema:"public",table:"player_tramo_progress",filter:"owner_id=eq."+currentAuthUser.id},()=>loadCloudInventory())
+    .subscribe();
 }
-
 async function activateUserSession(user){
   if(!user){
     if(inventoryChannel&&authClient)authClient.removeChannel(inventoryChannel);
     if(profilesChannel&&authClient)authClient.removeChannel(profilesChannel);
-    inventoryChannel=null;profilesChannel=null;
+    if(activityChannel&&authClient)authClient.removeChannel(activityChannel);
+    inventoryChannel=null;profilesChannel=null;activityChannel=null;
     activeSessionUserId=null;currentProfile=null;cloudMode=false;cloudDeck=[];cloudRoute=[];cloudSpecial=[];cloudInventory=[];
+    currentTramo=0;tramoSpinsRemaining=0;bonusTramoSpinsRemaining=0;
     evolutionRulesBySource=Object.create(null);cardEffectsById=Object.create(null);
     demoDeck=loadDeck();demoRouteState=loadRouteState();
-    renderAuthState(null);renderDeck();loadPlayers();return;
+    renderAuthState(null);renderDeck();loadPlayers();loadActivityFeed();return;
   }
   if(activeSessionUserId===user.id&&cloudMode)return;
   activeSessionUserId=user.id;currentAuthUser=user;cloudMode=true;
   cloudDeck=[];cloudRoute=[];cloudSpecial=[];cloudInventory=[];
   renderAuthState(user);renderDeck();
-  await Promise.all([loadMyProfile(),loadCloudInventory(),loadPlayers()]);
+  await Promise.all([loadMyProfile(),loadCloudInventory(),loadPlayers(),loadActivityFeed()]);
   setupRealtime();
 }
 
@@ -665,6 +805,7 @@ async function spin(){
   if(spinning)return;
   if(!currentAuthUser||!authClient){notify("Inicia sesión con Discord para obtener cartas.");return;}
   if(activeNormalCards().length>=normalCardLimit){notify("Tu baraja ya tiene el límite de "+normalCardLimit+" cartas normales.");return;}
+  if(tramoSpinsRemaining+bonusTramoSpinsRemaining<=0){notify("No tienes giros disponibles. Avanza de tramo para recibir 3 giros.");return;}
   spinning=true;renderDeck();
   try{
     // The server selects and awards the card in one protected transaction.
@@ -693,20 +834,29 @@ async function spin(){
   }
 }
 
-async function addTramo(){
+async function startNewTramo(){
   if(spinning)return;
-  if(!currentAuthUser||!authClient){notify("Inicia sesión con Discord para recibir cartas de tramo.");return;}
+  if(!currentAuthUser||!authClient){notify("Inicia sesión con Discord para avanzar de tramo.");return;}
+  const count=activeNormalCards().length;
+  const freeSlots=normalCardLimit-count;
+  if(tramoSpinsRemaining+bonusTramoSpinsRemaining>0){
+    notify("Utiliza los giros pendientes antes de avanzar de tramo.");return;
+  }
+  if(freeSlots<3){
+    notify("Te quedan cartas por utilizar, así que no puedes avanzar de tramo hasta tener suficiente espacio.");return;
+  }
   spinning=true;renderDeck();
   try{
-    const {data,error}=await authClient.rpc("issue_tramo_cards");
+    const {data,error}=await authClient.rpc("start_new_tramo");
     if(error)throw error;
     await loadCloudInventory();
-    const count=Array.isArray(data?.cards)?data.cards.length:2;
-    const tramo=data?.tramo_number||"";
-    notify("¡Tramo "+tramo+": has recibido "+count+" cartas acumulables!");
+    const cardCount=Array.isArray(data?.cards)?data.cards.length:2;
+    const tramo=data?.tramo_number||currentTramo;
+    notify("¡Tramo "+tramo+" iniciado! Recibiste "+cardCount+" cartas de tramo y 3 giros normales.");
   }catch(error){
-    console.error("No se pudieron entregar las cartas de tramo:",error);
-    notify("No se pudo iniciar el tramo: "+(error.message||"error desconocido"));
+    console.error("No se pudo avanzar de tramo:",error);
+    notify("No se pudo avanzar de tramo: "+(error.message||"error desconocido"));
+    await loadCloudInventory();
   }finally{
     spinning=false;renderDeck();
   }
@@ -717,12 +867,13 @@ function setPage(page){
   document.querySelectorAll("[data-page]").forEach(button=>{
     if(button.classList.contains("nav-link"))button.classList.toggle("active",button.dataset.page===page);
   });
-  const labels={home:"INICIO",roulette:"RULETA",players:"JUGADORES",profile:"MI PERFIL",deck:"MI BARAJA",pokemon:"MI EQUIPO POKÉMON",notifications:"NOTIFICACIONES",admin:"ADMINISTRACIÓN"};
+  const labels={home:"INICIO",roulette:"RULETA",players:"JUGADORES",activity:"MURO DE CARTAS",profile:"MI PERFIL",deck:"MI BARAJA",pokemon:"MI EQUIPO POKÉMON",notifications:"NOTIFICACIONES",admin:"ADMINISTRACIÓN"};
   setText("currentSection",labels[page]||"INICIO");
   document.getElementById("sidebar").classList.remove("open");
   document.getElementById("mobileScrim").classList.remove("show");
   if(page==="roulette")drawWheel();
   if(page==="players")loadPlayers();
+  if(page==="activity")loadActivityFeed();
   if(page==="deck"&&cloudMode)loadCloudInventory();
   if(page==="profile"&&currentAuthUser)loadMyProfile();
   window.scrollTo({top:0,behavior:"smooth"});
@@ -782,8 +933,8 @@ function initSupabaseAuth(){
 
 document.querySelectorAll("[data-page]").forEach(button=>button.addEventListener("click",()=>setPage(button.dataset.page)));
 spinButton.addEventListener("click",spin);
-document.getElementById("tramoButton").addEventListener("click",addTramo);
-document.getElementById("tramoButtonFull").addEventListener("click",addTramo);
+document.getElementById("tramoButton").addEventListener("click",startNewTramo);
+document.getElementById("tramoButtonFull").addEventListener("click",startNewTramo);
 document.getElementById("saveProfileButton").addEventListener("click",saveProfile);
 document.getElementById("closePublicProfile").addEventListener("click",closePublicPlayer);
 document.getElementById("closeCardAction").addEventListener("click",closeCardAction);
