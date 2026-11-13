@@ -43,7 +43,7 @@ Consulta [`docs/architecture.md`](docs/architecture.md) para el esquema, políti
 ## Pendiente
 - Sustituir las ocho cartas provisionales por el catálogo y las imágenes definitivas de TypeLink 2.
 - Conectar importador de partidas Pokémon Blanco/Negro y TypeLink Sync.
-- Configurar los efectos y las reglas de evolución definitivas para el catálogo aprobado, y completar los giros especiales de las ruletas legendaria y Fiesta.
+- Añadir las cartas de premio definitivas a las ruletas Legendaria y Fiesta y activarlas cuando estén listas; el sistema de tickets, accesos y giros ya está conectado.
 - Añadir autorización de administradores y herramientas del evento.
 - Conectar el bot de Discord para operaciones administrativas y `/tramo` cuando se definan las reglas finales.
 
@@ -69,6 +69,12 @@ El perfil incluye un registro persistente de los 18 tipos Pokémon (habilitado/b
 ### Migración reciente
 - `20261113175916_add_trainer_type_tracker_and_incoming_effects`
 
+
+### Ruletas especiales
+- `20261113230000_connect_special_roulette_ticket_cards_and_spin_engine`
+- `20261113231500_add_private_roulette_unlock_balance_rpc`
+
+Las cartas Legenleta y Rumba se obtienen en la ruleta Normal y conceden un acceso cada una. Las ruletas especiales permanecen cerradas hasta que se añadan y habiliten sus cartas de premio.
 
 ### Acceso de administración
 El menú y el panel de administración se muestran únicamente cuando Supabase valida que la cuenta autenticada está en la lista privada de administradores. La primera cuenta autorizada es la del propietario del proyecto, identificada por su UUID de Supabase Auth, no por su nombre o correo. Las herramientas de gestión se irán habilitando por módulos.
