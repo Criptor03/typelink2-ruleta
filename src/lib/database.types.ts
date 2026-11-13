@@ -28,6 +28,7 @@ export type Database = {
           rarity: string
           slug: string
           target_scope: string
+          uses_per_card: number
         }
         Insert: {
           category: string
@@ -42,6 +43,7 @@ export type Database = {
           rarity: string
           slug: string
           target_scope?: string
+          uses_per_card?: number
         }
         Update: {
           category?: string
@@ -56,6 +58,7 @@ export type Database = {
           rarity?: string
           slug?: string
           target_scope?: string
+          uses_per_card?: number
         }
         Relationships: []
       }
@@ -205,6 +208,7 @@ export type Database = {
           result_card_id: string
           same_tramo_only: boolean
           slug: string
+          source_card_id: string
         }
         Insert: {
           created_at?: string
@@ -215,6 +219,7 @@ export type Database = {
           result_card_id: string
           same_tramo_only?: boolean
           slug: string
+          source_card_id: string
         }
         Update: {
           created_at?: string
@@ -225,8 +230,16 @@ export type Database = {
           result_card_id?: string
           same_tramo_only?: boolean
           slug?: string
+          source_card_id?: string
         }
-        Relationships: [{
+        Relationships: [
+          {
+            foreignKeyName: "card_evolution_rules_source_card_id_fkey"
+            columns: ["source_card_id"]
+            isOneToOne: true
+            referencedRelation: "card_catalog"
+            referencedColumns: ["id"]
+          }, {
           foreignKeyName: "card_evolution_rules_result_card_id_fkey"
           columns: ["result_card_id"]
           isOneToOne: false
@@ -593,6 +606,7 @@ export type Database = {
           id: string
           obtained_at: string
           owner_id: string
+          remaining_uses: number
           source: string
           status: string
           tramo_number: number | null
@@ -602,6 +616,7 @@ export type Database = {
           id?: string
           obtained_at?: string
           owner_id: string
+          remaining_uses?: number
           source: string
           status?: string
           tramo_number?: number | null
@@ -611,6 +626,7 @@ export type Database = {
           id?: string
           obtained_at?: string
           owner_id?: string
+          remaining_uses?: number
           source?: string
           status?: string
           tramo_number?: number | null
@@ -715,6 +731,10 @@ export type Database = {
       issue_tramo_cards: { Args: never; Returns: Json }
       play_card: {
         Args: { p_card_instance_id: string; p_target_id?: string | null }
+        Returns: Json
+      }
+      evolve_card: {
+        Args: { p_card_instance_id: string }
         Returns: Json
       }
     }
