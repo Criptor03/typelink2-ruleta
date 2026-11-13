@@ -230,13 +230,96 @@
                 <span class="admin-module-icon">▤</span><span class="admin-module-copy"><strong>Catálogo de cartas</strong><small>Crear cartas, actualizar ilustraciones, rarezas, usos y descripciones.</small></span><span class="admin-module-state">ABRIR CATÁLOGO ↗</span>
               </button>
               <article class="admin-module panel"><span class="admin-module-icon">✦</span><div><h3>Efectos y evoluciones</h3><p>Configurar efectos, objetivos, duración, excepciones y transformaciones de una carta.</p></div><span class="admin-module-state">EN PREPARACIÓN</span></article>
-              <article class="admin-module panel"><span class="admin-module-icon">♙</span><div><h3>Entrenadores</h3><p>Consultar participantes y, más adelante, administrar sus datos y sus inventarios.</p></div><span class="admin-module-state">EN PREPARACIÓN</span></article>
+              <button class="admin-module admin-module-button panel" type="button" id="openAdminTrainers">
+                <span class="admin-module-icon">♙</span><span class="admin-module-copy"><strong>Entrenadores</strong><small>Consultar participantes, barajas, tramo, giros, tipos y limpiar inventarios de prueba.</small></span><span class="admin-module-state">ABRIR ENTRENADORES ↗</span>
+              </button>
               <article class="admin-module panel"><span class="admin-module-icon">◉</span><div><h3>Ruletas y recompensas</h3><p>Gestionar las ruletas normal, legendaria y Fiesta y sus permisos de acceso.</p></div><span class="admin-module-state">EN PREPARACIÓN</span></article>
               <article class="admin-module panel"><span class="admin-module-icon">Ⅱ</span><div><h3>Progresión del evento</h3><p>Configurar tramos, límites de cartas, giros y reglas globales.</p></div><span class="admin-module-state">EN PREPARACIÓN</span></article>
               <article class="admin-module panel"><span class="admin-module-icon">◎</span><div><h3>Estado de la plataforma</h3><p>Supervisar la conexión de cuentas, actividad y módulos de TypeLink 2.</p></div><span class="admin-module-state">EN PREPARACIÓN</span></article>
             </div>
             <div class="admin-security-note"><b>PROTECCIÓN DEL PANEL</b><span>El menú y esta pantalla solo se habilitan para cuentas registradas en la lista privada de administradores. Las acciones de gestión también se validan en el servidor.</span></div>
           </div>
+
+          <section class="admin-trainers-workspace" id="adminTrainersWorkspace" hidden>
+            <div class="admin-catalog-heading">
+              <div>
+                <button class="inline-link" type="button" id="adminTrainersBack">← TODAS LAS HERRAMIENTAS</button>
+                <div class="eyebrow">ADMINISTRACIÓN / PARTICIPANTES</div>
+                <h2>GESTIÓN DE <em>ENTRENADORES</em></h2>
+                <p>Consulta el progreso y el inventario de cada participante de TypeLink 2.</p>
+              </div>
+            </div>
+
+            <div id="adminTrainersListView">
+              <div class="admin-catalog-stats admin-trainer-stats">
+                <div class="panel"><span class="eyebrow">ENTRENADORES</span><strong id="adminTrainersTotal">0</strong></div>
+                <div class="panel"><span class="eyebrow">CARTAS EN INVENTARIOS</span><strong id="adminTrainersCardsTotal">0</strong></div>
+                <div class="panel"><span class="eyebrow">CARTAS NORMALES</span><strong id="adminTrainersNormalTotal">0</strong></div>
+              </div>
+              <div class="admin-catalog-toolbar panel">
+                <input id="adminTrainersSearch" type="search" placeholder="Buscar entrenador por nombre..." aria-label="Buscar entrenadores">
+              </div>
+              <div class="admin-trainers-grid" id="adminTrainersGrid">
+                <div class="admin-catalog-loading">Cargando entrenadores...</div>
+              </div>
+            </div>
+
+            <div id="adminTrainerDetailView" hidden>
+              <div class="admin-trainer-detail-heading">
+                <div class="admin-trainer-identity">
+                  <div class="admin-trainer-avatar" id="adminTrainerAvatar">TL</div>
+                  <div>
+                    <span class="eyebrow">FICHA DE ENTRENADOR</span>
+                    <h3 id="adminTrainerName">Entrenador</h3>
+                    <p id="adminTrainerSince">Registrado en TypeLink 2</p>
+                    <small id="adminTrainerUpdated">—</small>
+                  </div>
+                </div>
+                <button class="admin-danger-button" type="button" id="adminClearTrainerCardsButton">VACIAR TODAS SUS CARTAS</button>
+              </div>
+
+              <div class="admin-trainer-detail-stats">
+                <div class="panel"><span class="eyebrow">TRAMO ACTUAL</span><strong id="adminTrainerTramo">0</strong></div>
+                <div class="panel"><span class="eyebrow">GIROS NORMALES</span><strong id="adminTrainerSpins">0</strong></div>
+                <div class="panel"><span class="eyebrow">GIROS EXTRA</span><strong id="adminTrainerBonusSpins">0</strong></div>
+                <div class="panel"><span class="eyebrow">CARTAS EN INVENTARIO</span><strong id="adminTrainerCardCount">0</strong></div>
+              </div>
+              <div class="admin-trainer-progress-note" id="adminTrainerProgressNote">El progreso del entrenador se conserva al vaciar su inventario.</div>
+
+              <section class="admin-trainer-section panel">
+                <div class="admin-trainer-section-heading">
+                  <div><span class="eyebrow">INVENTARIO COMPLETO</span><h3>Cartas del entrenador</h3></div>
+                  <span class="type-count" id="adminTrainerInventoryCount">0 CARTAS</span>
+                </div>
+                <div class="admin-trainer-inventory-grid" id="adminTrainerInventory">
+                  <div class="admin-catalog-loading">Cargando inventario...</div>
+                </div>
+              </section>
+
+              <section class="admin-trainer-section panel">
+                <div class="admin-trainer-section-heading">
+                  <div><span class="eyebrow">ESTADO DE TIPOS</span><h3>Los 18 tipos Pokémon</h3></div>
+                  <span class="type-count" id="adminTrainerTypesCount">18 / 18 ACTIVOS</span>
+                </div>
+                <div class="admin-trainer-types-grid" id="adminTrainerTypes"></div>
+              </section>
+
+              <section class="admin-trainer-section panel">
+                <div class="admin-trainer-section-heading">
+                  <div><span class="eyebrow">EFECTOS RECIBIDOS</span><h3>Cartas que le afectan</h3></div>
+                  <span class="type-count" id="adminTrainerEffectsCount">0 ACTIVOS</span>
+                </div>
+                <div class="admin-trainer-effects-list" id="adminTrainerEffects">
+                  <div class="profile-module-empty">No hay efectos activos.</div>
+                </div>
+              </section>
+
+              <div class="admin-trainer-reset-note">
+                <b>QUÉ HACE EL VACIADO</b>
+                <span>Elimina todas las cartas normales, de tramo, Fiesta y las copias usadas de este entrenador. Conserva su tramo, giros, tipos, efectos activos recibidos y el historial de actividad del muro. No se puede deshacer.</span>
+              </div>
+            </div>
+          </section>
 
           <section class="admin-catalog-workspace" id="adminCatalogWorkspace" hidden>
             <div class="admin-catalog-heading">
