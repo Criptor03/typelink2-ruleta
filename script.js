@@ -232,7 +232,7 @@ function renderRouteItems(cards,container,allowActions=false){
   if(!container)return;
   container.replaceChildren();
   if(!cards.length){
-    const empty=document.createElement("div");empty.className="deck-empty";empty.textContent="Todavía no has iniciado un tramo.";container.append(empty);return;
+    const empty=document.createElement("div");empty.className="deck-empty";empty.textContent="Sin tramo iniciado.";container.append(empty);return;
   }
   cards.forEach((card,index)=>container.append(createDeckItem(card,index,true,allowActions)));
 }
