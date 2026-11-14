@@ -204,8 +204,8 @@ function createDeckItem(card,index,route=false,allowActions=false){
       actionButton.title=hasEffects
         ?"Usar esta carta"
         :allowsNoEffect
-          ?"Lanzar carta sin efecto automático; el movimiento quedará registrado"
-          :"Esta carta todavía no tiene efectos y aún no permite un uso sin efecto";
+          ?"Lanzar sin efecto automático."
+          :"Sin efectos ni permiso de uso manual.";
       actionButton.addEventListener("click",()=>openCardAction(card.instance_id,"use"));
     }
     actions.append(actionButton);
@@ -238,10 +238,10 @@ function renderRouteItems(cards,container,allowActions=false){
 }
 function renderDeck(){
   const normal=activeNormalCards(),route=activeTramoCards(),special=cloudMode?cloudSpecial:[],normalCount=normal.length;
-  renderCardItems(normal,document.getElementById("deckList"),"Todavía no tienes cartas. ¡Haz tu primer giro!");
-  renderCardItems(normal,document.getElementById("deckListFull"),"Todavía no tienes cartas. Ve a la ruleta para conseguir la primera.",true);
+  renderCardItems(normal,document.getElementById("deckList"),"Sin cartas todavía.");
+  renderCardItems(normal,document.getElementById("deckListFull"),"Sin cartas todavía.",true);
   renderRouteItems(route,document.getElementById("routeListFull"),true);
-  renderCardItems(special,document.getElementById("specialListFull"),"Todavía no tienes cartas Fiesta u otras cartas especiales.",true);
+  renderCardItems(special,document.getElementById("specialListFull"),"Sin cartas especiales.",true);
 
   setText("deckCount",normalCount+"/"+normalCardLimit);
   setText("deckCountFull",normalCount+" / "+normalCardLimit);
@@ -255,7 +255,7 @@ function renderDeck(){
   ["capacityFill","capacityFillFull","homeCapacityFill"].forEach(id=>{
     const el=document.getElementById(id);if(el)el.style.width=width;
   });
-  setText("homeDeckHint",normalCount?("Tienes "+normalCount+" de "+normalCardLimit+" cartas normales disponibles."):"Tu baraja todavía está vacía. Haz tu primer giro.");
+  setText("homeDeckHint",normalCount?("Tienes "+normalCount+" de "+normalCardLimit+" cartas normales disponibles."):"Sin cartas todavía.");
   setText("profileNormalCount",normalCount+"/"+normalCardLimit);
   setText("profileRouteCount",route.length);
 
@@ -274,25 +274,25 @@ function renderDeck(){
     normalCount>=normalCardLimit?"BARAJA COMPLETA":
     totalSpins<=0?"SIN GIROS DISPONIBLES":"GIRAR RULETA";
   setText("spinHint",!currentAuthUser
-    ?"Inicia sesión con Discord para obtener cartas."
+    ?"Inicia sesión para girar."
     :normalCount>=normalCardLimit
-      ?"Tu baraja está completa. Utiliza o libera una carta para continuar."
+      ?"Baraja completa. Libera un espacio para continuar."
       :totalSpins<=0
-        ?"No tienes giros disponibles. Avanza de tramo para recibir "+normalSpinsPerTramo+" giros."
-        :"Cada giro consume 1 crédito y entrega una carta normal.");
+        ?"Sin giros. Avanza de tramo para recibir "+normalSpinsPerTramo+" giros."
+        :"Cada giro entrega 1 carta.");
   setText("spinBudget",currentAuthUser
     ?("GIROS DEL TRAMO: "+tramoSpinsRemaining+" · EXTRA: "+bonusTramoSpinsRemaining)
     :"INICIA SESIÓN PARA VER TUS GIROS");
 
   let tramoHint="";
   if(!currentAuthUser){
-    tramoHint="Inicia sesión con Discord para avanzar de tramo.";
+    tramoHint="Inicia sesión para avanzar.";
   }else if(pendingSpins){
-    tramoHint="Aún tienes "+totalSpins+" giros pendientes. Utilízalos antes de avanzar al siguiente tramo.";
+    tramoHint="Tienes "+totalSpins+" giros pendientes. Úsalos antes de avanzar.";
   }else if(freeSlots<normalSpinsPerTramo){
-    tramoHint="Te quedan cartas por utilizar. Libera al menos "+normalSpinsPerTramo+" espacio(s) en tu baraja antes de avanzar de tramo.";
+    tramoHint="Libera al menos "+normalSpinsPerTramo+" espacio(s) antes de avanzar.";
   }else{
-    tramoHint="Tienes espacio suficiente. Al avanzar recibirás "+cardsPerTramo+" carta(s) de tramo y "+normalSpinsPerTramo+" giros de la ruleta normal.";
+    tramoHint="Listo para avanzar: recibirás "+cardsPerTramo+" cartas de tramo y "+normalSpinsPerTramo+" giros.";
   }
   setText("tramoProgressHint",tramoHint);
   setText("tramoProgressCount","TRAMO "+currentTramo+" · GIROS "+tramoSpinsRemaining+" NORMALES · "+bonusTramoSpinsRemaining+" EXTRA");
@@ -305,8 +305,8 @@ function renderDeck(){
   });
 
   setText("deckCloudNote",cloudMode
-    ?"Tu baraja está conectada a Supabase. Los usos, acciones, giros y evoluciones se validan en el servidor."
-    :"Inicia sesión con Discord para activar tu baraja en la nube.");
+    ?"Baraja sincronizada."
+    :"Inicia sesión para sincronizar.");
   updateSpecialRouletteAccessUI();
 }
 function showResult(card){
@@ -362,11 +362,11 @@ function renderProfile(profile){
   setText("userDisplayName",displayName);
   setText("homeProfileName",currentAuthUser?("¡Bienvenido, "+displayName+"!"):"Tu perfil te espera.");
   setText("homeProfileDescription",currentAuthUser
-    ?"Tu identidad está conectada. Tu baraja y tus datos se guardan en tu cuenta."
-    :"Inicia sesión con Discord para registrar tu identidad y guardar tu baraja en la nube.");
+    ?"Cuenta conectada."
+    :"Inicia sesión para guardar tu perfil y baraja.");
   setText("homeProfileStatus",currentAuthUser?"CONECTADO":"SIN SESIÓN");
-  setText("homeProfileHandle",currentAuthUser?"ENTRENADOR · "+(metadata.preferred_username||metadata.user_name||displayName).toUpperCase():"ENTRENADOR NO IDENTIFICADO");
-  setText("homeProfileSince",currentProfile?.created_at?("Miembro desde "+formatDate(currentProfile.created_at)):"Conecta tu cuenta de Discord.");
+  setText("homeProfileHandle",currentAuthUser?"ENTRENADOR · "+(metadata.preferred_username||metadata.user_name||displayName).toUpperCase():"ENTRENADOR");
+  setText("homeProfileSince",currentProfile?.created_at?("Miembro desde "+formatDate(currentProfile.created_at)):"Conecta Discord.");
   setText("profileDiscordName",displayName);
   setText("profileDiscordHandle",currentAuthUser
     ?("@"+(metadata.preferred_username||metadata.user_name||displayName)+" · Discord")
@@ -385,7 +385,7 @@ function renderTypeTracker(){
   if(!container)return;
   container.replaceChildren();
   if(!currentAuthUser){
-    const empty=document.createElement("div");empty.className="profile-module-empty";empty.textContent="Inicia sesión con Discord para marcar los tipos habilitados.";container.append(empty);
+    const empty=document.createElement("div");empty.className="profile-module-empty";empty.textContent="Inicia sesión para editar tus tipos.";container.append(empty);
     setText("typeTrackerCount","SIN SESIÓN");return;
   }
   const enabledCount=POKEMON_TYPES.filter(type=>playerTypeStatus[type.slug]!==false).length;
@@ -443,10 +443,10 @@ function renderIncomingEffects(groups){
   container.replaceChildren();
   setText("incomingEffectsCount",groups.length+" ACTIVAS");
   if(!currentAuthUser){
-    const empty=document.createElement("div");empty.className="profile-module-empty";empty.textContent="Inicia sesión para consultar las cartas que te afectan.";container.append(empty);return;
+    const empty=document.createElement("div");empty.className="profile-module-empty";empty.textContent="Inicia sesión para ver tus efectos.";container.append(empty);return;
   }
   if(!groups.length){
-    const empty=document.createElement("div");empty.className="profile-module-empty";empty.textContent="Ningún otro entrenador tiene cartas con efectos activos sobre ti ahora mismo.";container.append(empty);return;
+    const empty=document.createElement("div");empty.className="profile-module-empty";empty.textContent="Sin efectos activos.";container.append(empty);return;
   }
   groups.forEach(group=>{
     const card=document.createElement("article");card.className="incoming-effect-card";
@@ -461,7 +461,7 @@ function renderIncomingEffects(groups){
     const name=document.createElement("strong");name.textContent=group.card?.name||"Carta TypeLink";
     const rarity=document.createElement("span");rarity.className="incoming-effect-rarity";rarity.textContent=group.card?.rarity||"CARTA";
     title.append(name,rarity);
-    const caster=document.createElement("p");caster.className="incoming-effect-caster";caster.textContent="Lanzada por "+(group.casterName||"otro entrenador");
+    const caster=document.createElement("p");caster.className="incoming-effect-caster";caster.textContent="De "+(group.casterName||"otro entrenador");
     const tags=document.createElement("div");tags.className="incoming-effect-tags";
     const effects=[...new Set(group.effects.map(effectLabel))];
     const durations=[...new Set(group.effects.map(durationLabel))];
@@ -743,7 +743,7 @@ function renderActivityFeed(entries,profiles){
   if(!container)return;
   container.replaceChildren();
   if(!entries.length){
-    container.append(makeActivityPlaceholder("Todavía no hay cartas en el chat. Cuando un entrenador lance una carta a otro o la utilice sobre sí mismo, aparecerá aquí."));
+    container.append(makeActivityPlaceholder("Sin cartas todavía."));
     return;
   }
   entries.forEach(entry=>{
@@ -791,8 +791,8 @@ function renderActivityFeed(entries,profiles){
       entry.target_id&&entry.target_id!==entry.actor_id
         ?"Ha lanzado una carta a "+targetName+"."
         :targetLabel==="PARA TODOS LOS ENTRENADORES"
-          ?"Ha lanzado una carta para todos los entrenadores."
-          :"Ha utilizado una carta para sí mismo."
+          ?"Ha lanzado una carta para todos."
+          :"Ha usado una carta para sí mismo."
     );
     bubble.append(bubbleText);
 
@@ -832,7 +832,7 @@ function renderActivityFeed(entries,profiles){
     cardMeta.textContent=rarity.toUpperCase()+(details.category?" · "+String(details.category).toUpperCase():"");
     const cardAction=document.createElement("span");
     cardAction.className="activity-card-preview-action";
-    cardAction.textContent=imagePath?"TOCAR PARA VER EN GRANDE ↗":"ILUSTRACIÓN NO DISPONIBLE";
+    cardAction.textContent=imagePath?"VER CARTA ↗":"SIN ILUSTRACIÓN";
     cardCopy.append(cardLabel,cardTitle,cardMeta,cardAction);
     cardPreview.append(cardCopy);
 
@@ -846,7 +846,7 @@ async function loadActivityFeed(){
   const container=document.getElementById("activityFeed");
   if(!container)return;
   if(!currentAuthUser||!authClient){
-    container.replaceChildren(makeActivityPlaceholder("Inicia sesión con Discord para ver las cartas lanzadas por la comunidad."));
+    container.replaceChildren(makeActivityPlaceholder("Inicia sesión para ver el chat."));
     return;
   }
   const {data,error}=await authClient.from("card_activity")
@@ -905,7 +905,7 @@ function renderNotifications(rows,profiles,unreadCount){
   const markAll=document.getElementById("markAllNotificationsRead");
   if(markAll)markAll.disabled=unread===0;
   if(!rows.length){
-    container.append(notificationPlaceholder("Todavía no tienes notificaciones. Cuando otro entrenador utilice una carta contra ti, aparecerá aquí."));
+    container.append(notificationPlaceholder("Sin notificaciones."));
     return;
   }
   rows.forEach(notification=>{
@@ -1002,10 +1002,10 @@ async function loadNotifications(){
   if(!currentAuthUser||!authClient){
     setNotificationBadge(0);
     setText("notificationsTotal","0 NOTIFICACIONES");
-    setText("notificationsUnreadLabel","Inicia sesión para consultar tus avisos.");
+    setText("notificationsUnreadLabel","Inicia sesión para ver tus avisos.");
     const markAll=document.getElementById("markAllNotificationsRead");
     if(markAll)markAll.disabled=true;
-    if(container)container.replaceChildren(notificationPlaceholder("Inicia sesión con Discord para consultar tus notificaciones."));
+    if(container)container.replaceChildren(notificationPlaceholder("Inicia sesión para ver tus avisos."));
     return;
   }
   const [listResult,unreadResult]=await Promise.all([
@@ -1079,17 +1079,17 @@ async function loadPlayers(){
   if(!currentAuthUser){
     const empty=document.createElement("div");empty.className="empty-feature panel";
     const icon=document.createElement("div");icon.className="empty-emblem";icon.textContent="♙";
-    const title=document.createElement("h2");title.textContent="Inicia sesión para ver a los entrenadores.";
-    const body=document.createElement("p");body.textContent="Los perfiles públicos están disponibles para los participantes registrados.";
+    const title=document.createElement("h2");title.textContent="Inicia sesión para ver los participantes.";
+    const body=document.createElement("p");body.textContent="";
     empty.append(icon,title,body);container.append(empty);setText("playersCount","0 ENTRENADORES");return;
   }
-  const loading=document.createElement("div");loading.className="players-loading";loading.textContent="Cargando entrenadores de Teselia...";container.append(loading);
+  const loading=document.createElement("div");loading.className="players-loading";loading.textContent="Cargando participantes...";container.append(loading);
   const {data:profiles,error}=await authClient.from("profiles")
     .select("id,display_name,avatar_url,created_at")
     .order("created_at",{ascending:true});
   if(error){
     console.error("No se pudieron cargar los jugadores:",error.message);
-    container.replaceChildren();const message=document.createElement("div");message.className="empty-feature panel";message.textContent="No pudimos cargar el directorio de jugadores.";container.append(message);return;
+    container.replaceChildren();const message=document.createElement("div");message.className="empty-feature panel";message.textContent="No se pudo cargar la lista.";container.append(message);return;
   }
   const {data:cards}=await authClient.from("player_cards").select("owner_id,card_catalog(category)");
   const counts={normal:{},tramo:{}};
@@ -1102,7 +1102,7 @@ async function loadPlayers(){
   container.replaceChildren();
   setText("playersCount",(profiles||[]).length+" ENTRENADORES");
   if(!profiles||!profiles.length){
-    const empty=document.createElement("div");empty.className="empty-feature panel";empty.textContent="Todavía no hay entrenadores registrados.";container.append(empty);return;
+    const empty=document.createElement("div");empty.className="empty-feature panel";empty.textContent="Sin participantes todavía.";container.append(empty);return;
   }
   profiles.forEach(profile=>{
     const displayName=profile.display_name||"Entrenador";
@@ -1143,7 +1143,7 @@ async function showPublicPlayer(playerId){
   const items=(rows||[]).map(mapInventoryRow).filter(Boolean);
   setText("publicPlayerCardCount",items.length+" CARTAS");
   if(!items.length){
-    const empty=document.createElement("div");empty.className="deck-empty";empty.textContent="Este entrenador todavía no tiene cartas.";container.append(empty);
+    const empty=document.createElement("div");empty.className="deck-empty";empty.textContent="Sin cartas todavía.";container.append(empty);
   }else{
     items.forEach((item,index)=>container.append(createDeckItem(item,index,item.category==="tramo")));
   }
@@ -1181,7 +1181,7 @@ function setCardActionTargetProfile(profile){
     if(initials)initials.hidden=false;
   }
   setText("cardActionTargetEffectCount","…");
-  setText("cardActionTargetStatus","CONSULTANDO EFECTOS ACTIVOS");
+  setText("cardActionTargetStatus","CONSULTANDO");
 }
 
 function initialsForTrainer(name){
@@ -1204,12 +1204,12 @@ async function refreshCardActionTargetProfile(profile){
     const count=Number(data);
     if(!Number.isInteger(count)||count<0)throw new Error("El servidor devolvió un contador no válido.");
     setText("cardActionTargetEffectCount",count);
-    setText("cardActionTargetStatus","EFECTOS ACTIVOS EN SU PERFIL");
+    setText("cardActionTargetStatus","EFECTOS ACTIVOS");
   }catch(error){
     if(request!==cardActionTargetPreviewRequest)return;
     console.warn("No se pudo consultar el contador de efectos del entrenador:",error.message);
     setText("cardActionTargetEffectCount","—");
-    setText("cardActionTargetStatus","CONTADOR NO DISPONIBLE");
+    setText("cardActionTargetStatus","NO DISPONIBLE");
   }
 }
 
@@ -1275,10 +1275,10 @@ async function openCardAction(instanceId,mode){
       :noAutomaticEffect?"Lanzar carta":"Usar carta");
     setText("cardActionArrow",transfer?"⇢":noAutomaticEffect?"↗":"✦");
     setText("cardActionDescription",transfer
-      ?"La carta pasará al inventario del entrenador seleccionado sin activar su efecto."
+      ?"La carta pasará al inventario del entrenador."
       :noAutomaticEffect
-        ?"Esta carta no aplica efectos automáticos en la plataforma. Al lanzarla, el movimiento quedará registrado en el muro y, si tiene objetivo, se notificará al entrenador seleccionado. Cada uso consume una carga."
-        :"La carta activará su efecto configurado. Cada uso resta una carga; al llegar a cero, la carta se agotará.");
+        ?"No aplica efectos automáticos. Se registra en el muro, notifica al objetivo y consume una carga."
+        :"Activa su efecto y consume una carga por uso.");
     confirmButton.textContent=transfer
       ?"CONFIRMAR TRANSFERENCIA"
       :noAutomaticEffect?"LANZAR CARTA":"USAR CARTA";
@@ -1535,7 +1535,7 @@ function renderAdminTrainers(){
   grid.replaceChildren();
   if(!filtered.length){
     const empty=document.createElement("div");empty.className="admin-catalog-loading";
-    empty.textContent=adminTrainerItems.length?"No hay entrenadores que coincidan con la búsqueda.":"Todavía no hay entrenadores registrados.";
+    empty.textContent=adminTrainerItems.length?"Sin resultados.":"Sin participantes todavía.";
     grid.append(empty);return;
   }
   filtered.forEach(trainer=>{
@@ -1558,7 +1558,7 @@ function renderAdminTrainers(){
 }
 async function loadAdminTrainers(){
   const grid=document.getElementById("adminTrainersGrid");
-  if(grid){grid.replaceChildren();const loading=document.createElement("div");loading.className="admin-catalog-loading";loading.textContent="Cargando participantes y progreso...";grid.append(loading);}
+  if(grid){grid.replaceChildren();const loading=document.createElement("div");loading.className="admin-catalog-loading";loading.textContent="Cargando participantes...";grid.append(loading);}
   if(!authClient||!currentAuthUser||!isAdmin){notify("No tienes permiso para consultar los entrenadores.");return;}
   try{
     const {data,error}=await authClient.rpc("admin_list_trainers");
@@ -1607,7 +1607,7 @@ function renderAdminTrainerDetail(data){
   const cards=Array.isArray(data.inventory)?data.inventory:[];
   if(!cards.length){
     const empty=document.createElement("div");empty.className="admin-catalog-loading";
-    empty.textContent="Este entrenador no tiene cartas en su inventario.";
+    empty.textContent="Sin cartas en el inventario.";
     inventory.append(empty);
   }else{
     cards.forEach(item=>{
@@ -1660,7 +1660,7 @@ function renderAdminTrainerDetail(data){
   setText("adminTrainerEffectsCount",effects.length+" ACTIVOS");
   if(!effects.length){
     const empty=document.createElement("div");empty.className="profile-module-empty";
-    empty.textContent="Este entrenador no tiene efectos activos recibidos.";
+    empty.textContent="Sin efectos activos.";
     effectsWrap.append(empty);
   }else{
     effects.forEach(effect=>{
@@ -1684,7 +1684,7 @@ function renderAdminTrainerDetail(data){
   setText("adminTrainerUnlocksCount",unlocks.length+" DESBLOQUEOS");
   if(!unlocks.length){
     const empty=document.createElement("div");empty.className="profile-module-empty";
-    empty.textContent="Este entrenador todavía no tiene ruletas especiales desbloqueadas.";
+    empty.textContent="Sin ruletas desbloqueadas.";
     unlocksWrap.append(empty);
   }else{
     unlocks.forEach(unlock=>{
@@ -1721,7 +1721,7 @@ function renderAdminTrainerDetail(data){
   };
   if(!activity.length){
     const empty=document.createElement("div");empty.className="profile-module-empty";
-    empty.textContent="Este entrenador todavía no tiene movimientos en el muro.";
+    empty.textContent="Sin movimientos.";
     activityWrap.append(empty);
   }else{
     activity.forEach(entry=>{
@@ -2239,7 +2239,7 @@ function createAdminEffectRow(effect={}){
   const spinFields=document.createElement("div");spinFields.className="admin-mechanics-effect-fields";spinFields.dataset.role="spin-fields";
   const spinValueLabel=document.createElement("label");spinValueLabel.className="admin-field";spinValueLabel.textContent="GIROS EXTRA QUE CONCEDE";
   const spinValue=document.createElement("input");spinValue.type="number";spinValue.min="1";spinValue.max="100";spinValue.step="1";spinValue.value=String(effect.effect_key==="tramo_spin_credit"?effect.effect_value??1:1);spinValue.dataset.role="effect-value";spinValueLabel.append(spinValue);
-  const spinNote=document.createElement("p");spinNote.className="admin-mechanics-inline-note";spinNote.textContent="Se añaden inmediatamente a los giros extra del entrenador objetivo. No tienen duración.";
+  const spinNote=document.createElement("p");spinNote.className="admin-mechanics-inline-note";spinNote.textContent="Se acreditan al instante y no caducan.";
   spinFields.append(spinValueLabel,spinNote);
 
   const unlockFields=document.createElement("div");unlockFields.className="admin-mechanics-effect-fields";unlockFields.dataset.role="unlock-fields";
@@ -2249,7 +2249,7 @@ function createAdminEffectRow(effect={}){
   pool.value=effect.parameters?.pool_slug==="fiesta"?"fiesta":"legendary";poolLabel.append(pool);
   const spinsLabel=document.createElement("label");spinsLabel.className="admin-field";spinsLabel.textContent="GIROS QUE CONCEDE";
   const spins=document.createElement("input");spins.type="number";spins.min="1";spins.max="100";spins.step="1";spins.value=String(effect.parameters?.spins_granted??1);spins.dataset.role="spins-granted";spinsLabel.append(spins);
-  const instantNote=document.createElement("p");instantNote.className="admin-mechanics-inline-note";instantNote.textContent="El acceso se concede al canjear la carta y requiere que la ruleta esté activa.";
+  const instantNote=document.createElement("p");instantNote.className="admin-mechanics-inline-note";instantNote.textContent="Se acredita al canjear. Requiere una ruleta activa.";
   unlockFields.append(poolLabel,spinsLabel,instantNote);
 
   function sync(){
@@ -2854,9 +2854,9 @@ function startWheelAnimation(card){
 }
 async function spin(){
   if(spinning)return;
-  if(!currentAuthUser||!authClient){notify("Inicia sesión con Discord para obtener cartas.");return;}
+  if(!currentAuthUser||!authClient){notify("Inicia sesión para girar.");return;}
   if(activeNormalCards().length>=normalCardLimit){notify("Tu baraja ya tiene el límite de "+normalCardLimit+" cartas normales.");return;}
-  if(tramoSpinsRemaining+bonusTramoSpinsRemaining<=0){notify("No tienes giros disponibles. Avanza de tramo para recibir "+normalSpinsPerTramo+" giros.");return;}
+  if(tramoSpinsRemaining+bonusTramoSpinsRemaining<=0){notify("Sin giros. Avanza de tramo para recibir "+normalSpinsPerTramo+" giros.");return;}
   spinning=true;renderDeck();
   try{
     // The server selects and awards the card in one protected transaction.
@@ -2942,7 +2942,7 @@ async function spinSpecialRoulette(poolSlug){
 
 async function startNewTramo(){
   if(spinning)return;
-  if(!currentAuthUser||!authClient){notify("Inicia sesión con Discord para avanzar de tramo.");return;}
+  if(!currentAuthUser||!authClient){notify("Inicia sesión para avanzar.");return;}
   try{
     await loadCardEngineConfig();
     renderDeck();
@@ -2997,8 +2997,8 @@ function renderAdminProgressionSettings(data){
   }
   const enough=Number(cards.active_count||0)>=cardsPer;
   setText("adminProgressionCatalogHint",enough
-    ?"El catálogo tiene suficientes cartas activas para la entrega configurada."
-    :"Faltan cartas activas. Activa o crea más cartas de tramo antes de guardar esta cantidad.");
+    ?"Cartas suficientes."
+    :"Faltan cartas activas.");
   setAdminPlatformIndicator("adminProgressionStatus",enough?"online":"warning",enough?"CONFIGURACIÓN CARGADA":"REVISAR CATÁLOGO");
   setText("adminProgressionSaveStatus","Última configuración guardada: "+formatAdminPlatformDate(settings.updated_at));
 }
@@ -3030,7 +3030,7 @@ async function saveAdminProgressionSettings(){
   if(!Number.isInteger(spinsPer)||spinsPer<1||spinsPer>20){setText("adminProgressionSaveStatus","Los giros por avance deben ser un entero entre 1 y 20.");return;}
   const button=document.getElementById("adminProgressionSave");
   button.disabled=true;button.textContent="GUARDANDO...";
-  setText("adminProgressionSaveStatus","Validando y guardando las reglas en Supabase...");
+  setText("adminProgressionSaveStatus","Guardando reglas...");
   try{
     const {data,error}=await authClient.rpc("admin_save_event_progression_settings",{
       p_normal_card_limit:normalLimit,p_cards_per_tramo:cardsPer,p_normal_spins_per_tramo:spinsPer
@@ -3038,7 +3038,7 @@ async function saveAdminProgressionSettings(){
     if(error)throw error;
     if(!data?.settings)throw new Error("El servidor no confirmó la nueva configuración.");
     renderAdminProgressionSettings(data);
-    setText("adminProgressionSaveStatus","¡Reglas guardadas correctamente! Se aplicarán en los próximos avances.");
+    setText("adminProgressionSaveStatus","Reglas guardadas. Se aplican en el próximo avance.");
     notify("Progresión del evento actualizada.");
     await loadCloudInventory();
   }catch(error){
@@ -3105,9 +3105,9 @@ function renderAdminPlatformModules(data){
   const activity=data.activity||{},settings=data.event_settings||{};
   const modules=[
     {name:"Catálogo de cartas",value:Number(catalog.active||0)+"/"+Number(catalog.total||0)+" activas",note:Number(catalog.inactive||0)+" desactivadas",state:Number(catalog.active||0)>0?"online":"warning"},
-    {name:"Ruletas",value:activePools+"/"+pools.length+" abiertas",note:activePoolCards+" cartas habilitadas. Las ruletas especiales pueden permanecer cerradas hasta configurarlas.",state:activePools>0?"online":"warning"},
-    {name:"Muro de cartas",value:Number(activity.total||0).toLocaleString("es-CO")+" movimientos",note:Number(activity.last_7_days||0)+" en los últimos 7 días · último: "+formatAdminPlatformDate(activity.last_activity_at),state:Number(activity.total||0)>0?"online":"warning"},
-    {name:"Progresión del evento",value:settings.singleton?(Number(settings.cards_per_tramo||0)+" cartas · "+Number(settings.normal_spins_per_tramo||3)+" giros por avance"):"Sin configuración",note:settings.singleton?("Límite base de baraja: "+Number(settings.normal_card_limit||0)+" · avance individual por entrenador"):"No se encontró la configuración principal del evento.",state:settings.singleton?"online":"warning"}
+    {name:"Ruletas",value:activePools+"/"+pools.length+" abiertas",note:activePoolCards+" cartas habilitadas.",state:activePools>0?"online":"warning"},
+    {name:"Muro de cartas",value:Number(activity.total||0).toLocaleString("es-CO")+" movimientos",note:Number(activity.last_7_days||0)+" en 7 días · último: "+formatAdminPlatformDate(activity.last_activity_at),state:Number(activity.total||0)>0?"online":"warning"},
+    {name:"Progresión del evento",value:settings.singleton?(Number(settings.cards_per_tramo||0)+" cartas · "+Number(settings.normal_spins_per_tramo||3)+" giros por avance"):"Sin configuración",note:settings.singleton?("Límite base: "+Number(settings.normal_card_limit||0)+" · progreso individual"):"No se encontró la configuración principal del evento.",state:settings.singleton?"online":"warning"}
   ];
   modules.forEach(module=>{
     const row=document.createElement("article");row.className="admin-platform-module";
