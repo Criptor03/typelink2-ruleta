@@ -16,7 +16,8 @@ Plataforma web de TypeLink 2 con identidad visual inspirada en Pokémon Blanco y
 - Las ruletas Legendaria y Fiesta ya tienen su motor de acceso y giro: el servidor valida el pase, usa los pesos configurados y descuenta exactamente un crédito por premio. Los premios de esas ruletas se podrán añadir desde el catálogo cuando estén diseñados.
 - Límite de cartas normales controlado por el servidor; ahora admite modificadores aditivos temporales.
 - Dos cartas de tramo entregadas mediante una función segura; se acumulan y no consumen espacios normales.
-- Actualizaciones Realtime preparadas para barajas, perfiles y notificaciones.
+- Actualizaciones Realtime preparadas para barajas, perfiles, notificaciones y el muro comunitario.
+- Al usar una carta, el entrenador puede añadir un mensaje opcional de hasta 280 caracteres que aparece junto al movimiento en el muro de cartas.
 - Motor universal de cartas con `play_card()` y `evolve_card()` en el servidor.
 - Cada carta admite de 1 a 99 usos configurables; el inventario muestra los usos restantes y agota la carta al llegar a cero.
 - Evoluciones de una sola carta a otra: consumen la instancia original y entregan una nueva, sin fusiones.
@@ -69,6 +70,10 @@ El perfil incluye un registro persistente de los 18 tipos Pokémon (habilitado/b
 ### Migración reciente
 - `20261113175916_add_trainer_type_tracker_and_incoming_effects`
 
+
+### Mensajes personalizados en el muro de cartas
+- `20261114001152_add_custom_messages_to_card_activity`
+- El RPC `play_card_with_message` valida el mensaje (máximo 280 caracteres) y lo adjunta al mismo movimiento de la carta dentro de la transacción; el muro lo presenta como texto, sin interpretar HTML.
 
 ### Ruletas especiales
 - `20261113230000_connect_special_roulette_ticket_cards_and_spin_engine`
