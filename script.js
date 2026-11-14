@@ -990,10 +990,6 @@ async function confirmCardAction(){
   }
 
   const customMessage=mode==="use"?(messageInput?.value||"").trim():"";
-  if(customMessage.length>280){
-    feedback.textContent="El mensaje no puede superar los 280 caracteres.";
-    return;
-  }
 
   button.disabled=true;button.textContent="PROCESANDO...";
   feedback.textContent="Validando la acción en el servidor...";
