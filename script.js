@@ -1044,20 +1044,25 @@ async function loadPlayers(){
     const empty=document.createElement("div");empty.className="empty-feature panel";empty.textContent="Todavía no hay entrenadores registrados.";container.append(empty);return;
   }
   profiles.forEach(profile=>{
-    const card=document.createElement("article");card.className="player-directory-card";
+    const displayName=profile.display_name||"Entrenador";
+    const card=document.createElement("button");
+    card.type="button";
+    card.className="player-directory-card";
+    card.setAttribute("aria-label","Abrir perfil de "+displayName);
     const avatar=document.createElement("div");avatar.className="player-directory-avatar";
-    applyAvatar(avatar,profile.avatar_url,(profile.display_name||"TL").slice(0,2).toUpperCase());
+    applyAvatar(avatar,profile.avatar_url,displayName.slice(0,2).toUpperCase());
     const info=document.createElement("div");info.className="player-directory-info";
-    const name=document.createElement("strong");name.textContent=profile.display_name||"Entrenador";
-    const since=document.createElement("small");since.textContent="Entrenador desde "+formatDate(profile.created_at);
+    const name=document.createElement("strong");name.textContent=displayName;
+    const since=document.createElement("small");since.textContent="Desde "+formatDate(profile.created_at);
     info.append(name,since);
     const stats=document.createElement("div");stats.className="player-directory-stats";
-    const normal=document.createElement("span");normal.textContent=(counts.normal[profile.id]||0)+" CARTAS NORMALES";
-    const tramo=document.createElement("span");tramo.textContent=(counts.tramo[profile.id]||0)+" TRAMO";
+    const normal=document.createElement("span");normal.textContent=(counts.normal[profile.id]||0)+" normales";
+    const tramo=document.createElement("span");tramo.textContent=(counts.tramo[profile.id]||0)+" tramo";
     stats.append(normal,tramo);
-    const button=document.createElement("button");button.className="player-view-button";button.type="button";button.textContent="VER PERFIL ↗";
-    button.addEventListener("click",()=>showPublicPlayer(profile.id));
-    card.append(avatar,info,stats,button);container.append(card);
+    const action=document.createElement("span");action.className="player-view-button";action.textContent="VER PERFIL ↗";
+    card.append(avatar,info,stats,action);
+    card.addEventListener("click",()=>showPublicPlayer(profile.id));
+    container.append(card);
   });
 }
 
