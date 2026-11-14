@@ -1564,7 +1564,12 @@ button:disabled{cursor:not-allowed}
 
 
 /* Explicit no-automatic-effect card option */
+.admin-card-no-effect-option{
+  color:#d1dde4!important;
+}
 .admin-card-no-effect-help{
+  flex:1 0 100%;
+  width:100%;
   grid-column:1/-1;
   display:block;
   max-width:760px;
