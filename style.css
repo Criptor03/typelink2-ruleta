@@ -1688,3 +1688,131 @@ button:disabled{cursor:not-allowed}
   .card-action-target-profile-head{gap:6px}
   .card-action-target-avatar{width:31px;height:31px}
 }
+
+
+/* TypeLink 2 — readable dark typography and deck shuffle controls */
+.page-view p:not(.activity-message),
+.page-view small:not(.card-rarity),
+.page-view label{
+  color:#b5c2cb!important;
+}
+.page-view .eyebrow,
+.page-view .overline,
+.page-view .section-kicker,
+.page-view .page-stamp,
+.page-view .section-note{
+  color:#abc0ce!important;
+}
+.page-view .panel-heading h2,
+.page-view .directory-toolbar h2,
+.page-view .deck-overview-top h2,
+.page-view .profile-module-heading h2,
+.page-view .special-roulette-heading h2,
+.page-view .tramo-tool h3{
+  color:#f1f5f7!important;
+}
+.page-view .hint,
+.page-view .tiny-note,
+.page-view .result-message,
+.page-view .spin-budget,
+.page-view .deck-empty,
+.page-view .deck-empty span,
+.page-view .deck-info small,
+.page-view .deck-index,
+.page-view .deck-cloud-note,
+.page-view .deck-section-note,
+.page-view .tramo-tool p,
+.page-view .tramo-progress-count,
+.page-view .route-demo-actions p,
+.page-view .special-roulette-footnote,
+.page-view .special-roulette-card p,
+.page-view .special-roulette-card small,
+.page-view .demo-note,
+.page-view .demo-banner,
+.page-view .profile-stats small,
+.page-view .directory-count,
+.page-view .notification-item small,
+.page-view .activity-item time{
+  color:#b5c2cb!important;
+}
+.page-view .deck-info strong,
+.page-view .deck-item .deck-info strong,
+.page-view .card-name,
+.page-view .counter{
+  color:#f0f4f7!important;
+}
+.page-view .card-rarity{color:#c2cfd7!important}
+.page-view .inline-link,
+.page-view .deck-open-link{
+  color:#c1ced7!important;
+}
+.page-view .spin-budget{
+  background:#17232d!important;
+  border-color:#405360!important;
+}
+.page-view .spin-button:disabled{
+  opacity:1;
+  background:linear-gradient(110deg,#3a4b57,#273743);
+  border:1px solid #637785;
+  color:#edf2f5;
+  box-shadow:0 4px 0 #1d2a34,0 9px 18px #0004;
+  cursor:not-allowed;
+}
+.page-view .spin-button:disabled b{color:#ef8d94!important}
+.deck-overview-toolbar{
+  flex:1;
+  min-width:0;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:12px;
+}
+.deck-overview-toolbar .deck-capacity-large{
+  flex:1;
+  width:auto;
+  min-width:55px;
+}
+.deck-shuffle-button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  width:100%;
+  min-height:38px;
+  padding:10px 13px;
+  border:1px solid #617d8d;
+  border-radius:5px;
+  background:linear-gradient(115deg,#263b49,#1a2a35);
+  color:#e8f0f4;
+  font:900 8px Inter;
+  letter-spacing:1.1px;
+  cursor:pointer;
+  box-shadow:0 5px 16px #0003,inset 0 1px #ffffff0c;
+  transition:background .16s,border-color .16s,box-shadow .16s,transform .16s;
+}
+.deck-shuffle-button span{
+  color:#b9d1df;
+  font-size:18px;
+  line-height:1;
+}
+.deck-shuffle-button:hover{
+  background:linear-gradient(115deg,#354f60,#243a49);
+  border-color:#a3c0cf;
+  box-shadow:0 0 22px #9dbbca20,0 7px 18px #0004;
+  transform:translateY(-1px);
+}
+.deck-shuffle-button:active{transform:translateY(1px)}
+.deck-shuffle-button:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+  transform:none;
+  box-shadow:none;
+}
+.quick-deck-shuffle{margin:10px 0 5px}
+@media(max-width:560px){
+  .deck-overview-top{align-items:flex-start}
+  .deck-overview-toolbar{flex-direction:column;align-items:stretch;gap:9px}
+  .deck-overview-toolbar .deck-capacity-large{width:100%;flex:none}
+  .deck-overview-toolbar .deck-shuffle-button{width:100%;min-width:0}
+  .quick-deck-shuffle{min-height:36px}
+}
