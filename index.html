@@ -130,7 +130,7 @@
               <div class="panel quick-deck-panel"><div class="panel-heading compact"><div><span class="section-kicker">TU INVENTARIO</span><h2>Mi baraja</h2></div><span id="deckCount" class="counter">0/5</span></div><div class="capacity"><span id="capacityFill"></span></div><div id="deckList" class="deck-list"><div class="deck-empty">Sin cartas todavía.</div></div><button class="inline-link deck-open-link" data-page="deck">ABRIR BARAJA COMPLETA ↗</button></div>
             </aside>
           </section>
-          <div class="tramo-tool panel"><div><span class="eyebrow">PROGRESIÓN DE ENTRENADOR</span><h3>Avanzar de tramo</h3><p id="tramoProgressHint">Recibes las recompensas configuradas. Necesitas espacio libre y ningún giro pendiente.</p><small id="tramoProgressCount" class="tramo-progress-count">TRAMO 0 · 0 GIROS DISPONIBLES</small></div><button id="tramoButton" class="secondary-button">AVANZAR DE TRAMO</button></div>
+          <div class="tramo-tool panel"><div><span class="eyebrow">PROGRESIÓN DE ENTRENADOR</span><h3>Avanzar de tramo</h3><p id="tramoProgressHint">Da las recompensas del tramo. Requiere espacio libre y 0 giros pendientes.</p><small id="tramoProgressCount" class="tramo-progress-count">TRAMO 0 · 0 GIROS DISPONIBLES</small></div><button id="tramoButton" class="secondary-button">AVANZAR DE TRAMO</button></div>
           <section class="special-roulette-access panel">
             <div class="special-roulette-heading">
               <div><span class="eyebrow">ACCESOS ESPECIALES</span><h2>Ruletas desbloqueables</h2><p>Canjea Legenleta o Rumba para obtener un giro.</p></div>
@@ -208,13 +208,13 @@
             </div>
             <p class="incoming-effects-note">La duración depende de cada efecto.</p>
           </div>
-          <div class="profile-info-note"><b>PERFIL PÚBLICO</b><span>Tu nombre, avatar y baraja son públicos. Tus notificaciones son privadas.</span></div>
+          <div class="profile-info-note"><b>PERFIL PÚBLICO</b><span>Nombre, avatar y baraja públicos. Notificaciones privadas.</span></div>
         </section>
 
         <section class="page-view" id="page-deck" hidden>
           <div class="page-heading"><div><div class="eyebrow">04 / INVENTARIO</div><h1>MI <em>BARAJA</em></h1><p>Cartas normales, de tramo y especiales.</p></div><span class="page-stamp">CARD<br>COLLECTION</span></div>
           <div class="deck-overview panel"><div class="deck-overview-top"><div><span class="eyebrow">CARTAS NORMALES</span><h2 id="deckCountFull">0 / 5</h2></div><div class="deck-capacity-large"><span id="capacityFillFull"></span></div></div><div id="deckListFull" class="full-deck-list"><div class="deck-empty">Sin cartas todavía.</div></div></div>
-          <div class="deck-overview panel route-overview"><div class="deck-overview-top"><div><span class="eyebrow">CARTAS DE TRAMO</span><h2><span id="routeCountFull">0</span> <small>DISPONIBLES</small></h2></div><span class="route-symbol">Ⅱ</span></div><div id="routeListFull" class="full-deck-list"><div class="deck-empty">Todavía no has iniciado un tramo.</div></div><div class="route-demo-actions"><button class="secondary-button" id="tramoButtonFull">AVANZAR DE TRAMO</button><p>Recibes las recompensas configuradas. Necesitas espacio libre y ningún giro pendiente.</p></div></div>
+          <div class="deck-overview panel route-overview"><div class="deck-overview-top"><div><span class="eyebrow">CARTAS DE TRAMO</span><h2><span id="routeCountFull">0</span> <small>DISPONIBLES</small></h2></div><span class="route-symbol">Ⅱ</span></div><div id="routeListFull" class="full-deck-list"><div class="deck-empty">Todavía no has iniciado un tramo.</div></div><div class="route-demo-actions"><button class="secondary-button" id="tramoButtonFull">AVANZAR DE TRAMO</button><p>Da las recompensas del tramo. Requiere espacio libre y 0 giros pendientes.</p></div></div>
           <div class="deck-overview panel special-overview"><div class="deck-overview-top"><div><span class="eyebrow">CARTAS ESPECIALES</span><h2><span id="specialCountFull">0</span> <small>DISPONIBLES</small></h2></div><span class="route-symbol">✦</span></div><div id="specialListFull" class="full-deck-list"><div class="deck-empty">Sin cartas especiales.</div></div></div>
           <div class="deck-rules-note"><b>USOS Y EVOLUCIONES</b><span>Las evoluciones reemplazan la carta original.</span></div>
           <button id="resetButton" class="text-button reset-button">Reiniciar demo local</button>
@@ -276,7 +276,7 @@
                 <span class="admin-module-icon">◎</span><span class="admin-module-copy"><strong>Estado de la plataforma</strong><small>Conexión, base de datos y almacenamiento.</small></span><span class="admin-module-state">ABRIR MONITOR ↗</span>
               </button>
             </div>
-            <div class="admin-security-note"><b>ACCESO PROTEGIDO</b><span>Solo administradores autorizados. Cada acción se valida en el servidor.</span></div>
+            <div class="admin-security-note"><b>ACCESO PROTEGIDO</b><span>Solo administradores autorizados. Acciones validadas por el servidor.</span></div>
           </div>
 
           <section class="admin-mechanics-workspace" id="adminMechanicsWorkspace" hidden>
@@ -354,7 +354,7 @@
                   <b>EFECTOS DISPONIBLES</b>
                   <span><strong>Límite de baraja:</strong> suma o resta espacios durante un periodo.</span>
                   <span><strong>Giros extra:</strong> añade créditos al entrenador objetivo.</span>
-                  <span><strong>Desbloquear ruleta:</strong> concede un acceso Legendario o Fiesta al usuario.</span>
+                  <span><strong>Desbloquear ruleta:</strong> acceso Legendario o Fiesta para quien la usa.</span>
                   <span>Otras mecánicas requieren un controlador propio.</span>
                 </div>
               </section>
@@ -476,7 +476,7 @@
                   </label>
                   <button class="primary-button" type="button" id="adminTrainerGrantCard">ENTREGAR CARTA ↗</button>
                 </div>
-                <p class="admin-trainer-tool-note">Se aplican los usos del catálogo. Los regalos quedan registrados y pueden superar el límite normal.</p>
+                <p class="admin-trainer-tool-note">Usos del catálogo. Regalos registrados; pueden superar el límite.</p>
               </section>
 
               <section class="admin-trainer-section panel">
@@ -618,7 +618,7 @@
               <div class="admin-card-grid" id="adminCardGrid">
                 <div class="admin-catalog-loading">Cargando catálogo...</div>
               </div>
-              <p class="admin-catalog-footnote">Desactivar una carta impide nuevos giros; no elimina copias existentes. Las cartas con historial no se pueden borrar.</p>
+              <p class="admin-catalog-footnote">Desactivar bloquea nuevos giros; no elimina copias. Las cartas con historial no se borran.</p>
             </div>
 
             <div id="adminCardEditorView" hidden>
@@ -633,7 +633,7 @@
                   </label>
                   <label class="admin-field">CÓDIGO INTERNO DE LA CARTA
                     <input id="adminCardSlug" type="text" maxlength="64" required placeholder="cambio-tactico">
-                    <small>Código interno fijo tras crear la carta. El nombre visible sí se puede cambiar.</small>
+                    <small>Código interno fijo. Nombre visible editable.</small>
                   </label>
                   <label class="admin-field">CATEGORÍA
                     <select id="adminCardCategory">
@@ -688,10 +688,10 @@
                   <label><input id="adminCardActive" type="checkbox" checked> Carta activa para el evento</label>
                   <label><input id="adminCardRouletteEligible" type="checkbox" checked> Puede aparecer en la ruleta</label>
                   <label class="admin-card-no-effect-option"><input id="adminCardAllowNoEffect" type="checkbox"> Permitir usar sin efecto automático</label>
-                  <small class="admin-card-no-effect-help">Uso narrativo o manual. Registra la jugada sin aplicar efectos automáticos.</small>
+                  <small class="admin-card-no-effect-help">Uso manual o narrativo. Registra la jugada sin automatizar efectos.</small>
                 </div>
                 <small id="adminCardRouletteHelp" class="admin-card-roulette-help">Las cartas con evolución se excluyen de las ruletas.</small>
-                <div class="admin-card-form-note"><b>IMPORTANTE</b><span>No puedes cambiar la categoría si hay copias o reglas conectadas. Desactivar no elimina copias existentes.</span></div>
+                <div class="admin-card-form-note"><b>IMPORTANTE</b><span>Con copias o reglas, no puedes cambiar categoría. Desactivar conserva las copias.</span></div>
                 <div class="admin-card-form-actions">
                   <span id="adminCardFormStatus" role="status">Revisa los datos y guarda.</span>
                   <div><button class="secondary-button" type="button" id="adminCardCancel">CANCELAR</button><button class="primary-button" type="submit" id="adminCardSave">GUARDAR CARTA ↗</button></div>
@@ -747,7 +747,7 @@
                 <div id="adminProgressionActiveCardsList" class="admin-progression-card-list"><span class="admin-progression-card-chip">Cargando catálogo...</span></div>
                 <small id="adminProgressionCatalogHint">Gestiona estas cartas desde el Catálogo.</small>
               </div>
-              <div class="admin-progression-warning"><b>IMPORTANTE</b><span>Los cambios no afectan el progreso ni las recompensas actuales. Se aplican en el próximo avance.</span></div>
+              <div class="admin-progression-warning"><b>IMPORTANTE</b><span>No afecta el progreso actual. Rige desde el próximo avance.</span></div>
               <div class="admin-progression-save-row">
                 <span id="adminProgressionSaveStatus" role="status">Sin guardar.</span>
                 <button class="primary-button" type="button" id="adminProgressionSave">GUARDAR REGLAS ↗</button>
@@ -794,7 +794,7 @@
               <div class="admin-platform-panel-heading"><div><span class="eyebrow">TYPELINK 2</span><h3>Estado de los módulos</h3></div><span class="admin-module-count">CONFIGURACIÓN</span></div>
               <div class="admin-platform-modules" id="adminPlatformModules"><div class="admin-catalog-loading">Comprobando módulos...</div></div>
             </section>
-            <p class="admin-platform-footnote"><b>MEDICIONES:</b> PostgreSQL muestra el tamaño lógico. Storage suma los objetos activos. No se muestran claves secretas.</p>
+            <p class="admin-platform-footnote"><b>MEDICIONES:</b> PostgreSQL: tamaño lógico. Storage: objetos activos. Sin claves secretas.</p>
           </section>
 
         </section>
