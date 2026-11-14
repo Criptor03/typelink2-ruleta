@@ -1100,11 +1100,13 @@ function showAdminOverview(){
   const trainersWorkspace=document.getElementById("adminTrainersWorkspace");
   const rouletteWorkspace=document.getElementById("adminRouletteWorkspace");
   const mechanicsWorkspace=document.getElementById("adminMechanicsWorkspace");
+  const platformWorkspace=document.getElementById("adminPlatformWorkspace");
   if(overview)overview.hidden=false;
   if(catalogWorkspace)catalogWorkspace.hidden=true;
   if(trainersWorkspace)trainersWorkspace.hidden=true;
   if(rouletteWorkspace)rouletteWorkspace.hidden=true;
   if(mechanicsWorkspace)mechanicsWorkspace.hidden=true;
+  if(platformWorkspace)platformWorkspace.hidden=true;
   const list=document.getElementById("adminCatalogListView");
   const editor=document.getElementById("adminCardEditorView");
   const trainerList=document.getElementById("adminTrainersListView");
@@ -2541,6 +2543,124 @@ async function startNewTramo(){
   }
 }
 
+
+function formatAdminPlatformBytes(value){
+  const bytes=Math.max(0,Number(value)||0);
+  if(bytes<1024)return Math.round(bytes)+" B";
+  const units=["KB","MB","GB","TB"];let amount=bytes/1024,index=0;
+  while(amount>=1024&&index<units.length-1){amount/=1024;index++;}
+  return amount.toLocaleString("es-CO",{maximumFractionDigits:1})+" "+units[index];
+}
+function formatAdminPlatformDate(value){
+  if(!value)return "Sin registros";
+  const date=new Date(value);if(Number.isNaN(date.getTime()))return "—";
+  return new Intl.DateTimeFormat("es-CO",{dateStyle:"medium",timeStyle:"short"}).format(date);
+}
+function setAdminPlatformIndicator(id,state,label){
+  const element=document.getElementById(id);if(!element)return;
+  element.className="admin-platform-state is-"+state;element.textContent=label;
+}
+function renderAdminPlatformBuckets(buckets){
+  const container=document.getElementById("adminPlatformBuckets");if(!container)return;
+  container.replaceChildren();
+  if(!Array.isArray(buckets)||!buckets.length){const empty=document.createElement("div");empty.className="admin-catalog-loading";empty.textContent="No hay buckets registrados.";container.append(empty);return;}
+  buckets.forEach(bucket=>{
+    const row=document.createElement("article");row.className="admin-platform-bucket";
+    const copy=document.createElement("div");copy.className="admin-platform-bucket-copy";
+    const name=document.createElement("strong");name.textContent=bucket.name||"Bucket sin nombre";
+    const access=document.createElement("small");access.textContent=bucket.is_public?"Acceso público":"Acceso privado";
+    copy.append(name,access);
+    const stats=document.createElement("div");stats.className="admin-platform-bucket-stats";
+    const count=document.createElement("strong");count.textContent=Number(bucket.file_count||0).toLocaleString("es-CO")+" archivos";
+    const size=document.createElement("small");size.textContent=formatAdminPlatformBytes(bucket.size_bytes);
+    stats.append(count,size);row.append(copy,stats);container.append(row);
+  });
+}
+function renderAdminPlatformFiles(files){
+  const container=document.getElementById("adminPlatformFiles");if(!container)return;
+  container.replaceChildren();
+  if(!Array.isArray(files)||!files.length){const empty=document.createElement("div");empty.className="admin-catalog-loading";empty.textContent="Todavía no hay archivos almacenados.";container.append(empty);return;}
+  files.forEach(file=>{
+    const row=document.createElement("article");row.className="admin-platform-file";
+    const copy=document.createElement("div");copy.className="admin-platform-file-copy";
+    const name=document.createElement("strong");name.textContent=file.name||"Archivo sin nombre";name.title=file.name||"";
+    const meta=document.createElement("small");meta.textContent=(file.bucket||"Storage")+" · "+formatAdminPlatformDate(file.created_at);
+    copy.append(name,meta);
+    const size=document.createElement("span");size.className="admin-platform-file-size";size.textContent=formatAdminPlatformBytes(file.size_bytes);
+    row.append(copy,size);container.append(row);
+  });
+}
+function renderAdminPlatformModules(data){
+  const container=document.getElementById("adminPlatformModules");if(!container)return;
+  container.replaceChildren();
+  const catalog=data.catalog||{},pools=Array.isArray(data.roulettes)?data.roulettes:[];
+  const activePools=pools.filter(pool=>pool.is_active).length;
+  const activePoolCards=pools.reduce((total,pool)=>total+Number(pool.active_cards||0),0);
+  const activity=data.activity||{},settings=data.event_settings||{};
+  const modules=[
+    {name:"Catálogo de cartas",value:Number(catalog.active||0)+"/"+Number(catalog.total||0)+" activas",note:Number(catalog.inactive||0)+" desactivadas",state:Number(catalog.active||0)>0?"online":"warning"},
+    {name:"Ruletas",value:activePools+"/"+pools.length+" abiertas",note:activePoolCards+" cartas habilitadas. Las ruletas especiales pueden permanecer cerradas hasta configurarlas.",state:activePools>0?"online":"warning"},
+    {name:"Muro de cartas",value:Number(activity.total||0).toLocaleString("es-CO")+" movimientos",note:Number(activity.last_7_days||0)+" en los últimos 7 días · último: "+formatAdminPlatformDate(activity.last_activity_at),state:Number(activity.total||0)>0?"online":"warning"},
+    {name:"Progresión del evento",value:settings.singleton?("Tramo global "+Number(settings.current_tramo||0)):"Sin configuración",note:settings.singleton?("Límite de baraja: "+Number(settings.normal_card_limit||0)+" · cartas por tramo: "+Number(settings.cards_per_tramo||0)):"No se encontró la configuración principal del evento.",state:settings.singleton?"online":"warning"}
+  ];
+  modules.forEach(module=>{
+    const row=document.createElement("article");row.className="admin-platform-module";
+    const marker=document.createElement("span");marker.className="admin-platform-module-marker is-"+module.state;
+    const copy=document.createElement("div");copy.className="admin-platform-module-copy";
+    const name=document.createElement("strong");name.textContent=module.name;
+    const value=document.createElement("span");value.textContent=module.value;
+    const note=document.createElement("small");note.textContent=module.note;copy.append(name,value,note);
+    const status=document.createElement("span");status.className="admin-platform-state is-"+module.state;status.textContent=module.state==="online"?"REGISTRADO":"REVISAR";
+    row.append(marker,copy,status);container.append(row);
+  });
+}
+function renderAdminPlatformStatus(data){
+  const database=data.database||{},storage=data.storage||{},auth=data.auth||{},activity=data.activity||{};
+  const databaseOk=database.status==="online",storageOk=storage.status==="online",authOk=auth.status==="online";
+  const healthy=databaseOk&&storageOk&&authOk;
+  setText("adminPlatformOverallStatus",healthy?"SERVICIOS OPERATIVOS":"ATENCIÓN REQUERIDA");
+  setText("adminPlatformLastCheck","Última comprobación: "+formatAdminPlatformDate(data.checked_at));
+  setAdminPlatformIndicator("adminPlatformOverallPill",healthy?"online":"warning",healthy?"OPERATIVA":"REVISAR");
+  setAdminPlatformIndicator("adminPlatformApiState","online","RESPONDE");
+  setAdminPlatformIndicator("adminPlatformDatabaseState",databaseOk?"online":"offline",databaseOk?"CONECTADA":"SIN CONEXIÓN");
+  setAdminPlatformIndicator("adminPlatformStorageState",storageOk?"online":"offline",storageOk?"DISPONIBLE":"SIN CONEXIÓN");
+  setAdminPlatformIndicator("adminPlatformAuthState",authOk?"online":"offline",authOk?"DISPONIBLE":"SIN CONEXIÓN");
+  setText("adminPlatformDbSize",database.size_pretty||formatAdminPlatformBytes(database.size_bytes));
+  setText("adminPlatformDbMeta",Number(database.public_tables||0).toLocaleString("es-CO")+" tablas públicas · "+(database.name||"PostgreSQL"));
+  setText("adminPlatformStorageSize",formatAdminPlatformBytes(storage.size_bytes));
+  setText("adminPlatformStorageMeta",Number(storage.object_count||0).toLocaleString("es-CO")+" archivos en "+Number(storage.bucket_count||0).toLocaleString("es-CO")+" buckets");
+  setText("adminPlatformUsers",Number(auth.users||0).toLocaleString("es-CO"));
+  setText("adminPlatformProfiles","Perfiles TypeLink: "+Number(auth.profiles||0).toLocaleString("es-CO"));
+  setText("adminPlatformActivityCount",Number(activity.last_7_days||0).toLocaleString("es-CO")+" movimientos");
+  setText("adminPlatformActivityMeta","Últimos 7 días · total histórico: "+Number(activity.total||0).toLocaleString("es-CO"));
+  setText("adminPlatformBucketCount",Number(storage.bucket_count||0).toLocaleString("es-CO")+" BUCKETS");
+  renderAdminPlatformBuckets(storage.buckets);renderAdminPlatformFiles(storage.recent_files);renderAdminPlatformModules(data);
+}
+function renderAdminPlatformError(){
+  setText("adminPlatformOverallStatus","NO SE PUDO COMPLETAR LA COMPROBACIÓN");
+  setText("adminPlatformLastCheck","Comprueba tu conexión y vuelve a actualizar.");
+  setAdminPlatformIndicator("adminPlatformOverallPill","offline","SIN DATOS");
+  setAdminPlatformIndicator("adminPlatformApiState","offline","SIN RESPUESTA");
+  setAdminPlatformIndicator("adminPlatformDatabaseState","pending","SIN DATOS");
+  setAdminPlatformIndicator("adminPlatformStorageState","pending","SIN DATOS");
+  setAdminPlatformIndicator("adminPlatformAuthState","pending","SIN DATOS");
+}
+async function loadAdminPlatformStatus(){
+  if(!authClient||!currentAuthUser||!isAdmin){renderAdminPlatformError();return;}
+  const button=document.getElementById("adminPlatformRefresh");
+  if(button){button.disabled=true;button.textContent="CONSULTANDO...";}
+  setText("adminPlatformOverallStatus","CONSULTANDO SERVICIOS");
+  setAdminPlatformIndicator("adminPlatformOverallPill","pending","CONSULTANDO");
+  try{
+    const {data,error}=await authClient.rpc("admin_get_platform_status");
+    if(error)throw error;
+    if(!data||typeof data!=="object")throw new Error("Supabase no devolvió datos de estado.");
+    renderAdminPlatformStatus(data);
+  }catch(error){
+    console.error("No se pudo consultar el estado de la plataforma:",error);renderAdminPlatformError();
+  }finally{if(button){button.disabled=false;button.textContent="↻ ACTUALIZAR";}}
+}
+
 function setPage(page){
   if(page==="admin"&&(!currentAuthUser||!isAdmin)){
     notify("Este apartado es privado y solo está disponible para administradores autorizados.");
@@ -2616,6 +2736,16 @@ function initSupabaseAuth(){
 }
 
 document.querySelectorAll("[data-page]").forEach(button=>button.addEventListener("click",()=>setPage(button.dataset.page)));
+document.getElementById("openAdminPlatformStatus").addEventListener("click",async()=>{
+  if(!isAdmin){notify("Acceso reservado al administrador.");return;}
+  showAdminOverview();
+  document.getElementById("adminOverview").hidden=true;
+  document.getElementById("adminPlatformWorkspace").hidden=false;
+  await loadAdminPlatformStatus();
+  window.scrollTo({top:0,behavior:"smooth"});
+});
+document.getElementById("adminPlatformBack").addEventListener("click",showAdminOverview);
+document.getElementById("adminPlatformRefresh").addEventListener("click",loadAdminPlatformStatus);
 document.getElementById("openAdminCatalog").addEventListener("click",async()=>{
   if(!isAdmin){notify("Acceso reservado al administrador.");return;}
   document.getElementById("adminOverview").hidden=true;
