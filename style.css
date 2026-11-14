@@ -2501,3 +2501,43 @@ button:disabled{cursor:not-allowed}
   .activity-card-modal-copy h2{font-size:28px}
   .activity-card-modal-copy small{margin-top:2px}
 }
+
+
+/* Generation V type symbols */
+.type-toggle{
+  align-items:center;
+  gap:9px;
+}
+.type-toggle-icon{
+  width:29px;height:29px;flex:none;
+  display:grid;place-items:center;
+  border:1px solid color-mix(in srgb,var(--type-color) 72%,#d8e4ec);
+  border-radius:7px;
+  background:color-mix(in srgb,var(--type-color) 82%,#17232d);
+  box-shadow:0 2px 7px #0004,inset 0 1px #ffffff25;
+}
+.type-toggle-icon img{display:block;width:19px;height:19px;object-fit:contain}
+.type-toggle-icon.is-missing{color:#101820;font:900 15px 'Barlow Condensed'}
+.type-toggle.disabled .type-toggle-icon{filter:grayscale(1);opacity:.65}
+.admin-trainer-type{
+  grid-template-columns:25px minmax(0,1fr);
+  column-gap:7px;
+}
+.admin-trainer-type-icon{
+  grid-row:1 / span 2;
+  width:24px;height:24px;
+  display:grid;place-items:center;
+  border:1px solid color-mix(in srgb,var(--type-color) 70%,#dce4e9);
+  border-radius:6px;
+  background:color-mix(in srgb,var(--type-color) 80%,#17232d);
+  box-shadow:0 2px 6px #0003;
+}
+.admin-trainer-type-icon img{display:block;width:17px;height:17px;object-fit:contain}
+.admin-trainer-type-icon.is-missing{color:#101820;font:900 13px 'Barlow Condensed'}
+.admin-trainer-type.disabled .admin-trainer-type-icon{filter:grayscale(1);opacity:.6}
+@media(max-width:560px){
+  .type-toggle-icon{width:25px;height:25px}
+  .type-toggle-icon img{width:17px;height:17px}
+  .admin-trainer-type-icon{width:21px;height:21px}
+  .admin-trainer-type-icon img{width:15px;height:15px}
+}
