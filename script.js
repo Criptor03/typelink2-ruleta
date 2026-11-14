@@ -2533,11 +2533,13 @@ async function spinSpecialRoulette(poolSlug){
 async function startNewTramo(){
   if(spinning)return;
   if(!currentAuthUser||!authClient){notify("Inicia sesión con Discord para avanzar de tramo.");return;}
-  if(tramoSpinsRemaining+bonusTramoSpinsRemaining>0){
-    notify("Utiliza los giros pendientes antes de avanzar de tramo.");return;
-  }
-  spinning=true;renderDeck();
   try{
+    await loadCardEngineConfig();
+    renderDeck();
+    if(tramoSpinsRemaining+bonusTramoSpinsRemaining>0){
+      notify("Utiliza los giros pendientes antes de avanzar de tramo.");return;
+    }
+    spinning=true;renderDeck();
     const {data,error}=await authClient.rpc("start_new_tramo");
     if(error)throw error;
     await loadCloudInventory();
