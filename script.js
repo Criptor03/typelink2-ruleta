@@ -1137,19 +1137,60 @@ async function showPublicPlayer(playerId){
   setText("publicPlayerName",profile.display_name||"Entrenador");
   setText("publicPlayerJoined","Entrenador desde "+formatDate(profile.created_at));
   applyAvatar(document.getElementById("publicPlayerAvatar"),profile.avatar_url,(profile.display_name||"TL").slice(0,2).toUpperCase());
+
+  const [cardsResult,typesResult]=await Promise.all([
+    authClient.from("player_cards")
+      .select("id,card_id,source,tramo_number,status,remaining_uses,obtained_at,card_catalog(id,name,category,rarity,image_path,uses_per_card,target_scope,disposition,counts_toward_normal_limit)")
+      .eq("owner_id",playerId).order("obtained_at",{ascending:true}),
+    authClient.from("player_type_status").select("type_slug,is_enabled").eq("owner_id",playerId)
+  ]);
+  if(cardsResult.error){notify("No pudimos cargar la baraja pública.");return;}
+
   const container=document.getElementById("publicPlayerCards");container.replaceChildren();
-  const {data:rows,error:cardsError}=await authClient.from("player_cards")
-    .select("id,card_id,source,tramo_number,status,remaining_uses,obtained_at,card_catalog(id,name,category,rarity,image_path,uses_per_card,target_scope,disposition,counts_toward_normal_limit)")
-    .eq("owner_id",playerId).order("obtained_at",{ascending:true});
-  if(cardsError){notify("No pudimos cargar la baraja pública.");return;}
-  const items=(rows||[]).map(mapInventoryRow).filter(Boolean);
+  const items=(cardsResult.data||[]).map(mapInventoryRow).filter(Boolean);
   setText("publicPlayerCardCount",items.length+" CARTAS");
   if(!items.length){
     const empty=document.createElement("div");empty.className="deck-empty";empty.textContent="Sin cartas todavía.";container.append(empty);
   }else{
     items.forEach((item,index)=>container.append(createDeckItem(item,index,item.category==="tramo")));
   }
+
+  renderPublicPlayerTypes(typesResult.data||[],typesResult.error);
   modal.hidden=false;
+}
+function renderPublicPlayerTypes(rows,error){
+  const container=document.getElementById("publicPlayerTypes");
+  if(!container)return;
+  container.replaceChildren();
+  if(error){
+    console.error("No se pudieron cargar los tipos del participante:",error.message);
+    setText("publicPlayerTypesCount","NO DISPONIBLE");
+    const message=document.createElement("div");message.className="deck-empty";
+    message.textContent="No se pudo consultar el registro de tipos.";
+    container.append(message);return;
+  }
+  const typeMap=Object.fromEntries((rows||[]).map(row=>[row.type_slug,row.is_enabled]));
+  let enabledCount=0;
+  POKEMON_TYPES.forEach(type=>{
+    const enabled=typeMap[type.slug]!==false;
+    if(enabled)enabledCount++;
+    const item=document.createElement("div");
+    item.className="public-player-type "+(enabled?"is-enabled":"is-disabled");
+    item.style.setProperty("--type-color",type.color);
+    const iconWrap=document.createElement("span");iconWrap.className="public-player-type-icon";
+    const icon=document.createElement("img");icon.src=type.icon;icon.alt="";icon.setAttribute("aria-hidden","true");
+    icon.loading="lazy";icon.decoding="async";
+    icon.onerror=()=>{
+      iconWrap.classList.add("is-missing");icon.remove();
+      const fallback=document.createElement("span");fallback.textContent=type.name.slice(0,1);iconWrap.append(fallback);
+    };
+    iconWrap.append(icon);
+    const copy=document.createElement("span");copy.className="public-player-type-copy";
+    const name=document.createElement("strong");name.textContent=type.name;
+    const state=document.createElement("small");state.textContent=enabled?"DISPONIBLE":"BLOQUEADO";
+    copy.append(name,state);item.append(iconWrap,copy);container.append(item);
+  });
+  setText("publicPlayerTypesCount",enabledCount+" / "+POKEMON_TYPES.length+" DISPONIBLES");
 }
 function closePublicPlayer(){document.getElementById("publicProfileModal").hidden=true;}
 
