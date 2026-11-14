@@ -214,7 +214,7 @@
         <section class="page-view" id="page-deck" hidden>
           <div class="page-heading"><div><div class="eyebrow">04 / INVENTARIO</div><h1>MI <em>BARAJA</em></h1><p>Cartas normales, de tramo y especiales.</p></div></div>
           <div class="deck-overview panel"><div class="deck-overview-top"><div><span class="eyebrow">CARTAS NORMALES</span><h2 id="deckCountFull">0 / 5</h2></div><div class="deck-capacity-large"><span id="capacityFillFull"></span></div></div><div id="deckListFull" class="full-deck-list"><div class="deck-empty">Sin cartas todavía.</div></div></div>
-          <div class="deck-overview panel route-overview"><div class="deck-overview-top"><div><span class="eyebrow">CARTAS DE TRAMO</span><h2><span id="routeCountFull">0</span> <small>DISPONIBLES</small></h2></div><span class="route-symbol">Ⅱ</span></div><div id="routeListFull" class="full-deck-list"><div class="deck-empty">Todavía no has iniciado un tramo.</div></div><div class="route-demo-actions"><button class="secondary-button" id="tramoButtonFull">AVANZAR DE TRAMO</button><p>Da las recompensas del tramo. Requiere espacio libre y 0 giros pendientes.</p></div></div>
+          <div class="deck-overview panel route-overview"><div class="deck-overview-top"><div><span class="eyebrow">CARTAS DE TRAMO</span><h2><span id="routeCountFull">0</span> <small>DISPONIBLES</small></h2></div><span class="route-symbol">Ⅱ</span></div><div id="routeListFull" class="full-deck-list"><div class="deck-empty">Sin tramo iniciado.</div></div><div class="route-demo-actions"><button class="secondary-button" id="tramoButtonFull">AVANZAR DE TRAMO</button><p>Da las recompensas del tramo. Requiere espacio libre y 0 giros pendientes.</p></div></div>
           <div class="deck-overview panel special-overview"><div class="deck-overview-top"><div><span class="eyebrow">CARTAS ESPECIALES</span><h2><span id="specialCountFull">0</span> <small>DISPONIBLES</small></h2></div><span class="route-symbol">✦</span></div><div id="specialListFull" class="full-deck-list"><div class="deck-empty">Sin cartas especiales.</div></div></div>
           <div class="deck-rules-note"><b>USOS Y EVOLUCIONES</b><span>Las evoluciones reemplazan la carta original.</span></div>
           <button id="resetButton" class="text-button reset-button">Reiniciar demo local</button>
@@ -881,7 +881,7 @@
       <div class="card-action-message" id="cardActionMessageWrap" hidden>
         <label for="cardActionMessage">MENSAJE PARA EL MURO <span>OPCIONAL</span></label>
         <textarea id="cardActionMessage" rows="3" placeholder="Escribe un mensaje para el rival o para acompañar tu jugada..."></textarea>
-        <small><span id="cardActionMessageCount">0</span> caracteres · Se mostrará junto a tu movimiento en el muro de cartas.</small>
+        <small><span id="cardActionMessageCount">0</span> caracteres · Aparece en el muro.</small>
       </div>
       <div class="card-action-feedback" id="cardActionFeedback"></div>
       <div class="card-action-buttons">
