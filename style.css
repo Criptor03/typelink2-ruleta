@@ -2595,3 +2595,50 @@ button:disabled{cursor:not-allowed}
   .public-player-type-copy strong{font-size:8px}
   .public-player-type-copy small{font-size:5px}
 }
+
+
+/* Perfil público de jugadores: orden visual y tema oscuro */
+.public-profile-dialog{
+  background:#111a23;
+  border:1px solid #3a4c58;
+  color:#e8eef2;
+}
+.public-profile-heading{
+  border-bottom-color:#344550;
+}
+.public-profile-heading h2{color:#edf2f5}
+.public-profile-heading p{color:#99a8b2}
+.public-profile-section .panel-topline{color:#b0bec7}
+.public-profile-section .panel-topline span{color:#91a3ae}
+.public-profile-section .deck-empty{
+  background:#151f29;
+  border:1px solid #3a4c58;
+  color:#94a5b0;
+  border-radius:5px;
+}
+.public-profile-dialog .public-card-list .deck-item{
+  background:#17232d;
+  border-color:#364956;
+  color:#e5edf2;
+}
+.public-profile-dialog .public-card-list .deck-info strong{color:#e5edf2}
+.public-profile-dialog .public-card-list .deck-info small{color:#9baab4}
+.public-profile-dialog .public-card-list .deck-index{color:#8495a1}
+.public-player-type{
+  background:#1b2a35;
+  border-color:#3b4c58;
+  color:#e5edf2;
+}
+.public-player-type-icon{
+  border-color:color-mix(in srgb,var(--type-color) 74%,#718594);
+  background:color-mix(in srgb,var(--type-color) 64%,#17232d);
+  box-shadow:0 2px 5px #0005,inset 0 1px #ffffff22;
+}
+.public-player-type-icon.is-missing{color:#f0f4f7}
+.public-player-type-copy strong{color:#e7edf2}
+.public-player-type-copy small{color:#85bd98}
+.public-player-type.is-disabled .public-player-type-copy strong{color:#a4b0b8}
+.public-player-type.is-disabled .public-player-type-copy small{color:#8998a2}
+.public-player-types-legend{color:#93a3ad}
+.public-player-types-legend i.is-available{background:#5ba477}
+.public-player-types-legend i.is-blocked{background:#7d8b95}
