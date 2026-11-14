@@ -25,7 +25,7 @@
         <button class="nav-link" data-page="profile"><span class="nav-icon">◎</span><span>Mi perfil</span></button>
         <button class="nav-link" data-page="deck"><span class="nav-icon">▤</span><span>Mi baraja</span></button>
         <button class="nav-link" data-page="pokemon"><span class="nav-icon">✦</span><span>Mi equipo Pokémon</span></button>
-        <button class="nav-link" data-page="notifications"><span class="nav-icon">♧</span><span>Notificaciones</span><span class="nav-dot"></span></button>
+        <button class="nav-link" data-page="notifications"><span class="nav-icon">♧</span><span>Notificaciones</span><span class="nav-count notification-count" id="navNotificationCount" hidden>0</span></button>
       </nav>
 
       <div class="sidebar-label secondary-label" id="adminSectionLabel" hidden>GESTIÓN</div>
@@ -233,8 +233,14 @@
         </section>
 
         <section class="page-view" id="page-notifications" hidden>
-          <div class="page-heading"><div><div class="eyebrow">06 / ACTIVIDAD</div><h1>TUS <em>NOTIFICACIONES</em></h1><p>Novedades y movimientos relacionados con tu entrenador.</p></div><span class="page-stamp">LIVE<br>ACTIVITY</span></div>
-          <div class="empty-feature panel"><div class="empty-emblem">♧</div><div class="eyebrow">PRÓXIMAMENTE</div><h2>Tu actividad aparecerá aquí.</h2><p>En futuras versiones podrás recibir avisos cuando una mecánica del evento requiera tu atención. No hay notificaciones reales conectadas todavía.</p></div>
+          <div class="page-heading"><div><div class="eyebrow">06 / BUZÓN PERSONAL</div><h1>TUS <em>NOTIFICACIONES</em></h1><p>Las cartas que otros entrenadores han utilizado contra ti.</p></div><span class="page-stamp">TRAINER<br>INBOX</span></div>
+          <div class="notifications-toolbar panel">
+            <div><span class="eyebrow">AVISOS DIRIGIDOS A TI</span><h2 id="notificationsTotal">0 NOTIFICACIONES</h2><p id="notificationsUnreadLabel">Tu bandeja está al día.</p></div>
+            <button class="secondary-button notifications-mark-all" id="markAllNotificationsRead" type="button" disabled>MARCAR TODO COMO LEÍDO</button>
+          </div>
+          <div id="notificationsList" class="notifications-list">
+            <div class="activity-empty panel">Inicia sesión con Discord para consultar tus notificaciones.</div>
+          </div>
         </section>
 
         <section class="page-view" id="page-admin" hidden>
