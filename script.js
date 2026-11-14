@@ -58,8 +58,7 @@ let cloudDeck = [];
 let cloudRoute = [];
 let cloudSpecial = [];
 let cloudInventory = [];
-let deckDisplayOrder = [];
-let deckDisplayInitialized = false;
+let wheelPoolSlug = "demo";
 let evolutionRulesBySource = Object.create(null);
 let cardEffectsById = Object.create(null);
 let pendingCardAction = null;
@@ -89,6 +88,7 @@ let adminMechanicsItems = [];
 let adminSelectedMechanicsCardId = null;
 let spinRewardResolver = null;
 
+shuffleRouletteItems(CARDS);
 
 CARDS.forEach(card=>{
   const image=new Image();
@@ -121,55 +121,6 @@ function activeNormalCards(){
 }
 function activeTramoCards(){
   return cloudMode?cloudRoute:demoRouteState.cards;
-}
-function deckDisplayKey(card){
-  return card.instance_id?"card:"+card.instance_id:"demo:"+String(card.id||card.slug||card.name||"card");
-}
-function shuffledCopy(items){
-  const copy=[...items];
-  for(let i=copy.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [copy[i],copy[j]]=[copy[j],copy[i]];
-  }
-  return copy;
-}
-function syncDeckDisplayOrder(cards,forceShuffle=false){
-  const ids=cards.map(deckDisplayKey);
-  if(!ids.length)return;
-  if(forceShuffle||!deckDisplayInitialized){
-    deckDisplayOrder=shuffledCopy(ids);
-    deckDisplayInitialized=true;
-    return;
-  }
-  const activeIds=new Set(ids);
-  deckDisplayOrder=deckDisplayOrder.filter(id=>activeIds.has(id));
-  const knownIds=new Set(deckDisplayOrder);
-  ids.filter(id=>!knownIds.has(id)).forEach(id=>{
-    const position=Math.floor(Math.random()*(deckDisplayOrder.length+1));
-    deckDisplayOrder.splice(position,0,id);
-  });
-}
-function orderDeckCards(cards){
-  const positions=new Map(deckDisplayOrder.map((id,index)=>[id,index]));
-  return [...cards].sort((a,b)=>{
-    const aPosition=positions.get(deckDisplayKey(a));
-    const bPosition=positions.get(deckDisplayKey(b));
-    return (aPosition??Number.MAX_SAFE_INTEGER)-(bPosition??Number.MAX_SAFE_INTEGER);
-  });
-}
-function shuffleDeckDisplay(){
-  if(spinning){notify("Espera a que termine el giro para barajar tu inventario.");return;}
-  const cards=[...activeNormalCards(),...activeTramoCards(),...(cloudMode?cloudSpecial:[])];
-  if(!cards.length){notify("Todavía no tienes cartas para barajar.");return;}
-  syncDeckDisplayOrder(cards,true);
-  renderDeck();
-  notify("¡Tu baraja se ha mezclado! Las cartas y sus usos siguen intactos.");
-}
-function updateDeckShuffleButtons(cardCount){
-  ["shuffleQuickDeckButton","shuffleDeckButton"].forEach(id=>{
-    const button=document.getElementById(id);
-    if(button)button.disabled=spinning||cardCount<2;
-  });
 }
 function cardImage(card){
   return card.image_path||card.art||(card.slug?"assets/"+card.slug+".svg":"");
@@ -286,10 +237,7 @@ function renderRouteItems(cards,container,allowActions=false){
   cards.forEach((card,index)=>container.append(createDeckItem(card,index,true,allowActions)));
 }
 function renderDeck(){
-  const normalSource=activeNormalCards(),routeSource=activeTramoCards(),specialSource=cloudMode?cloudSpecial:[];
-  syncDeckDisplayOrder([...normalSource,...routeSource,...specialSource]);
-  const normal=orderDeckCards(normalSource),route=orderDeckCards(routeSource),special=orderDeckCards(specialSource);
-  const normalCount=normal.length;
+  const normal=activeNormalCards(),route=activeTramoCards(),special=cloudMode?cloudSpecial:[],normalCount=normal.length;
   renderCardItems(normal,document.getElementById("deckList"),"Todavía no tienes cartas. ¡Haz tu primer giro!");
   renderCardItems(normal,document.getElementById("deckListFull"),"Todavía no tienes cartas. Ve a la ruleta para conseguir la primera.",true);
   renderRouteItems(route,document.getElementById("routeListFull"),true);
@@ -357,7 +305,6 @@ function renderDeck(){
   setText("deckCloudNote",cloudMode
     ?"Tu baraja está conectada a Supabase. Los usos, acciones, giros y evoluciones se validan en el servidor."
     :"Inicia sesión con Discord para activar tu baraja en la nube.");
-  updateDeckShuffleButtons(normal.length+route.length+special.length);
   updateSpecialRouletteAccessUI();
 }
 function showResult(card){
@@ -2723,15 +2670,48 @@ function mapRouletteCardRecord(card){
     weight:Number(card.weight||1)
   };
 }
-function setWheelCards(cards){
-  CARDS.splice(0,CARDS.length,...cards);
-  cards.forEach(card=>{
+function shuffleRouletteItems(items){
+  for(let i=items.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [items[i],items[j]]=[items[j],items[i]];
+  }
+  return items;
+}
+function setWheelCards(cards,poolSlug="normal",forceShuffle=false){
+  const nextCards=[...cards];
+  const poolChanged=wheelPoolSlug!==poolSlug;
+  if(forceShuffle||poolChanged){
+    shuffleRouletteItems(nextCards);
+    wheelPoolSlug=poolSlug;
+    rotation=0;
+  }else{
+    const previousOrder=new Map(CARDS.map((card,index)=>[card.slug,index]));
+    nextCards.sort((a,b)=>{
+      const aIndex=previousOrder.get(a.slug);
+      const bIndex=previousOrder.get(b.slug);
+      if(aIndex===undefined&&bIndex===undefined)return 0;
+      if(aIndex===undefined)return 1;
+      if(bIndex===undefined)return -1;
+      return aIndex-bIndex;
+    });
+  }
+  CARDS.splice(0,CARDS.length,...nextCards);
+  nextCards.forEach(card=>{
     const image=new Image();
     image.src=card.image_path||("assets/"+card.slug+".svg");
     image.onload=()=>drawWheel();
+    cardArtImages[card.id]=image;
     cardArtImages[card.slug]=image;
   });
   drawWheel();
+}
+function shuffleWheelCards(){
+  if(spinning){notify("Espera a que termine el giro para mezclar la ruleta.");return;}
+  if(CARDS.length<2){notify("No hay suficientes cartas para mezclar la ruleta.");return;}
+  shuffleRouletteItems(CARDS);
+  rotation=0;
+  drawWheel();
+  notify("¡Ruleta mezclada! Las probabilidades de cada carta siguen siendo las mismas.");
 }
 async function getPublicRouletteCards(poolSlug){
   if(!authClient||!currentAuthUser)return [];
@@ -2744,7 +2724,7 @@ async function loadPublicNormalCards(){
   if(!authClient||!currentAuthUser)return;
   try{
     const cards=await getPublicRouletteCards("normal");
-    setWheelCards(cards);
+    setWheelCards(cards,"normal");
   }catch(error){
     console.warn("No se pudo cargar la ruleta normal configurada:",error.message);
   }
@@ -2779,7 +2759,6 @@ async function activateUserSession(user){
     notificationCache=[];
     setNotificationBadge(0);
     activeSessionUserId=null;currentProfile=null;isAdmin=false;adminAccessChecked=false;cloudMode=false;cloudDeck=[];cloudRoute=[];cloudSpecial=[];cloudInventory=[];
-    deckDisplayOrder=[];deckDisplayInitialized=false;
     currentTramo=0;tramoSpinsRemaining=0;bonusTramoSpinsRemaining=0;
     normalCardLimit=5;cardsPerTramo=2;normalSpinsPerTramo=3;
     rouletteAccessByPool={legendary:0,fiesta:0};
@@ -2793,7 +2772,6 @@ async function activateUserSession(user){
   if(activeSessionUserId===user.id&&cloudMode)return;
   activeSessionUserId=user.id;currentAuthUser=user;cloudMode=true;
   cloudDeck=[];cloudRoute=[];cloudSpecial=[];cloudInventory=[];
-  deckDisplayOrder=[];deckDisplayInitialized=false;
   renderAuthState(user);renderDeck();
   await Promise.all([loadAdminAccess(),loadMyProfile(),loadCloudInventory(),loadPlayers(),loadActivityFeed(),loadNotifications(),loadPublicNormalCards(),loadRouletteAccess()]);
   renderAdminAccess();
@@ -2878,7 +2856,7 @@ async function spinSpecialRoulette(poolSlug){
     if(!prizeCards.length){
       throw new Error(poolName+" todavía no está abierta o no tiene premios activos. Tu acceso se conserva.");
     }
-    setWheelCards(prizeCards);
+    setWheelCards(prizeCards,poolSlug);
     const {data,error}=await authClient.rpc("draw_special_roulette_card",{p_pool_slug:poolSlug});
     if(error)throw error;
     const result=Array.isArray(data)?data[0]:data;
@@ -3347,8 +3325,7 @@ document.getElementById("adminCardRemoveImage").addEventListener("click",()=>{
   showAdminCardImage(null);
 });
 spinButton.addEventListener("click",spin);
-document.getElementById("shuffleQuickDeckButton").addEventListener("click",shuffleDeckDisplay);
-document.getElementById("shuffleDeckButton").addEventListener("click",shuffleDeckDisplay);
+document.getElementById("shuffleWheelButton").addEventListener("click",shuffleWheelCards);
 document.getElementById("legendarySpinButton").addEventListener("click",()=>spinSpecialRoulette("legendary"));
 document.getElementById("fiestaSpinButton").addEventListener("click",()=>spinSpecialRoulette("fiesta"));
 document.getElementById("tramoButton").addEventListener("click",startNewTramo);
