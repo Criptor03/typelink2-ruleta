@@ -1097,6 +1097,90 @@ async function showPublicPlayer(playerId){
 function closePublicPlayer(){document.getElementById("publicProfileModal").hidden=true;}
 
 
+
+let cardActionTargetProfiles=Object.create(null);
+let cardActionTargetPreviewRequest=0;
+
+function setCardActionTargetProfile(profile){
+  const wrap=document.getElementById("cardActionTargetProfile");
+  const image=document.getElementById("cardActionTargetAvatar");
+  const initials=document.getElementById("cardActionTargetInitials");
+  if(!wrap)return;
+  if(!profile){
+    wrap.hidden=true;
+    if(image){image.hidden=true;image.removeAttribute("src");}
+    return;
+  }
+  wrap.hidden=false;
+  const name=profile.display_name||"Entrenador";
+  setText("cardActionTargetName",name);
+  if(initials)initials.textContent=initialsForTrainer(name);
+  if(image&&profile.avatar_url){
+    image.src=profile.avatar_url;
+    image.alt="";
+    image.hidden=false;
+    if(initials)initials.hidden=true;
+    image.onerror=()=>{image.hidden=true;if(initials)initials.hidden=false;};
+  }else{
+    if(image){image.hidden=true;image.removeAttribute("src");}
+    if(initials)initials.hidden=false;
+  }
+  setText("cardActionTargetEffectCount","…");
+  setText("cardActionTargetStatus","CONSULTANDO EFECTOS ACTIVOS");
+}
+
+function initialsForTrainer(name){
+  return String(name||"TL").trim().split(/\s+/).slice(0,2).map(part=>part[0]||"").join("").toUpperCase()||"TL";
+}
+
+async function refreshCardActionTargetProfile(profile){
+  const request=++cardActionTargetPreviewRequest;
+  if(!profile){
+    setCardActionTargetProfile(null);
+    return;
+  }
+  setCardActionTargetProfile(profile);
+  try{
+    const [playerEffectsResult,eventEffectsResult,progressResult,settingsResult]=await Promise.all([
+      authClient.from("player_effects")
+        .select("id,source_card_instance_id,effect_key,duration_type,expires_at,expires_after_tramo,remaining_uses,starts_at")
+        .eq("owner_id",profile.id).eq("status","active"),
+      authClient.from("event_effects")
+        .select("id,source_card_instance_id,effect_key,duration_type,expires_at,expires_after_tramo,remaining_uses,starts_at")
+        .eq("status","active"),
+      authClient.from("player_tramo_progress").select("current_tramo").eq("owner_id",profile.id).maybeSingle(),
+      authClient.from("event_settings").select("current_tramo").eq("singleton",true).maybeSingle()
+    ]);
+    if(request!==cardActionTargetPreviewRequest)return;
+    if(playerEffectsResult.error)throw playerEffectsResult.error;
+    if(eventEffectsResult.error)throw eventEffectsResult.error;
+    if(progressResult.error)throw progressResult.error;
+    if(settingsResult.error)throw settingsResult.error;
+    const now=Date.now();
+    const playerTramo=Number(progressResult.data?.current_tramo)||0;
+    const eventTramo=Number(settingsResult.data?.current_tramo)||0;
+    const isCurrentlyActive=(effect,tramo)=>(
+      (!effect.starts_at||new Date(effect.starts_at).getTime()<=now)
+      &&(!effect.expires_at||new Date(effect.expires_at).getTime()>now)
+      &&(effect.expires_after_tramo==null||Number(effect.expires_after_tramo)>=tramo)
+      &&(effect.duration_type!=="charges"||effect.remaining_uses==null||Number(effect.remaining_uses)>0)
+    );
+    const activePlayerEffects=(playerEffectsResult.data||[]).filter(effect=>isCurrentlyActive(effect,playerTramo));
+    const activeEventEffects=(eventEffectsResult.data||[]).filter(effect=>isCurrentlyActive(effect,eventTramo));
+    const affectedCards=new Set();
+    [...activePlayerEffects,...activeEventEffects].forEach(effect=>{
+      affectedCards.add(effect.source_card_instance_id||("effect:"+effect.id));
+    });
+    setText("cardActionTargetEffectCount",affectedCards.size);
+    setText("cardActionTargetStatus","EFECTOS ACTIVOS EN SU PERFIL");
+  }catch(error){
+    if(request!==cardActionTargetPreviewRequest)return;
+    console.warn("No se pudo consultar el contador de efectos del entrenador:",error.message);
+    setText("cardActionTargetEffectCount","—");
+    setText("cardActionTargetStatus","CONTADOR NO DISPONIBLE");
+  }
+}
+
 async function openCardAction(instanceId,mode){
   if(!currentAuthUser||!authClient){notify("Inicia sesión con Discord para gestionar tus cartas.");return;}
   const card=cloudInventory.find(item=>item.instance_id===instanceId);
@@ -1120,8 +1204,12 @@ async function openCardAction(instanceId,mode){
   setText("cardActionUses",card.remaining_uses+"/"+card.uses_per_card+" USOS RESTANTES");
   targetWrap.hidden=true;
   resultPreview.hidden=true;
+  setCardActionTargetProfile(null);
+  cardActionTargetProfiles=Object.create(null);
+  cardActionTargetPreviewRequest++;
   feedback.textContent="";
   targetSelect.replaceChildren();
+  targetSelect.onchange=null;
   if(messageInput)messageInput.value="";
   if(messageCount)messageCount.textContent="0";
   if(messageWrap)messageWrap.hidden=mode!=="use";
@@ -1174,13 +1262,36 @@ async function openCardAction(instanceId,mode){
       if(card.target_scope==="opponent"||mode==="transfer")prompt.disabled=true;
       try{
         const {data,error}=await authClient.from("profiles")
-          .select("id,display_name").neq("id",currentAuthUser.id).order("display_name",{ascending:true});
+          .select("id,display_name,avatar_url").order("display_name",{ascending:true});
         if(error)throw error;
         (data||[]).forEach(profile=>{
+          cardActionTargetProfiles[profile.id]=profile;
+          if(profile.id===currentAuthUser.id)return;
           const option=document.createElement("option");
           option.value=profile.id;option.textContent=profile.display_name||"Entrenador";
           targetSelect.append(option);
         });
+        targetSelect.onchange=()=>{
+          const selectedId=targetSelect.value||(
+            card.target_scope==="either"&&mode!=="transfer"?currentAuthUser.id:null
+          );
+          const selectedProfile=selectedId?cardActionTargetProfiles[selectedId]:null;
+          if(mode==="use"||mode==="transfer")void refreshCardActionTargetProfile(selectedProfile);
+          else setCardActionTargetProfile(null);
+        };
+        if(card.target_scope==="either"&&mode!=="transfer"){
+          targetSelect.value="";
+          void refreshCardActionTargetProfile(cardActionTargetProfiles[currentAuthUser.id]||null);
+        }else if(targetSelect.options.length>1){
+          targetSelect.selectedIndex=1;
+          targetSelect.dispatchEvent(new Event("change"));
+        }else{
+          setCardActionTargetProfile(null);
+          if(card.target_scope==="opponent"||mode==="transfer"){
+            confirmButton.disabled=true;
+            feedback.textContent="Todavía no hay otro entrenador disponible para seleccionar.";
+          }
+        }
       }catch(error){
         feedback.textContent="No pudimos cargar la lista de entrenadores: "+(error.message||"error desconocido");
         confirmButton.disabled=true;
@@ -1193,6 +1304,8 @@ async function openCardAction(instanceId,mode){
 function closeCardAction(){
   const modal=document.getElementById("cardActionModal");
   if(modal)modal.hidden=true;
+  cardActionTargetPreviewRequest++;
+  setCardActionTargetProfile(null);
   pendingCardAction=null;
   const button=document.getElementById("confirmCardAction");
   if(button){button.disabled=false;button.textContent="CONFIRMAR";}
