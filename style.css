@@ -1759,60 +1759,48 @@ button:disabled{cursor:not-allowed}
   cursor:not-allowed;
 }
 .page-view .spin-button:disabled b{color:#ef8d94!important}
-.deck-overview-toolbar{
-  flex:1;
-  min-width:0;
+
+/* Shuffle the wheel layout, never the player's inventory. */
+.roulette-heading-actions{
   display:flex;
   align-items:center;
   justify-content:flex-end;
-  gap:12px;
+  gap:13px;
+  flex-shrink:0;
 }
-.deck-overview-toolbar .deck-capacity-large{
-  flex:1;
-  width:auto;
-  min-width:55px;
-}
-.deck-shuffle-button{
+.roulette-shuffle-button{
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  gap:8px;
-  width:100%;
-  min-height:38px;
-  padding:10px 13px;
-  border:1px solid #617d8d;
-  border-radius:5px;
-  background:linear-gradient(115deg,#263b49,#1a2a35);
+  gap:7px;
+  min-height:34px;
+  padding:8px 12px;
+  border:1px solid #627f90;
+  border-radius:4px;
+  background:linear-gradient(115deg,#263b49,#172630);
   color:#e8f0f4;
   font:900 8px Inter;
-  letter-spacing:1.1px;
+  letter-spacing:1px;
+  white-space:nowrap;
   cursor:pointer;
-  box-shadow:0 5px 16px #0003,inset 0 1px #ffffff0c;
+  box-shadow:0 4px 14px #0003,inset 0 1px #ffffff0b;
   transition:background .16s,border-color .16s,box-shadow .16s,transform .16s;
 }
-.deck-shuffle-button span{
-  color:#b9d1df;
-  font-size:18px;
+.roulette-shuffle-button span{
+  color:#c4d8e3;
+  font-size:17px;
   line-height:1;
 }
-.deck-shuffle-button:hover{
-  background:linear-gradient(115deg,#354f60,#243a49);
-  border-color:#a3c0cf;
-  box-shadow:0 0 22px #9dbbca20,0 7px 18px #0004;
+.roulette-shuffle-button:hover{
+  background:linear-gradient(115deg,#385466,#243b49);
+  border-color:#aac5d3;
+  color:#fff;
+  box-shadow:0 0 19px #9dbbca22,0 7px 17px #0004;
   transform:translateY(-1px);
 }
-.deck-shuffle-button:active{transform:translateY(1px)}
-.deck-shuffle-button:disabled{
-  opacity:.45;
-  cursor:not-allowed;
-  transform:none;
-  box-shadow:none;
-}
-.quick-deck-shuffle{margin:10px 0 5px}
+.roulette-shuffle-button:active{transform:translateY(1px)}
+.roulette-shuffle-button:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
 @media(max-width:560px){
-  .deck-overview-top{align-items:flex-start}
-  .deck-overview-toolbar{flex-direction:column;align-items:stretch;gap:9px}
-  .deck-overview-toolbar .deck-capacity-large{width:100%;flex:none}
-  .deck-overview-toolbar .deck-shuffle-button{width:100%;min-width:0}
-  .quick-deck-shuffle{min-height:36px}
+  .roulette-heading-actions{gap:7px;flex-direction:column;align-items:flex-end}
+  .roulette-shuffle-button{min-height:31px;padding:7px 9px;font-size:7px}
 }
