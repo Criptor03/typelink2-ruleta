@@ -716,3 +716,49 @@ button[hidden]{display:none!important}
 @media(max-width:560px){
   .activity-custom-note{margin-left:0}
 }
+
+/* Monitor privado de estado de plataforma */
+.admin-platform-heading{align-items:flex-end}
+.admin-platform-overall{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px;margin-bottom:12px;border-left:3px solid #6b8798}
+.admin-platform-overall>div{display:grid;gap:5px}
+.admin-platform-overall strong{font:800 21px 'Barlow Condensed';letter-spacing:.7px;color:#2c3b46}
+.admin-platform-overall small{font-size:9px;color:#7b8991}
+.admin-platform-state{display:inline-flex;align-items:center;justify-content:center;padding:5px 8px;border:1px solid #d9e0e4;background:#f0f3f5;color:#73818a;font-size:7px;font-weight:900;letter-spacing:.7px;white-space:nowrap}
+.admin-platform-state.is-online{border-color:#cce2d3;background:#edf7f0;color:#397d53}
+.admin-platform-state.is-warning{border-color:#ead9b8;background:#fbf5e9;color:#9a7433}
+.admin-platform-state.is-offline{border-color:#e8c8c8;background:#fbefef;color:#a64e4e}
+.admin-platform-state.is-pending{border-color:#d9e0e4;background:#f0f3f5;color:#73818a}
+.admin-platform-health-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.admin-platform-health-card{padding:14px;display:grid;gap:9px}
+.admin-platform-health-card>div{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.admin-platform-health-card>strong{font:800 16px 'Barlow Condensed';color:#344653}
+.admin-platform-health-card>small{font-size:9px;line-height:1.5;color:#7b8991}
+.admin-platform-resource-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.admin-platform-resource{padding:15px;display:grid;gap:7px;min-width:0}
+.admin-platform-resource>strong{font:800 25px 'Barlow Condensed';color:#2c3b46;overflow-wrap:anywhere}
+.admin-platform-resource>small{font-size:9px;line-height:1.5;color:#7b8991}
+.admin-platform-data-grid{display:grid;grid-template-columns:1fr 1.15fr;gap:12px;margin-bottom:12px}
+.admin-platform-data-panel,.admin-platform-modules-panel{padding:16px;min-width:0}
+.admin-platform-panel-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.admin-platform-panel-heading h3{font:800 20px 'Barlow Condensed';margin:4px 0 0;color:#30414d}
+.admin-platform-buckets,.admin-platform-files,.admin-platform-modules{display:grid;gap:8px}
+.admin-platform-bucket,.admin-platform-file{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid #e8ecef;min-width:0}
+.admin-platform-bucket-copy,.admin-platform-file-copy{display:grid;gap:4px;min-width:0}
+.admin-platform-bucket-copy strong,.admin-platform-file-copy strong{font-size:10px;color:#344653;overflow-wrap:anywhere}
+.admin-platform-bucket-copy small,.admin-platform-file-copy small{font-size:8px;line-height:1.45;color:#849099}
+.admin-platform-bucket-stats{display:grid;gap:4px;text-align:right;flex-shrink:0}
+.admin-platform-bucket-stats strong{font-size:9px;color:#52636e}
+.admin-platform-bucket-stats small{font-size:8px;color:#849099}
+.admin-platform-file-size{font-size:9px;color:#52636e;white-space:nowrap;flex-shrink:0}
+.admin-platform-module{display:grid;grid-template-columns:8px minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 0;border-top:1px solid #e8ecef}
+.admin-platform-module-marker{width:7px;height:7px;border-radius:50%;background:#849099}
+.admin-platform-module-marker.is-online{background:#4f986a}
+.admin-platform-module-marker.is-warning{background:#b68a42}
+.admin-platform-module-copy{display:grid;gap:3px;min-width:0}
+.admin-platform-module-copy strong{font-size:10px;color:#344653}
+.admin-platform-module-copy>span{font-size:9px;color:#52636e}
+.admin-platform-module-copy small{font-size:8px;line-height:1.5;color:#849099}
+.admin-platform-footnote{font-size:8px;line-height:1.65;color:#829099;margin:12px 0 0}
+.admin-platform-footnote b{color:#586974;letter-spacing:.5px}
+@media(max-width:950px){.admin-platform-health-grid,.admin-platform-resource-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-platform-data-grid{grid-template-columns:1fr}}
+@media(max-width:600px){.admin-platform-heading{align-items:flex-start;flex-direction:column}.admin-platform-health-grid,.admin-platform-resource-grid{grid-template-columns:1fr 1fr}.admin-platform-overall{align-items:flex-start;flex-direction:column}.admin-platform-module{grid-template-columns:7px minmax(0,1fr)}.admin-platform-module>.admin-platform-state{grid-column:2;justify-self:start}}
