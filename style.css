@@ -1240,3 +1240,324 @@ button:disabled{cursor:not-allowed}
 @media(prefers-reduced-motion:reduce){
   *,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
 }
+
+
+/* TypeLink 2 — compact trainer tiles and complete dark surfaces */
+.players-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,176px));
+  justify-content:start;
+  align-items:stretch;
+  gap:13px;
+}
+.players-grid .player-directory-card{
+  appearance:none;
+  -webkit-appearance:none;
+  width:100%;
+  min-width:0;
+  aspect-ratio:1 / 1;
+  padding:15px 12px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  position:relative;
+  overflow:hidden;
+  text-align:center;
+  cursor:pointer;
+  font:inherit;
+  color:#e8eef2;
+  background:
+    radial-gradient(circle at 50% 0%,#9ab6c413 0,transparent 58%),
+    linear-gradient(145deg,#17232d,#111922);
+  border:1px solid #344653;
+  border-radius:10px;
+  box-shadow:0 8px 24px #0003,inset 0 1px #ffffff07;
+  transition:transform .18s,border-color .18s,box-shadow .18s,background .18s;
+}
+.players-grid .player-directory-card:hover{
+  transform:translateY(-3px);
+  border-color:#7893a4;
+  background:
+    radial-gradient(circle at 50% 0%,#a9c6d51f 0,transparent 62%),
+    linear-gradient(145deg,#1c2b36,#131e27);
+  box-shadow:0 13px 28px #0005,0 0 22px #91b4c51a;
+}
+.players-grid .player-directory-card:focus-visible{
+  outline:2px solid #a8c4d4;
+  outline-offset:3px;
+}
+.player-directory-avatar{
+  width:62px;
+  height:62px;
+  flex:none;
+  overflow:hidden;
+  border-radius:50%;
+  border:1px solid #607786;
+  background:#1b2a35;
+  color:#e2eaf0;
+  box-shadow:0 0 18px #91b4c51a;
+}
+.player-directory-avatar img{
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+  border-radius:inherit;
+}
+.player-directory-info{
+  width:100%;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:3px;
+}
+.player-directory-info strong{
+  display:block;
+  max-width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:#f0f4f7;
+  font:800 16px 'Barlow Condensed';
+}
+.player-directory-info small{
+  color:#8799a5;
+  font-size:8px;
+}
+.player-directory-stats{
+  width:100%;
+  display:flex;
+  flex-direction:row;
+  flex-wrap:wrap;
+  justify-content:center;
+  align-items:center;
+  gap:5px 9px;
+  text-align:center;
+}
+.player-directory-stats span{
+  color:#9eafb9;
+  font-size:7px;
+  font-weight:800;
+  letter-spacing:.3px;
+  white-space:nowrap;
+}
+.players-grid .player-view-button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  margin-top:1px;
+  padding:5px 8px;
+  border:1px solid #405563;
+  border-radius:4px;
+  background:#1d2c37;
+  color:#c6d4dd;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.8px;
+}
+.players-grid .player-directory-card:hover .player-view-button{
+  border-color:#7993a3;
+  background:#263a47;
+  color:#f2f6f8;
+}
+.players-loading{
+  background:#141f29;
+  border:1px solid #344550;
+  color:#9aaab5;
+}
+.public-profile-dialog{
+  background:linear-gradient(145deg,#151f29,#101820);
+  border:1px solid #405360;
+  border-radius:10px;
+  color:#e7eef2;
+}
+.public-profile-heading{border-bottom-color:#344550}
+.public-profile-section .panel-topline{color:#b0bec7}
+.public-profile-modal{background:#050a10d9;backdrop-filter:blur(8px)}
+.modal-close{color:#b8c5ce}
+.public-card-list .deck-item{background:#17232d;border-color:#364956}
+.public-profile-section .deck-empty{background:#151f29;border-color:#3a4c58;color:#94a5b0}
+.logout-button{
+  border-color:#40515e;
+  background:#17232d;
+  color:#c3cfd7;
+}
+.logout-button:hover{background:#263946;border-color:#708a9a;color:#fff}
+.deck-action-button{
+  border-color:#465966;
+  background:#1b2a35;
+  color:#dce6ec;
+}
+.deck-action-button:hover{background:#2a3d49;border-color:#8aa5b5;color:#fff}
+.deck-action-button.evolve{
+  border-color:#806d4b;
+  background:#29271f;
+  color:#d6bc84;
+}
+.deck-action-button.evolve:hover{background:#655333;border-color:#b69b66;color:#fff}
+.card-action-target,.card-action-message{
+  background:#192630;
+  border-color:#3a4d59;
+  color:#dce5eb;
+}
+.card-action-target select,.card-action-message textarea{
+  background:#0e161e;
+  border-color:#435663;
+  color:#edf2f5;
+}
+.card-action-cancel{
+  background:#1b2934;
+  border-color:#465966;
+  color:#d9e3e9;
+}
+.card-action-cancel:hover{background:#2a3c48;border-color:#829baa;color:#fff}
+.spin-reward-dialog{
+  background:linear-gradient(145deg,#17232d,#101820);
+  border-color:#526775;
+  color:#eaf0f4;
+}
+.spin-reward-dialog h2,.spin-reward-dialog h3{color:#f0f4f7}
+.sync-steps span{
+  background:#17232d;
+  border-color:#3b4e5b;
+  color:#aab9c3;
+}
+.sync-steps b{color:#e17a80}
+.coming-soon{
+  background:#1b2934;
+  color:#9cabb5;
+  border:1px solid #3b4e5b;
+}
+.app-footer{
+  border-top-color:#2d3c47;
+  color:#7f909c;
+}
+.admin-catalog-toolbar input,.admin-catalog-toolbar select,
+.admin-field input,.admin-field select,.admin-field textarea,
+.admin-roulette-weight input,.admin-progression-field input{
+  background:#0e161e!important;
+  border-color:#3b4d59!important;
+  color:#edf2f5!important;
+}
+.admin-catalog-toolbar input::placeholder,.admin-field input::placeholder,
+.admin-field textarea::placeholder{color:#71828f}
+.admin-card-status.is-inactive,.admin-roulette-pool-status.is-inactive{
+  background:#29251d;
+  border-color:#766443;
+  color:#d5b978;
+}
+.admin-card-edit,.admin-danger-button,.admin-trainer-card-remove{
+  background:#202c35;
+  border-color:#596a75;
+  color:#d7e0e6;
+}
+.admin-card-edit:hover{background:#344752;color:#fff;border-color:#8399a6}
+.admin-danger-button,.admin-trainer-card-remove{
+  background:#332125;
+  border-color:#78434a;
+  color:#e59b9f;
+}
+.admin-danger-button:hover,.admin-trainer-card-remove:hover{
+  background:#71383f;
+  border-color:#b9666d;
+  color:#fff;
+}
+.admin-catalog-loading{
+  background:#151f29;
+  border-color:#344550;
+  color:#97a7b1;
+}
+.admin-trainer-detail-heading,.admin-trainer-card-item,
+.admin-trainer-effect-item,.admin-trainer-unlock-item,
+.admin-trainer-activity-item,.admin-roulette-card-row,
+.admin-admin-mechanics-effect-row{
+  background:#17232d;
+  border-color:#354955;
+  color:#dce5eb;
+}
+.admin-trainer-reset-note{
+  background:#2b2023;
+  border-left-color:#b35c64;
+  color:#d0a6a8;
+}
+.admin-roulette-pool-icon.legendary{background:#302a1e;border-color:#816d49;color:#ddc17f}
+.admin-roulette-pool-icon.fiesta{background:#302329;border-color:#80515d;color:#e1a0aa}
+.admin-roulette-active-toggle{
+  background:#1b2934;
+  border-color:#455965;
+  color:#cbd6dd;
+}
+.admin-roulette-card-row.is-included{background:#1b2b35;border-color:#688292}
+.admin-mechanics-effect-row{
+  background:#17232d;
+  border-color:#354955;
+}
+.special-roulette-seal{
+  background:#202d37;
+  border-color:#596b77;
+  color:#d1b77e;
+}
+.admin-platform-state{
+  background:#1b2933;
+  border-color:#425560;
+  color:#a9b7c0;
+}
+.admin-platform-state.is-warning{
+  background:#30291e;
+  border-color:#766443;
+  color:#d7bd83;
+}
+.admin-platform-state.is-offline{
+  background:#352226;
+  border-color:#78464c;
+  color:#e4a0a4;
+}
+.admin-platform-state.is-pending{
+  background:#1b2933;
+  border-color:#425560;
+  color:#a9b7c0;
+}
+.admin-roulette-pool-status,.admin-card-status{
+  background:#1d2b35;
+  border-color:#40525e;
+  color:#b7c4cc;
+}
+.admin-progression-catalog,.admin-progression-warning{
+  background:#1b2933;
+  border-color:#3a4d59;
+  color:#a8b6bf;
+}
+.admin-progression-card-chip{
+  background:#202e38;
+  border-color:#405460;
+  color:#c4d0d8;
+}
+.admin-progression-card-chip.is-empty{
+  background:#30291e;
+  border-color:#766443;
+  color:#d7bd83;
+}
+.notification-item.unread{background:linear-gradient(100deg,#201d25,#141e28)}
+.notification-read-button{
+  background:#1b2a35;
+  border-color:#465966;
+  color:#dbe5eb;
+}
+.notification-read-button:hover{background:#283a46;border-color:#91a9b7}
+@media(max-width:800px){
+  .players-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+}
+@media(max-width:560px){
+  .players-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .players-grid .player-directory-card{padding:11px 8px;gap:7px}
+  .player-directory-avatar{width:54px;height:54px}
+  .player-directory-info strong{font-size:14px}
+}
+@media(max-width:350px){
+  .players-grid .player-directory-card{padding:8px 5px;gap:6px}
+  .player-directory-avatar{width:46px;height:46px}
+  .players-grid .player-view-button{font-size:6px}
+}
