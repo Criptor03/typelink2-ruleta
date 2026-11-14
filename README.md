@@ -17,7 +17,7 @@ Plataforma web de TypeLink 2 con identidad visual inspirada en Pokémon Blanco y
 - Límite de cartas normales controlado por el servidor; ahora admite modificadores aditivos temporales.
 - Dos cartas de tramo entregadas mediante una función segura; se acumulan y no consumen espacios normales.
 - Actualizaciones Realtime preparadas para barajas, perfiles, notificaciones y el muro comunitario.
-- Al usar una carta, el entrenador puede añadir un mensaje opcional de hasta 280 caracteres que aparece junto al movimiento en el muro de cartas.
+- Al usar una carta, el entrenador puede añadir un mensaje opcional sin límite de caracteres configurado que aparece junto al movimiento en el muro de cartas.
 - Motor universal de cartas con `play_card()` y `evolve_card()` en el servidor.
 - Cada carta admite de 1 a 99 usos configurables; el inventario muestra los usos restantes y agota la carta al llegar a cero.
 - Evoluciones de una sola carta a otra: consumen la instancia original y entregan una nueva, sin fusiones.
