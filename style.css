@@ -762,3 +762,33 @@ button[hidden]{display:none!important}
 .admin-platform-footnote b{color:#586974;letter-spacing:.5px}
 @media(max-width:950px){.admin-platform-health-grid,.admin-platform-resource-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-platform-data-grid{grid-template-columns:1fr}}
 @media(max-width:600px){.admin-platform-heading{align-items:flex-start;flex-direction:column}.admin-platform-health-grid,.admin-platform-resource-grid{grid-template-columns:1fr 1fr}.admin-platform-overall{align-items:flex-start;flex-direction:column}.admin-platform-module{grid-template-columns:7px minmax(0,1fr)}.admin-platform-module>.admin-platform-state{grid-column:2;justify-self:start}}
+
+/* Editor privado de progresión del evento */
+.admin-progression-heading{align-items:flex-end}
+.admin-progression-summary{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px;margin-bottom:12px;border-left:3px solid #687f90}
+.admin-progression-summary h3{font:800 19px 'Barlow Condensed';color:#30414d;margin:5px 0}
+.admin-progression-summary p{font-size:9px;color:#7b8991;line-height:1.55;margin:0}
+.admin-progression-current-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.admin-progression-current-grid article{padding:15px;display:grid;gap:7px}
+.admin-progression-current-grid strong{font:800 27px 'Barlow Condensed';color:#2c3b46}
+.admin-progression-current-grid small{font-size:9px;line-height:1.5;color:#7b8991}
+.admin-progression-editor{padding:18px}
+.admin-progression-form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}
+.admin-progression-field{display:grid;gap:8px;font-size:8px;letter-spacing:.8px;font-weight:900;color:#53636e}
+.admin-progression-field input{width:100%;padding:12px;border:1px solid #cbd3da;background:#fff;color:#263541;font:700 16px Inter;outline:none}
+.admin-progression-field input:focus{border-color:#566b7a;box-shadow:0 0 0 2px #566b7a18}
+.admin-progression-field small{font-size:8px;line-height:1.6;letter-spacing:0;font-weight:500;color:#83909a}
+.admin-progression-catalog{padding:13px 14px;background:#f0f3f5;border:1px solid #d9e0e4;display:grid;gap:10px}
+.admin-progression-catalog>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.admin-progression-catalog>div:first-child strong{font-size:8px;letter-spacing:.7px;color:#53636e}
+.admin-progression-card-list{display:flex;flex-wrap:wrap;gap:7px}
+.admin-progression-card-chip{padding:7px 9px;border:1px solid #d0d8de;background:#fff;color:#475966;font-size:8px;font-weight:800}
+.admin-progression-card-chip.is-empty{color:#987d4d;border-color:#e6d8bd;background:#faf5eb}
+.admin-progression-catalog>small{font-size:8px;line-height:1.5;color:#83909a}
+.admin-progression-warning{display:flex;gap:12px;align-items:center;padding:12px 14px;margin-top:13px;background:#f2f4f6;border-left:3px solid #8a9aa5;color:#6e7d87;font-size:8px;line-height:1.6}
+.admin-progression-warning b{font-size:8px;letter-spacing:.7px;color:#4d606e;white-space:nowrap}
+.admin-progression-save-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:14px;margin-top:14px;border-top:1px solid #e0e5e8}
+.admin-progression-save-row>span{font-size:8px;line-height:1.5;color:#7c8992}
+.admin-progression-save-row .primary-button{flex:none}
+@media(max-width:850px){.admin-progression-current-grid{grid-template-columns:1fr 1fr}.admin-progression-form-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.admin-progression-heading{align-items:flex-start;flex-direction:column}.admin-progression-summary{align-items:flex-start;flex-direction:column}.admin-progression-current-grid,.admin-progression-form-grid{grid-template-columns:1fr}.admin-progression-catalog>div:first-child,.admin-progression-save-row{align-items:flex-start;flex-direction:column}.admin-progression-warning{align-items:flex-start;flex-direction:column}}
