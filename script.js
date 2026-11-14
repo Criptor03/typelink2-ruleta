@@ -58,6 +58,8 @@ let cloudDeck = [];
 let cloudRoute = [];
 let cloudSpecial = [];
 let cloudInventory = [];
+let deckDisplayOrder = [];
+let deckDisplayInitialized = false;
 let evolutionRulesBySource = Object.create(null);
 let cardEffectsById = Object.create(null);
 let pendingCardAction = null;
@@ -119,6 +121,55 @@ function activeNormalCards(){
 }
 function activeTramoCards(){
   return cloudMode?cloudRoute:demoRouteState.cards;
+}
+function deckDisplayKey(card){
+  return card.instance_id?"card:"+card.instance_id:"demo:"+String(card.id||card.slug||card.name||"card");
+}
+function shuffledCopy(items){
+  const copy=[...items];
+  for(let i=copy.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [copy[i],copy[j]]=[copy[j],copy[i]];
+  }
+  return copy;
+}
+function syncDeckDisplayOrder(cards,forceShuffle=false){
+  const ids=cards.map(deckDisplayKey);
+  if(!ids.length)return;
+  if(forceShuffle||!deckDisplayInitialized){
+    deckDisplayOrder=shuffledCopy(ids);
+    deckDisplayInitialized=true;
+    return;
+  }
+  const activeIds=new Set(ids);
+  deckDisplayOrder=deckDisplayOrder.filter(id=>activeIds.has(id));
+  const knownIds=new Set(deckDisplayOrder);
+  ids.filter(id=>!knownIds.has(id)).forEach(id=>{
+    const position=Math.floor(Math.random()*(deckDisplayOrder.length+1));
+    deckDisplayOrder.splice(position,0,id);
+  });
+}
+function orderDeckCards(cards){
+  const positions=new Map(deckDisplayOrder.map((id,index)=>[id,index]));
+  return [...cards].sort((a,b)=>{
+    const aPosition=positions.get(deckDisplayKey(a));
+    const bPosition=positions.get(deckDisplayKey(b));
+    return (aPosition??Number.MAX_SAFE_INTEGER)-(bPosition??Number.MAX_SAFE_INTEGER);
+  });
+}
+function shuffleDeckDisplay(){
+  if(spinning){notify("Espera a que termine el giro para barajar tu inventario.");return;}
+  const cards=[...activeNormalCards(),...activeTramoCards(),...(cloudMode?cloudSpecial:[])];
+  if(!cards.length){notify("Todavía no tienes cartas para barajar.");return;}
+  syncDeckDisplayOrder(cards,true);
+  renderDeck();
+  notify("¡Tu baraja se ha mezclado! Las cartas y sus usos siguen intactos.");
+}
+function updateDeckShuffleButtons(cardCount){
+  ["shuffleQuickDeckButton","shuffleDeckButton"].forEach(id=>{
+    const button=document.getElementById(id);
+    if(button)button.disabled=spinning||cardCount<2;
+  });
 }
 function cardImage(card){
   return card.image_path||card.art||(card.slug?"assets/"+card.slug+".svg":"");
@@ -235,7 +286,10 @@ function renderRouteItems(cards,container,allowActions=false){
   cards.forEach((card,index)=>container.append(createDeckItem(card,index,true,allowActions)));
 }
 function renderDeck(){
-  const normal=activeNormalCards(),route=activeTramoCards(),special=cloudMode?cloudSpecial:[],normalCount=normal.length;
+  const normalSource=activeNormalCards(),routeSource=activeTramoCards(),specialSource=cloudMode?cloudSpecial:[];
+  syncDeckDisplayOrder([...normalSource,...routeSource,...specialSource]);
+  const normal=orderDeckCards(normalSource),route=orderDeckCards(routeSource),special=orderDeckCards(specialSource);
+  const normalCount=normal.length;
   renderCardItems(normal,document.getElementById("deckList"),"Todavía no tienes cartas. ¡Haz tu primer giro!");
   renderCardItems(normal,document.getElementById("deckListFull"),"Todavía no tienes cartas. Ve a la ruleta para conseguir la primera.",true);
   renderRouteItems(route,document.getElementById("routeListFull"),true);
@@ -303,6 +357,7 @@ function renderDeck(){
   setText("deckCloudNote",cloudMode
     ?"Tu baraja está conectada a Supabase. Los usos, acciones, giros y evoluciones se validan en el servidor."
     :"Inicia sesión con Discord para activar tu baraja en la nube.");
+  updateDeckShuffleButtons(normal.length+route.length+special.length);
   updateSpecialRouletteAccessUI();
 }
 function showResult(card){
@@ -1396,14 +1451,14 @@ function setupRealtime(){
   if(activityChannel)authClient.removeChannel(activityChannel);
   if(notificationChannel)authClient.removeChannel(notificationChannel);
   inventoryChannel=authClient.channel("typelink-player-cards-"+currentAuthUser.id)
-    .on("postgres_changes",{event:"*",schema:"public",table:"player_cards",filter:"owner_id=eq."+currentAuthUser.id},()=>loadCloudInventory())
+    .on("postgres_changes",{event:"*",schema:"public",table:"player_cards",filter:"owner_id=eq."+currentAuthUser.id},()=>{if(!spinning)loadCloudInventory();})
     .subscribe();
   profilesChannel=authClient.channel("typelink-public-profiles")
     .on("postgres_changes",{event:"*",schema:"public",table:"profiles"},()=>loadPlayers())
     .subscribe();
   activityChannel=authClient.channel("typelink-community-activity")
     .on("postgres_changes",{event:"INSERT",schema:"public",table:"card_activity"},()=>loadActivityFeed())
-    .on("postgres_changes",{event:"*",schema:"public",table:"player_tramo_progress",filter:"owner_id=eq."+currentAuthUser.id},()=>loadCloudInventory())
+    .on("postgres_changes",{event:"*",schema:"public",table:"player_tramo_progress",filter:"owner_id=eq."+currentAuthUser.id},()=>{if(!spinning)loadCloudInventory();})
     .on("postgres_changes",{event:"*",schema:"public",table:"player_effects",filter:"owner_id=eq."+currentAuthUser.id},()=>loadProfileMechanics())
     .on("postgres_changes",{event:"*",schema:"public",table:"player_type_status",filter:"owner_id=eq."+currentAuthUser.id},()=>loadProfileMechanics())
     .on("postgres_changes",{event:"*",schema:"public",table:"player_roulette_unlocks",filter:"owner_id=eq."+currentAuthUser.id},()=>loadRouletteAccess())
@@ -2724,6 +2779,7 @@ async function activateUserSession(user){
     notificationCache=[];
     setNotificationBadge(0);
     activeSessionUserId=null;currentProfile=null;isAdmin=false;adminAccessChecked=false;cloudMode=false;cloudDeck=[];cloudRoute=[];cloudSpecial=[];cloudInventory=[];
+    deckDisplayOrder=[];deckDisplayInitialized=false;
     currentTramo=0;tramoSpinsRemaining=0;bonusTramoSpinsRemaining=0;
     normalCardLimit=5;cardsPerTramo=2;normalSpinsPerTramo=3;
     rouletteAccessByPool={legendary:0,fiesta:0};
@@ -2737,6 +2793,7 @@ async function activateUserSession(user){
   if(activeSessionUserId===user.id&&cloudMode)return;
   activeSessionUserId=user.id;currentAuthUser=user;cloudMode=true;
   cloudDeck=[];cloudRoute=[];cloudSpecial=[];cloudInventory=[];
+  deckDisplayOrder=[];deckDisplayInitialized=false;
   renderAuthState(user);renderDeck();
   await Promise.all([loadAdminAccess(),loadMyProfile(),loadCloudInventory(),loadPlayers(),loadActivityFeed(),loadNotifications(),loadPublicNormalCards(),loadRouletteAccess()]);
   renderAdminAccess();
@@ -3290,6 +3347,8 @@ document.getElementById("adminCardRemoveImage").addEventListener("click",()=>{
   showAdminCardImage(null);
 });
 spinButton.addEventListener("click",spin);
+document.getElementById("shuffleQuickDeckButton").addEventListener("click",shuffleDeckDisplay);
+document.getElementById("shuffleDeckButton").addEventListener("click",shuffleDeckDisplay);
 document.getElementById("legendarySpinButton").addEventListener("click",()=>spinSpecialRoulette("legendary"));
 document.getElementById("fiestaSpinButton").addEventListener("click",()=>spinSpecialRoulette("fiesta"));
 document.getElementById("tramoButton").addEventListener("click",startNewTramo);
