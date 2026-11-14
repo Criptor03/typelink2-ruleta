@@ -9,24 +9,23 @@ const CARDS = [
 ];
 
 const POKEMON_TYPES = [
-  {slug:"normal",name:"Normal",color:"#A8A77A"},
-  {slug:"fuego",name:"Fuego",color:"#EE8130"},
-  {slug:"agua",name:"Agua",color:"#6390F0"},
-  {slug:"electrico",name:"Eléctrico",color:"#F7D02C"},
-  {slug:"planta",name:"Planta",color:"#7AC74C"},
-  {slug:"hielo",name:"Hielo",color:"#96D9D6"},
-  {slug:"lucha",name:"Lucha",color:"#C22E28"},
-  {slug:"veneno",name:"Veneno",color:"#A33EA1"},
-  {slug:"tierra",name:"Tierra",color:"#E2BF65"},
-  {slug:"volador",name:"Volador",color:"#A98FF3"},
-  {slug:"psiquico",name:"Psíquico",color:"#F95587"},
-  {slug:"bicho",name:"Bicho",color:"#A6B91A"},
-  {slug:"roca",name:"Roca",color:"#B6A136"},
-  {slug:"fantasma",name:"Fantasma",color:"#735797"},
-  {slug:"dragon",name:"Dragón",color:"#6F35FC"},
-  {slug:"siniestro",name:"Siniestro",color:"#705746"},
-  {slug:"acero",name:"Acero",color:"#B7B7CE"},
-  {slug:"hada",name:"Hada",color:"#D685AD"}
+  {slug:"normal",name:"Normal",color:"#A8A77A",icon:"https://play.pokemonshowdown.com/sprites/typeicons/Normal.png"},
+  {slug:"fuego",name:"Fuego",color:"#EE8130",icon:"https://play.pokemonshowdown.com/sprites/typeicons/Fire.png"},
+  {slug:"agua",name:"Agua",color:"#6390F0",icon:"https://play.pokemonshowdown.com/sprites/typeicons/Water.png"},
+  {slug:"electrico",name:"Eléctrico",color:"#F7D02C",icon:"https://play.pokemonshowdown.com/sprites/typeicons/Electric.png"},
+  {slug:"planta",name:"Planta",color:"#7AC74C",icon:"https://play.pokemonshowdown.com/sprites/typeicons/Grass.png"},
+  {slug:"hielo",name:"Hielo",color:"#96D9D6",icon:"https://play.pokemonshowdown.com/sprites/typeicons/Ice.png"},
+  {slug:"lucha",name:"Lucha",color:"#C22E28",icon:"https://play.pokemonshowdown.com/sprites/typeicons/Fighting.png"},
+  {slug:"veneno",name:"Veneno",color:"#A33EA1",icon:"https://play.pokemonshowdown.com/sprites/typeicons/Poison.png"},
+  {slug:"tierra",name:"Tierra",color:"#E2BF65",icon:"https://play.pokemonshowdown.com/sprites/typeicons/Ground.png"},
+  {slug:"volador",name:"Volador",color:"#A98FF3",icon:"https://play.pokemonshowdown.com/sprites/typeicons/Flying.png"},
+  {slug:"psiquico",name:"Psíquico",color:"#F95587",icon:"https://play.pokemonshowdown.com/sprites/typeicons/Psychic.png"},
+  {slug:"bicho",name:"Bicho",color:"#A6B91A",icon:"https://play.pokemonshowdown.com/sprites/typeicons/Bug.png"},
+  {slug:"roca",name:"Roca",color:"#B6A136",icon:"https://play.pokemonshowdown.com/sprites/typeicons/Rock.png"},
+  {slug:"fantasma",name:"Fantasma",color:"#735797",icon:"https://play.pokemonshowdown.com/sprites/typeicons/Ghost.png"},
+  {slug:"dragon",name:"Dragón",color:"#6F35FC",icon:"https://play.pokemonshowdown.com/sprites/typeicons/Dragon.png"},
+  {slug:"siniestro",name:"Siniestro",color:"#705746",icon:"https://play.pokemonshowdown.com/sprites/typeicons/Dark.png"},
+  {slug:"acero",name:"Acero",color:"#B7B7CE",icon:"https://play.pokemonshowdown.com/sprites/typeicons/Steel.png"}
 ];
 
 const STORAGE_KEY = "typelink2-beta01-deck";
@@ -389,7 +388,7 @@ function renderTypeTracker(){
     setText("typeTrackerCount","SIN SESIÓN");return;
   }
   const enabledCount=POKEMON_TYPES.filter(type=>playerTypeStatus[type.slug]!==false).length;
-  setText("typeTrackerCount",enabledCount+" / 18 ACTIVOS");
+  setText("typeTrackerCount",enabledCount+" / "+POKEMON_TYPES.length+" ACTIVOS");
   POKEMON_TYPES.forEach(type=>{
     const enabled=playerTypeStatus[type.slug]!==false;
     const button=document.createElement("button");
@@ -400,11 +399,14 @@ function renderTypeTracker(){
     button.setAttribute("aria-label",type.name+": "+(enabled?"habilitado":"bloqueado"));
     button.title=enabled?"Haz clic para bloquear el tipo "+type.name:"Haz clic para habilitar el tipo "+type.name;
     button.disabled=pendingTypeUpdates.has(type.slug);
-    const dot=document.createElement("span");dot.className="type-dot";
+    const iconWrap=document.createElement("span");iconWrap.className="type-toggle-icon";
+    const icon=document.createElement("img");icon.src=type.icon;icon.alt="";icon.setAttribute("aria-hidden","true");icon.loading="lazy";icon.decoding="async";
+    icon.onerror=()=>{iconWrap.classList.add("is-missing");icon.remove();const fallback=document.createElement("span");fallback.textContent=type.name.slice(0,1);iconWrap.append(fallback);};
+    iconWrap.append(icon);
     const label=document.createElement("span");label.className="type-toggle-label";
     const name=document.createElement("strong");name.textContent=type.name;
     const state=document.createElement("small");state.textContent=enabled?"HABILITADO":"BLOQUEADO";
-    label.append(name,state);button.append(dot,label);
+    label.append(name,state);button.append(iconWrap,label);
     button.addEventListener("click",()=>togglePokemonType(type.slug));
     container.append(button);
   });
@@ -1647,12 +1649,16 @@ function renderAdminTrainerDetail(data){
     const enabled=typeMap[type.slug]!==false;
     if(enabled)enabledCount++;
     const chip=document.createElement("div");chip.className="admin-trainer-type"+(enabled?" enabled":" disabled");
-    const dot=document.createElement("i");dot.style.backgroundColor=type.color;
+    const iconWrap=document.createElement("span");iconWrap.className="admin-trainer-type-icon";
+    iconWrap.style.setProperty("--type-color",type.color);
+    const icon=document.createElement("img");icon.src=type.icon;icon.alt="";icon.setAttribute("aria-hidden","true");icon.loading="lazy";icon.decoding="async";
+    icon.onerror=()=>{iconWrap.classList.add("is-missing");icon.remove();const fallback=document.createElement("span");fallback.textContent=type.name.slice(0,1);iconWrap.append(fallback);};
+    iconWrap.append(icon);
     const name=document.createElement("strong");name.textContent=type.name;
     const state=document.createElement("small");state.textContent=enabled?"HABILITADO":"BLOQUEADO";
-    chip.append(dot,name,state);typesWrap.append(chip);
+    chip.append(iconWrap,name,state);typesWrap.append(chip);
   });
-  setText("adminTrainerTypesCount",enabledCount+" / 18 ACTIVOS");
+  setText("adminTrainerTypesCount",enabledCount+" / "+POKEMON_TYPES.length+" ACTIVOS");
 
   const effectsWrap=document.getElementById("adminTrainerEffects");
   effectsWrap.replaceChildren();
