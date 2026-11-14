@@ -792,3 +792,47 @@ button[hidden]{display:none!important}
 .admin-progression-save-row .primary-button{flex:none}
 @media(max-width:850px){.admin-progression-current-grid{grid-template-columns:1fr 1fr}.admin-progression-form-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.admin-progression-heading{align-items:flex-start;flex-direction:column}.admin-progression-summary{align-items:flex-start;flex-direction:column}.admin-progression-current-grid,.admin-progression-form-grid{grid-template-columns:1fr}.admin-progression-catalog>div:first-child,.admin-progression-save-row{align-items:flex-start;flex-direction:column}.admin-progression-warning{align-items:flex-start;flex-direction:column}}
+
+
+/* Private trainer notifications */
+.notification-count{background:#a84444;border-color:#a84444!important;color:#fff;font-weight:900;min-width:18px;text-align:center}
+.notifications-toolbar{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:20px 22px;margin-bottom:13px}
+.notifications-toolbar h2{font:800 24px 'Barlow Condensed';color:#24313c;margin:5px 0 3px}
+.notifications-toolbar p{font-size:9px;line-height:1.6;color:#74818a;margin:0}
+.notifications-mark-all{flex:none;padding:11px 13px}
+.notifications-mark-all:disabled{opacity:.45;cursor:not-allowed}
+.notifications-list{display:flex;flex-direction:column;gap:9px}
+.notification-item{display:grid;grid-template-columns:43px minmax(0,1fr);gap:13px;padding:16px 18px;background:#fbfcfd;border:1px solid #d9e0e5}
+.notification-item.unread{border-left:3px solid #b64c4c;background:#fff}
+.notification-avatar{width:42px;height:42px;border:1px solid #cbd4db;background:#e8edf0;display:grid;place-items:center;overflow:hidden;color:#314653;font:800 13px 'Barlow Condensed'}
+.notification-content{min-width:0}
+.notification-header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.notification-identity{display:flex;align-items:center;gap:8px;min-width:0}
+.notification-identity strong{font:800 16px 'Barlow Condensed';color:#263541;overflow-wrap:anywhere}
+.notification-state{font-size:7px;font-weight:900;letter-spacing:.6px;color:#78858e;border:1px solid #d4dce1;padding:4px 6px;white-space:nowrap}
+.notification-state.unread{color:#a33f3f;border-color:#e0bcbc;background:#fbefef}
+.notification-header time{font-size:8px;color:#87929a;text-align:right}
+.notification-title{font:800 18px 'Barlow Condensed';color:#273541;margin:7px 0 2px}
+.notification-body{font-size:10px;line-height:1.6;color:#667680;margin:0}
+.notification-card-row{display:flex;align-items:center;gap:10px;margin-top:11px;padding:9px;background:#f0f3f5;border:1px solid #e0e5e8}
+.notification-card-image{width:43px;height:59px;object-fit:cover;background:#e4e9ec;border:1px solid #c8d1d7}
+.notification-card-meta{display:flex;flex-direction:column;gap:4px;min-width:0}
+.notification-card-meta strong{font:800 15px 'Barlow Condensed';color:#2c3b47}
+.notification-card-meta small{font-size:8px;color:#7c8992;text-transform:uppercase;letter-spacing:.6px}
+.notification-custom-note{margin-top:10px;padding:10px 12px;background:#f8f6f1;border-left:2px solid #b99a61}
+.notification-custom-label{font-size:7px;font-weight:900;letter-spacing:1px;color:#90794f}
+.notification-custom-note p{font-size:10px;line-height:1.6;color:#59656d;margin:5px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.notification-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:11px;color:#89949c;font-size:8px}
+.notification-read-button{border:1px solid #b9c4cb;background:#fff;color:#53636e;padding:7px 9px;font-size:7px;font-weight:900;letter-spacing:.55px;cursor:pointer}
+.notification-read-button:hover{border-color:#728490;background:#f3f6f7}
+.notification-read-button:disabled{opacity:.55;cursor:wait}
+@media(max-width:560px){
+  .notifications-toolbar{align-items:flex-start;flex-direction:column;padding:16px}
+  .notifications-mark-all{width:100%}
+  .notification-item{grid-template-columns:35px minmax(0,1fr);gap:9px;padding:12px}
+  .notification-avatar{width:35px;height:35px}
+  .notification-header{align-items:flex-start;flex-direction:column;gap:4px}
+  .notification-header time{text-align:left}
+  .notification-identity{flex-wrap:wrap}
+  .notification-title{font-size:16px}
+}
