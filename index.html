@@ -60,7 +60,7 @@
             <div class="welcome-copy">
               <div class="overline"><span class="overline-line"></span> POKÉMON · TESelia</div>
               <h1>UNA NUEVA<br><em>AVENTURA</em> COMIENZA.</h1>
-              <p>El centro de operaciones de Pokémon TypeLink 2. Tu recorrido por Teselia empieza aquí.</p>
+              <p>Tu aventura por Teselia empieza aquí.</p>
               <button class="primary-button" data-page="roulette">IR A LA RULETA <span>↗</span></button>
             </div>
             <div class="unova-art" aria-hidden="true">
@@ -74,25 +74,25 @@
 
           <div class="section-intro">
             <div><div class="eyebrow">CENTRO DE ENTRENADORES</div><h2>Tu aventura en TypeLink</h2></div>
-            <span class="section-note">BETA 0.3 · IDENTIDAD Y BARAJAS CONECTADAS</span>
+            <span class="section-note">TU PROGRESO</span>
           </div>
 
           <div class="overview-grid">
             <button class="overview-card card-roulette" data-page="roulette">
               <span class="overview-number">01</span><span class="overview-icon">◉</span>
-              <strong>RULETA DE CARTAS</strong><small>Gira y descubre tu próxima carta.</small><span class="card-arrow">↗</span>
+              <strong>RULETA DE CARTAS</strong><small>Consigue cartas.</small><span class="card-arrow">↗</span>
             </button>
             <button class="overview-card" data-page="players">
               <span class="overview-number">02</span><span class="overview-icon">♙</span>
-              <strong>JUGADORES</strong><small>Explora los perfiles de los entrenadores.</small><span class="card-arrow">↗</span>
+              <strong>JUGADORES</strong><small>Ver participantes.</small><span class="card-arrow">↗</span>
             </button>
             <button class="overview-card" data-page="deck">
               <span class="overview-number">03</span><span class="overview-icon">▤</span>
-              <strong>MI BARAJA</strong><small>Consulta tus cartas y cartas de tramo.</small><span class="card-arrow">↗</span>
+              <strong>MI BARAJA</strong><small>Consulta tus cartas.</small><span class="card-arrow">↗</span>
             </button>
             <button class="overview-card" data-page="pokemon">
               <span class="overview-number">04</span><span class="overview-icon">✦</span>
-              <strong>EQUIPO POKÉMON</strong><small>Prepara la conexión de tu partida.</small><span class="card-arrow">↗</span>
+              <strong>EQUIPO POKÉMON</strong><small>Conecta tu partida.</small><span class="card-arrow">↗</span>
             </button>
           </div>
 
@@ -100,10 +100,10 @@
             <div class="panel home-status-panel">
               <div class="panel-topline"><span class="eyebrow">IDENTIDAD DEL ENTRENADOR</span><span class="status-tag" id="homeProfileStatus">SIN SESIÓN</span></div>
               <h3 id="homeProfileName">Tu perfil te espera.</h3>
-              <p id="homeProfileDescription">Inicia sesión con Discord para registrar tu identidad y guardar tu baraja en la nube.</p>
+              <p id="homeProfileDescription">Inicia sesión con Discord para guardar tu perfil y baraja.</p>
               <div class="status-placeholder">
                 <span class="profile-placeholder" id="homeProfileAvatar">TL</span>
-                <div><b id="homeProfileHandle">ENTRENADOR NO IDENTIFICADO</b><small id="homeProfileSince">Conecta tu cuenta de Discord.</small></div>
+                <div><b id="homeProfileHandle">ENTRENADOR</b><small id="homeProfileSince">Conecta Discord.</small></div>
               </div>
               <button class="inline-link profile-open-link" data-page="profile">VER MI PERFIL ↗</button>
             </div>
@@ -111,14 +111,14 @@
               <div class="panel-topline"><span class="eyebrow">RESUMEN DE BARAJA</span><button class="inline-link" data-page="deck">VER BARAJA ↗</button></div>
               <div class="mini-stats"><div><strong id="homeDeckCount">0/5</strong><small>CARTAS NORMALES</small></div><div><strong id="homeRouteCount">0</strong><small>CARTAS DE TRAMO</small></div></div>
               <div class="mini-capacity"><span id="homeCapacityFill"></span></div>
-              <p id="homeDeckHint">Tu baraja todavía está vacía. Haz tu primer giro.</p>
+              <p id="homeDeckHint">Sin cartas todavía.</p>
             </div>
           </div>
-          <div class="demo-banner"><b>AVISO DE BETA</b><span>Tu identidad Discord y tu baraja ya se conectan con Supabase. El catálogo de cartas sigue siendo provisional; la importación de partidas Pokémon llegará en otra etapa.</span></div>
+          <div class="demo-banner"><b>BETA</b><span>Catálogo provisional. Importación de partidas, en desarrollo.</span></div>
         </section>
 
         <section class="page-view" id="page-roulette" hidden>
-          <div class="page-heading"><div><div class="eyebrow">01 / SISTEMA DE CARTAS</div><h1>RULETA <em>TYPELINK</em></h1><p>Gira la ruleta y descubre qué carta se une a tu baraja.</p></div><span class="page-stamp">UNOVA<br>LEAGUE</span></div>
+          <div class="page-heading"><div><div class="eyebrow">01 / SISTEMA DE CARTAS</div><h1>RULETA <em>TYPELINK</em></h1><p>Consigue cartas para tu baraja.</p></div><span class="page-stamp">UNOVA<br>LEAGUE</span></div>
           <section class="game-grid">
             <div class="wheel-panel panel">
               <div class="panel-heading"><div><span class="section-kicker">SORTEO DE CARTAS</span><h2>Ruleta de cartas</h2></div><div class="roulette-heading-actions"><button class="roulette-shuffle-button" id="shuffleWheelButton" type="button" title="Mezcla las posiciones de las cartas sin cambiar sus probabilidades"><span>⤨</span> MEZCLAR RULETA</button><span class="live-pill"><i></i> LISTA</span></div></div>
@@ -126,50 +126,50 @@
               <div class="wheel-actions"><button id="spinButton" class="spin-button"><span>GIRAR RULETA</span><b>✦</b></button><p id="spinHint" class="hint">Primero inicia un tramo para recibir tus giros.</p><div class="spin-budget" id="spinBudget">SIN GIROS DISPONIBLES</div></div>
             </div>
             <aside class="side-column">
-              <div class="result-panel panel"><div class="panel-heading compact"><div><span class="section-kicker">RESULTADO</span><h2>Tu recompensa</h2></div></div><div id="resultCard" class="result-card empty"><div class="card-placeholder"><span>✦</span><strong>¿QUÉ TE<br>TOCARÁ?</strong><small>GIRA LA RULETA</small></div></div><p id="resultMessage" class="result-message">Tu próxima carta te espera.</p></div>
-              <div class="panel quick-deck-panel"><div class="panel-heading compact"><div><span class="section-kicker">TU INVENTARIO</span><h2>Mi baraja</h2></div><span id="deckCount" class="counter">0/5</span></div><div class="capacity"><span id="capacityFill"></span></div><div id="deckList" class="deck-list"><div class="deck-empty">Todavía no tienes cartas.<br><span>¡Haz tu primer giro!</span></div></div><button class="inline-link deck-open-link" data-page="deck">ABRIR BARAJA COMPLETA ↗</button></div>
+              <div class="result-panel panel"><div class="panel-heading compact"><div><span class="section-kicker">RESULTADO</span><h2>Tu recompensa</h2></div></div><div id="resultCard" class="result-card empty"><div class="card-placeholder"><span>✦</span><strong>¿QUÉ TE<br>TOCARÁ?</strong><small>GIRA LA RULETA</small></div></div><p id="resultMessage" class="result-message">Esperando giro.</p></div>
+              <div class="panel quick-deck-panel"><div class="panel-heading compact"><div><span class="section-kicker">TU INVENTARIO</span><h2>Mi baraja</h2></div><span id="deckCount" class="counter">0/5</span></div><div class="capacity"><span id="capacityFill"></span></div><div id="deckList" class="deck-list"><div class="deck-empty">Sin cartas todavía.</div></div><button class="inline-link deck-open-link" data-page="deck">ABRIR BARAJA COMPLETA ↗</button></div>
             </aside>
           </section>
-          <div class="tramo-tool panel"><div><span class="eyebrow">PROGRESIÓN DE ENTRENADOR</span><h3>Avanzar de tramo</h3><p id="tramoProgressHint">Al avanzar recibirás las cartas de tramo y los giros configurados en el evento. Necesitas suficientes espacios libres en tu baraja.</p><small id="tramoProgressCount" class="tramo-progress-count">TRAMO 0 · 0 GIROS DISPONIBLES</small></div><button id="tramoButton" class="secondary-button">AVANZAR DE TRAMO</button></div>
+          <div class="tramo-tool panel"><div><span class="eyebrow">PROGRESIÓN DE ENTRENADOR</span><h3>Avanzar de tramo</h3><p id="tramoProgressHint">Recibes las recompensas configuradas. Necesitas espacio libre y ningún giro pendiente.</p><small id="tramoProgressCount" class="tramo-progress-count">TRAMO 0 · 0 GIROS DISPONIBLES</small></div><button id="tramoButton" class="secondary-button">AVANZAR DE TRAMO</button></div>
           <section class="special-roulette-access panel">
             <div class="special-roulette-heading">
-              <div><span class="eyebrow">ACCESOS ESPECIALES</span><h2>Ruletas desbloqueables</h2><p>Canjea una carta de acceso para conseguir un giro individual. Cada giro se consume al obtener un premio.</p></div>
+              <div><span class="eyebrow">ACCESOS ESPECIALES</span><h2>Ruletas desbloqueables</h2><p>Canjea Legenleta o Rumba para obtener un giro.</p></div>
               <span class="special-roulette-seal">✦</span>
             </div>
             <div class="special-roulette-grid">
               <article class="special-roulette-card legendary">
                 <div class="special-roulette-card-top"><span class="special-roulette-icon">✧</span><span class="special-roulette-kind">ACCESO LEGENDARIO</span></div>
                 <h3>Ruleta Legendaria</h3>
-                <p>Canjea <strong>Legenleta</strong> en tu baraja para desbloquear 1 giro.</p>
+                <p>Canjea <strong>Legenleta</strong> para obtener 1 giro.</p>
                 <div class="special-roulette-credit"><strong id="legendaryAccessCount">0</strong><span>GIROS DISPONIBLES</span></div>
                 <button class="special-roulette-button" id="legendarySpinButton" type="button" disabled>CANJEA LEGENLETA</button>
-                <small id="legendaryAccessHint">Todavía no tienes accesos legendarios.</small>
+                <small id="legendaryAccessHint">Sin giros disponibles.</small>
               </article>
               <article class="special-roulette-card fiesta">
                 <div class="special-roulette-card-top"><span class="special-roulette-icon">♫</span><span class="special-roulette-kind">ACCESO FIESTA</span></div>
                 <h3>Ruleta Fiesta</h3>
-                <p>Canjea <strong>Rumba</strong> en tu baraja para desbloquear 1 giro.</p>
+                <p>Canjea <strong>Rumba</strong> para obtener 1 giro.</p>
                 <div class="special-roulette-credit"><strong id="fiestaAccessCount">0</strong><span>GIROS DISPONIBLES</span></div>
                 <button class="special-roulette-button" id="fiestaSpinButton" type="button" disabled>CANJEA RUMBA</button>
-                <small id="fiestaAccessHint">Todavía no tienes accesos Fiesta.</small>
+                <small id="fiestaAccessHint">Sin giros disponibles.</small>
               </article>
             </div>
-            <p class="special-roulette-footnote">Los accesos que ya hayas desbloqueado se conservan aunque la ruleta especial todavía no esté abierta.</p>
+            <p class="special-roulette-footnote">Los accesos se conservan aunque la ruleta esté cerrada.</p>
           </section>
-          <div class="demo-note"><strong>Inventario conectado:</strong> los giros y las cartas de tramo se guardan en tu cuenta. Debes iniciar sesión para obtener cartas.</div>
+          <div class="demo-note"><strong>Cuenta conectada:</strong> inicia sesión para girar y guardar cartas.</div>
         </section>
 
         <section class="page-view" id="page-players" hidden>
-          <div class="page-heading"><div><div class="eyebrow">02 / COMUNIDAD</div><h1>LOS <em>ENTRENADORES</em></h1><p>El registro de participantes de Pokémon TypeLink 2.</p></div><span class="page-stamp">TRAINER<br>NETWORK</span></div>
+          <div class="page-heading"><div><div class="eyebrow">02 / COMUNIDAD</div><h1>LOS <em>ENTRENADORES</em></h1><p>Perfiles de participantes.</p></div><span class="page-stamp">TRAINER<br>NETWORK</span></div>
           <div class="directory-toolbar panel">
-            <div><span class="eyebrow">RED DE ENTRENADORES</span><h2>Participantes registrados</h2></div>
+            <div><span class="eyebrow">COMUNIDAD</span><h2>Participantes</h2></div>
             <span class="directory-count" id="playersCount">0 ENTRENADORES</span>
           </div>
-          <div id="playersList" class="players-grid"><div class="empty-feature panel"><div class="empty-emblem">♙</div><h2>Inicia sesión para ver a los entrenadores.</h2><p>Los perfiles públicos están disponibles para los participantes registrados.</p></div></div>
+          <div id="playersList" class="players-grid"><div class="empty-feature panel"><div class="empty-emblem">♙</div><h2>Inicia sesión para ver los participantes.</h2></div></div>
         </section>
 
         <section class="page-view" id="page-profile" hidden>
-          <div class="page-heading"><div><div class="eyebrow">03 / IDENTIDAD</div><h1>MI <em>PERFIL</em></h1><p>Tu identidad de entrenador dentro de Pokémon TypeLink 2.</p></div><span class="page-stamp">TRAINER<br>PROFILE</span></div>
+          <div class="page-heading"><div><div class="eyebrow">03 / IDENTIDAD</div><h1>MI <em>PERFIL</em></h1><p>Cuenta y progreso.</p></div><span class="page-stamp">TRAINER<br>PROFILE</span></div>
           <div class="profile-editor panel">
             <div class="profile-identity">
               <div class="profile-avatar-large" id="profileAvatarLarge">TL</div>
@@ -178,9 +178,9 @@
             <div class="profile-form">
               <label for="profileDisplayName">Nombre público de entrenador</label>
               <input id="profileDisplayName" type="text" maxlength="28" placeholder="Tu nombre en TypeLink" autocomplete="nickname">
-              <p>Este será el nombre que verán los demás participantes. Tu identidad de Discord seguirá siendo la referencia de inicio de sesión.</p>
+              <p>Visible para los demás jugadores.</p>
               <button id="saveProfileButton" class="secondary-button">GUARDAR PERFIL</button>
-              <span id="profileSaveStatus" class="profile-save-status">Los cambios se guardan en tu cuenta de TypeLink.</span>
+              <span id="profileSaveStatus" class="profile-save-status">Sin cambios.</span>
             </div>
             <div class="profile-stats">
               <div><strong id="profileNormalCount">0/5</strong><small>CARTAS NORMALES</small></div>
@@ -190,93 +190,93 @@
           </div>
           <div class="profile-module panel type-tracker-panel">
             <div class="profile-module-heading">
-              <div><span class="eyebrow">CONTROL DE TIPOS</span><h2>Mis 18 tipos Pokémon</h2><p>Activa los tipos que tienes habilitados. Desactiva aquellos que no puedes utilizar.</p></div>
+              <div><span class="eyebrow">CONTROL DE TIPOS</span><h2>Mis 18 tipos Pokémon</h2><p>Activa o bloquea tipos.</p></div>
               <span class="type-count" id="typeTrackerCount">18 / 18 ACTIVOS</span>
             </div>
             <div class="type-tracker-grid" id="typeTrackerGrid">
               <div class="profile-module-empty">Inicia sesión para cargar tus tipos.</div>
             </div>
-            <div class="type-tracker-legend"><span><i class="legend-enabled"></i> Habilitado · puedes utilizarlo</span><span><i class="legend-disabled"></i> Bloqueado · no puedes utilizarlo</span></div>
+            <div class="type-tracker-legend"><span><i class="legend-enabled"></i> Disponible</span><span><i class="legend-disabled"></i> Bloqueado</span></div>
           </div>
           <div class="profile-module panel incoming-effects-panel">
             <div class="profile-module-heading">
-              <div><span class="eyebrow">EFECTOS SOBRE TU ENTRENADOR</span><h2>Cartas que te afectan</h2><p>Cartas lanzadas por otros entrenadores que mantienen un efecto activo sobre ti.</p></div>
+              <div><span class="eyebrow">EFECTOS SOBRE TU ENTRENADOR</span><h2>Cartas que te afectan</h2><p>Efectos activos aplicados por otros jugadores.</p></div>
               <span class="type-count" id="incomingEffectsCount">0 ACTIVAS</span>
             </div>
             <div class="incoming-effects-list" id="incomingEffectsList">
               <div class="profile-module-empty">Inicia sesión para consultar tus efectos activos.</div>
             </div>
-            <p class="incoming-effects-note">Los efectos configurados para durar un tramo se eliminan al avanzar al siguiente. Los permanentes, temporales y por cargas respetan su duración configurada.</p>
+            <p class="incoming-effects-note">La duración depende de cada efecto.</p>
           </div>
-          <div class="profile-info-note"><b>PERFIL PÚBLICO</b><span>Tu nombre, avatar y baraja estarán visibles para los participantes que hayan iniciado sesión. Tus notificaciones seguirán siendo privadas.</span></div>
+          <div class="profile-info-note"><b>PERFIL PÚBLICO</b><span>Tu nombre, avatar y baraja son públicos. Tus notificaciones son privadas.</span></div>
         </section>
 
         <section class="page-view" id="page-deck" hidden>
-          <div class="page-heading"><div><div class="eyebrow">04 / INVENTARIO</div><h1>MI <em>BARAJA</em></h1><p>Tus cartas normales y las cartas acumulables de cada tramo.</p></div><span class="page-stamp">CARD<br>COLLECTION</span></div>
-          <div class="deck-overview panel"><div class="deck-overview-top"><div><span class="eyebrow">CARTAS NORMALES</span><h2 id="deckCountFull">0 / 5</h2></div><div class="deck-capacity-large"><span id="capacityFillFull"></span></div></div><div id="deckListFull" class="full-deck-list"><div class="deck-empty">Todavía no tienes cartas. Ve a la ruleta para conseguir la primera.</div></div></div>
-          <div class="deck-overview panel route-overview"><div class="deck-overview-top"><div><span class="eyebrow">CARTAS DE TRAMO</span><h2><span id="routeCountFull">0</span> <small>DISPONIBLES</small></h2></div><span class="route-symbol">Ⅱ</span></div><div id="routeListFull" class="full-deck-list"><div class="deck-empty">Todavía no has iniciado un tramo.</div></div><div class="route-demo-actions"><button class="secondary-button" id="tramoButtonFull">AVANZAR DE TRAMO</button><p>Al avanzar recibirás las cartas de tramo y los giros configurados en el evento, siempre que tengas los espacios libres necesarios y no queden giros pendientes.</p></div></div>
-          <div class="deck-overview panel special-overview"><div class="deck-overview-top"><div><span class="eyebrow">CARTAS ESPECIALES</span><h2><span id="specialCountFull">0</span> <small>DISPONIBLES</small></h2></div><span class="route-symbol">✦</span></div><div id="specialListFull" class="full-deck-list"><div class="deck-empty">Todavía no tienes cartas Fiesta u otras cartas especiales.</div></div><p class="deck-section-note">Las cartas especiales y sus usos aparecerán aquí.</p></div>
-          <div class="deck-rules-note"><b>USOS Y EVOLUCIONES</b><span>Cada carta muestra sus usos restantes. Las evoluciones transforman una carta en otra; no se fusionan cartas.</span></div>
-          <button id="resetButton" class="text-button reset-button">Reiniciar datos de demostración local</button>
-          <p class="deck-cloud-note" id="deckCloudNote">La baraja todavía no se sincroniza con una cuenta.</p>
+          <div class="page-heading"><div><div class="eyebrow">04 / INVENTARIO</div><h1>MI <em>BARAJA</em></h1><p>Cartas normales, de tramo y especiales.</p></div><span class="page-stamp">CARD<br>COLLECTION</span></div>
+          <div class="deck-overview panel"><div class="deck-overview-top"><div><span class="eyebrow">CARTAS NORMALES</span><h2 id="deckCountFull">0 / 5</h2></div><div class="deck-capacity-large"><span id="capacityFillFull"></span></div></div><div id="deckListFull" class="full-deck-list"><div class="deck-empty">Sin cartas todavía.</div></div></div>
+          <div class="deck-overview panel route-overview"><div class="deck-overview-top"><div><span class="eyebrow">CARTAS DE TRAMO</span><h2><span id="routeCountFull">0</span> <small>DISPONIBLES</small></h2></div><span class="route-symbol">Ⅱ</span></div><div id="routeListFull" class="full-deck-list"><div class="deck-empty">Todavía no has iniciado un tramo.</div></div><div class="route-demo-actions"><button class="secondary-button" id="tramoButtonFull">AVANZAR DE TRAMO</button><p>Recibes las recompensas configuradas. Necesitas espacio libre y ningún giro pendiente.</p></div></div>
+          <div class="deck-overview panel special-overview"><div class="deck-overview-top"><div><span class="eyebrow">CARTAS ESPECIALES</span><h2><span id="specialCountFull">0</span> <small>DISPONIBLES</small></h2></div><span class="route-symbol">✦</span></div><div id="specialListFull" class="full-deck-list"><div class="deck-empty">Sin cartas especiales.</div></div><p class="deck-section-note"></p></div>
+          <div class="deck-rules-note"><b>USOS Y EVOLUCIONES</b><span>Las evoluciones reemplazan la carta original.</span></div>
+          <button id="resetButton" class="text-button reset-button">Reiniciar demo local</button>
+          <p class="deck-cloud-note" id="deckCloudNote">Inicia sesión para sincronizar tu baraja.</p>
         </section>
 
         <section class="page-view" id="page-pokemon" hidden>
-          <div class="page-heading"><div><div class="eyebrow">05 / REGISTRO DE PARTIDA</div><h1>MI EQUIPO <em>POKÉMON</em></h1><p>Tu equipo, tus cajas, tus movimientos y tus objetos.</p></div><span class="page-stamp">POKÉMON<br>BLACK / WHITE</span></div>
-          <div class="sync-preview panel"><div class="sync-icon">✦</div><div class="eyebrow">TYPELINK SYNC</div><h2>Conecta tu aventura en Teselia.</h2><p>Estamos preparando la lectura de partidas de Pokémon Blanco y Negro desde DeSmuME. La idea es que puedas autorizar tu archivo de guardado una vez y que la web detecte futuras actualizaciones después de guardar dentro del juego.</p><div class="sync-steps"><span><b>01</b> Seleccionar archivo .dsv</span><span><b>02</b> Analizar equipo y cajas</span><span><b>03</b> Mostrar datos en tu perfil</span></div><div class="coming-soon">IMPORTADOR EN DESARROLLO · TODAVÍA NO SE SUBE NI PROCESA NINGÚN ARCHIVO</div></div>
+          <div class="page-heading"><div><div class="eyebrow">05 / REGISTRO DE PARTIDA</div><h1>MI EQUIPO <em>POKÉMON</em></h1><p>Importa tu partida de Pokémon Blanco y Negro.</p></div><span class="page-stamp">POKÉMON<br>BLACK / WHITE</span></div>
+          <div class="sync-preview panel"><div class="sync-icon">✦</div><div class="eyebrow">TYPELINK SYNC</div><h2>Importador de partida</h2><p>Importación desde DeSmuME en desarrollo.</p><div class="sync-steps"><span><b>01</b> Seleccionar archivo .dsv</span><span><b>02</b> Analizar equipo y cajas</span><span><b>03</b> Mostrar datos en tu perfil</span></div><div class="coming-soon">EN DESARROLLO · AÚN NO SE PROCESAN ARCHIVOS</div></div>
         </section>
 
         <section class="page-view" id="page-activity" hidden>
-          <div class="page-heading"><div><div class="eyebrow">06 / COMUNIDAD</div><h1>MURO DE <em>CARTAS</em></h1><p>Los movimientos de todos los entrenadores, en directo.</p></div><span class="page-stamp">COMMUNITY<br>FEED</span></div>
-          <div class="activity-intro panel"><div><span class="eyebrow">CHAT DE CARTAS · EN VIVO</span><h2>La comunidad TypeLink</h2><p>Solo aparecen las cartas que un entrenador lanza a otro o utiliza sobre sí mismo. Los mensajes personales se muestran junto a su perfil y puedes tocar cada carta para verla en grande.</p></div><span class="activity-live-tag"><i></i> EN DIRECTO</span></div>
-          <div id="activityFeed" class="activity-feed"><div class="activity-empty panel">Inicia sesión para ver los movimientos de la comunidad.</div></div>
+          <div class="page-heading"><div><div class="eyebrow">06 / COMUNIDAD</div><h1>MURO DE <em>CARTAS</em></h1><p>Cartas lanzadas por la comunidad.</p></div><span class="page-stamp">COMMUNITY<br>FEED</span></div>
+          <div class="activity-intro panel"><div><span class="eyebrow">CHAT DE CARTAS</span><h2>La comunidad</h2><p>Cartas lanzadas entre jugadores. Toca una carta para ampliarla.</p></div><span class="activity-live-tag"><i></i> EN DIRECTO</span></div>
+          <div id="activityFeed" class="activity-feed"><div class="activity-empty panel">Inicia sesión para ver el chat.</div></div>
         </section>
 
         <section class="page-view" id="page-notifications" hidden>
-          <div class="page-heading"><div><div class="eyebrow">06 / BUZÓN PERSONAL</div><h1>TUS <em>NOTIFICACIONES</em></h1><p>Las cartas que otros entrenadores han utilizado contra ti.</p></div><span class="page-stamp">TRAINER<br>INBOX</span></div>
+          <div class="page-heading"><div><div class="eyebrow">06 / BUZÓN PERSONAL</div><h1>TUS <em>NOTIFICACIONES</em></h1><p>Avisos de cartas que te lanzan.</p></div><span class="page-stamp">TRAINER<br>INBOX</span></div>
           <div class="notifications-toolbar panel">
             <div><span class="eyebrow">AVISOS DIRIGIDOS A TI</span><h2 id="notificationsTotal">0 NOTIFICACIONES</h2><p id="notificationsUnreadLabel">Tu bandeja está al día.</p></div>
             <button class="secondary-button notifications-mark-all" id="markAllNotificationsRead" type="button" disabled>MARCAR TODO COMO LEÍDO</button>
           </div>
           <div id="notificationsList" class="notifications-list">
-            <div class="activity-empty panel">Inicia sesión con Discord para consultar tus notificaciones.</div>
+            <div class="activity-empty panel">Inicia sesión para ver tus avisos.</div>
           </div>
         </section>
 
         <section class="page-view" id="page-admin" hidden>
-          <div class="page-heading"><div><div class="eyebrow">07 / CONTROL PRIVADO</div><h1>CENTRO DE <em>ADMINISTRACIÓN</em></h1><p>Herramientas oficiales de gestión de Pokémon TypeLink 2.</p></div><span class="page-stamp">OWNER<br>ACCESS</span></div>
+          <div class="page-heading"><div><div class="eyebrow">07 / CONTROL PRIVADO</div><h1>CENTRO DE <em>ADMINISTRACIÓN</em></h1><p>Gestión del evento.</p></div><span class="page-stamp">OWNER<br>ACCESS</span></div>
           <div id="adminOverview">
             <div class="admin-access-banner panel">
               <div class="admin-access-seal">⚙</div>
-              <div class="admin-access-copy"><span class="eyebrow">ACCESO AUTORIZADO</span><h2>Bienvenido al centro de control.</h2><p>Esta cuenta está registrada como administradora de TypeLink 2. La autorización se comprueba en Supabase y no depende del nombre visible de Discord.</p></div>
+              <div class="admin-access-copy"><span class="eyebrow">ACCESO AUTORIZADO</span><h2>Acceso autorizado.</h2><p>Permisos validados por el servidor.</p></div>
               <span class="admin-access-badge"><i></i> ADMINISTRADOR</span>
             </div>
             <div class="admin-owner-card panel">
               <div><span class="eyebrow">CUENTA ADMINISTRADORA</span><strong id="adminAccountName">—</strong><small id="adminAccountProvider">Discord · Acceso verificado</small></div>
-              <div class="admin-owner-status"><span class="eyebrow">ESTADO DE ACCESO</span><strong>PERMITIDO</strong><small>Autorización del servidor</small></div>
+              <div class="admin-owner-status"><span class="eyebrow">ESTADO DE ACCESO</span><strong>PERMITIDO</strong><small>Servidor</small></div>
             </div>
-            <div class="admin-section-heading"><div><span class="eyebrow">MÓDULOS DEL EVENTO</span><h2>Herramientas de gestión</h2></div><span class="admin-module-count">CENTRO DE CONTROL · BETA</span></div>
+            <div class="admin-section-heading"><div><span class="eyebrow">ADMINISTRACIÓN</span><h2>Herramientas</h2></div><span class="admin-module-count">CENTRO DE CONTROL · BETA</span></div>
             <div class="admin-module-grid">
               <button class="admin-module admin-module-button panel" type="button" id="openAdminCatalog">
-                <span class="admin-module-icon">▤</span><span class="admin-module-copy"><strong>Catálogo de cartas</strong><small>Crear cartas, actualizar ilustraciones, rarezas, usos y descripciones.</small></span><span class="admin-module-state">ABRIR CATÁLOGO ↗</span>
+                <span class="admin-module-icon">▤</span><span class="admin-module-copy"><strong>Catálogo de cartas</strong><small>Cartas, ilustraciones, rarezas y usos.</small></span><span class="admin-module-state">ABRIR CATÁLOGO ↗</span>
               </button>
               <button class="admin-module admin-module-button panel" type="button" id="openAdminMechanics">
-                <span class="admin-module-icon">✦</span><span class="admin-module-copy"><strong>Efectos y evoluciones</strong><small>Configurar qué hace cada carta y cómo cambia al avanzar de tramo.</small></span><span class="admin-module-state">ABRIR EDITOR ↗</span>
+                <span class="admin-module-icon">✦</span><span class="admin-module-copy"><strong>Efectos y evoluciones</strong><small>Configura las mecánicas de cada carta.</small></span><span class="admin-module-state">ABRIR EDITOR ↗</span>
               </button>
               <button class="admin-module admin-module-button panel" type="button" id="openAdminTrainers">
-                <span class="admin-module-icon">♙</span><span class="admin-module-copy"><strong>Entrenadores</strong><small>Consultar participantes, barajas, tramo, giros, tipos y limpiar inventarios de prueba.</small></span><span class="admin-module-state">ABRIR ENTRENADORES ↗</span>
+                <span class="admin-module-icon">♙</span><span class="admin-module-copy"><strong>Entrenadores</strong><small>Perfiles, barajas y progreso.</small></span><span class="admin-module-state">ABRIR ENTRENADORES ↗</span>
               </button>
               <button class="admin-module admin-module-button panel" type="button" id="openAdminRoulettes">
-                <span class="admin-module-icon">◉</span><span class="admin-module-copy"><strong>Ruletas y recompensas</strong><small>Editar Normal, Legendaria y Fiesta, añadir cartas y ajustar probabilidades.</small></span><span class="admin-module-state">ABRIR EDITOR ↗</span>
+                <span class="admin-module-icon">◉</span><span class="admin-module-copy"><strong>Ruletas y recompensas</strong><small>Premios y probabilidades.</small></span><span class="admin-module-state">ABRIR EDITOR ↗</span>
               </button>
               <button class="admin-module admin-module-button panel" type="button" id="openAdminProgression">
-                <span class="admin-module-icon">Ⅱ</span><span class="admin-module-copy"><strong>Progresión del evento</strong><small>Configurar el límite de la baraja, las cartas de tramo y los giros que recibe cada entrenador.</small></span><span class="admin-module-state">ABRIR CONFIGURACIÓN ↗</span>
+                <span class="admin-module-icon">Ⅱ</span><span class="admin-module-copy"><strong>Progresión del evento</strong><small>Límites y recompensas por tramo.</small></span><span class="admin-module-state">ABRIR CONFIGURACIÓN ↗</span>
               </button>
               <button class="admin-module admin-module-button panel" type="button" id="openAdminPlatformStatus">
-                <span class="admin-module-icon">◎</span><span class="admin-module-copy"><strong>Estado de la plataforma</strong><small>Conexión real, base de datos, cuentas, espacio ocupado y archivos almacenados.</small></span><span class="admin-module-state">ABRIR MONITOR ↗</span>
+                <span class="admin-module-icon">◎</span><span class="admin-module-copy"><strong>Estado de la plataforma</strong><small>Conexión, base de datos y almacenamiento.</small></span><span class="admin-module-state">ABRIR MONITOR ↗</span>
               </button>
             </div>
-            <div class="admin-security-note"><b>PROTECCIÓN DEL PANEL</b><span>El menú y esta pantalla solo se habilitan para cuentas registradas en la lista privada de administradores. Las acciones de gestión también se validan en el servidor.</span></div>
+            <div class="admin-security-note"><b>ACCESO PROTEGIDO</b><span>Solo administradores autorizados. Cada acción se valida en el servidor.</span></div>
           </div>
 
           <section class="admin-mechanics-workspace" id="adminMechanicsWorkspace" hidden>
@@ -285,7 +285,7 @@
                 <button class="inline-link" type="button" id="adminMechanicsBack">← TODAS LAS HERRAMIENTAS</button>
                 <div class="eyebrow">ADMINISTRACIÓN / MECÁNICAS</div>
                 <h2>EFECTOS Y <em>EVOLUCIONES</em></h2>
-                <p>Define cómo funciona cada carta y qué sucede cuando un entrenador avanza de tramo.</p>
+                <p>Configura efectos y evoluciones.</p>
               </div>
             </div>
 
@@ -305,7 +305,7 @@
                 </select>
               </div>
               <div class="admin-mechanics-card-grid" id="adminMechanicsGrid">
-                <div class="admin-catalog-loading">Cargando cartas y sus mecánicas...</div>
+                <div class="admin-catalog-loading">Cargando cartas...</div>
               </div>
             </div>
 
@@ -339,7 +339,7 @@
                     </select>
                   </label>
                 </div>
-                <p class="admin-mechanics-help">Estos valores se guardan en la ficha de la carta. Algunos efectos requieren un objetivo y un comportamiento concretos; el editor te indicará cuáles son compatibles.</p>
+                <p class="admin-mechanics-help">El editor valida las combinaciones compatibles.</p>
               </section>
 
               <section class="admin-mechanics-section panel">
@@ -348,20 +348,20 @@
                   <button class="secondary-button" type="button" id="adminAddEffect">+ AÑADIR EFECTO</button>
                 </div>
                 <div class="admin-mechanics-effects-list" id="adminMechanicsEffectsList">
-                  <div class="profile-module-empty">Esta carta todavía no tiene efectos configurados.</div>
+                  <div class="profile-module-empty">Sin efectos configurados.</div>
                 </div>
                 <div class="admin-mechanics-help-panel">
-                  <b>CONTROLADORES DISPONIBLES</b>
-                  <span><strong>Modificar límite de baraja:</strong> suma o resta espacios durante un periodo definido.</span>
-                  <span><strong>Conceder giros extra:</strong> añade inmediatamente créditos de giro normales al entrenador objetivo.</span>
-                  <span><strong>Desbloquear ruleta:</strong> concede créditos de acceso a la Ruleta Legendaria o Fiesta; siempre afecta a quien utiliza la carta.</span>
-                  <span>Las nuevas mecánicas, como bloquear tipos o retirar cartas de una baraja, necesitarán que añadamos su controlador antes de poder activarlas.</span>
+                  <b>EFECTOS DISPONIBLES</b>
+                  <span><strong>Límite de baraja:</strong> suma o resta espacios durante un periodo.</span>
+                  <span><strong>Giros extra:</strong> añade créditos al entrenador objetivo.</span>
+                  <span><strong>Desbloquear ruleta:</strong> concede un acceso Legendario o Fiesta al usuario.</span>
+                  <span>Otras mecánicas requieren un controlador propio.</span>
                 </div>
               </section>
 
               <section class="admin-mechanics-section panel">
                 <div class="admin-trainer-section-heading">
-                  <div><span class="eyebrow">TRANSFORMACIÓN DE UNA CARTA EN OTRA</span><h3>Evolución</h3></div>
+                  <div><span class="eyebrow">EVOLUCIÓN</span><h3>Resultado</h3></div>
                   <label class="admin-mechanics-evolution-toggle"><input id="adminEvolutionEnabled" type="checkbox"> ESTA CARTA PUEDE EVOLUCIONAR</label>
                 </div>
                 <div id="adminEvolutionFields" hidden>
@@ -387,11 +387,11 @@
                   <label class="admin-mechanics-check-row"><input id="adminEvolutionSameTramo" type="checkbox"> Solo puede evolucionar durante el tramo en el que se obtuvo.</label>
                   <div class="admin-evolution-method-note" id="adminEvolutionMethodNote">La evolución manual aparecerá como botón en la baraja del entrenador.</div>
                 </div>
-                <div id="adminEvolutionDisabledNote" class="profile-module-empty">Esta carta no tiene una evolución configurada.</div>
+                <div id="adminEvolutionDisabledNote" class="profile-module-empty">Sin evolución configurada.</div>
               </section>
 
               <div class="admin-mechanics-save-row">
-                <span id="adminMechanicsSaveStatus" role="status">Los cambios todavía no se han guardado.</span>
+                <span id="adminMechanicsSaveStatus" role="status">Sin guardar.</span>
                 <button class="primary-button" type="button" id="adminSaveMechanics">GUARDAR MECÁNICAS ↗</button>
               </div>
             </div>
@@ -403,7 +403,7 @@
                 <button class="inline-link" type="button" id="adminTrainersBack">← TODAS LAS HERRAMIENTAS</button>
                 <div class="eyebrow">ADMINISTRACIÓN / PARTICIPANTES</div>
                 <h2>GESTIÓN DE <em>ENTRENADORES</em></h2>
-                <p>Consulta el progreso y el inventario de cada participante de TypeLink 2.</p>
+                <p>Progreso e inventario de cada jugador.</p>
               </div>
             </div>
 
@@ -427,7 +427,7 @@
                 <div class="admin-trainer-identity">
                   <div class="admin-trainer-avatar" id="adminTrainerAvatar">TL</div>
                   <div>
-                    <span class="eyebrow">FICHA DE ENTRENADOR</span>
+                    <span class="eyebrow">ENTRENADOR</span>
                     <h3 id="adminTrainerName">Entrenador</h3>
                     <p id="adminTrainerSince">Registrado en TypeLink 2</p>
                     <small id="adminTrainerUpdated">—</small>
@@ -442,7 +442,7 @@
                 <div class="panel"><span class="eyebrow">GIROS EXTRA</span><strong id="adminTrainerBonusSpins">0</strong></div>
                 <div class="panel"><span class="eyebrow">CARTAS EN INVENTARIO</span><strong id="adminTrainerCardCount">0</strong></div>
               </div>
-              <div class="admin-trainer-progress-note" id="adminTrainerProgressNote">El progreso del entrenador se conserva al vaciar su inventario.</div>
+              <div class="admin-trainer-progress-note" id="adminTrainerProgressNote">El tramo y los giros se conservan al vaciar el inventario.</div>
 
               <section class="admin-trainer-section panel admin-trainer-tools-panel">
                 <div class="admin-trainer-section-heading">
@@ -452,7 +452,7 @@
                 <div class="admin-trainer-tool-form">
                   <label class="admin-field" for="adminTrainerTramoInput">TRAMO ACTUAL DEL ENTRENADOR
                     <input id="adminTrainerTramoInput" type="number" min="0" max="999" step="1" value="0">
-                    <small>Solo cambia el número de tramo. No modifica sus cartas, giros ni cargas disponibles.</small>
+                    <small>Solo cambia el tramo. No afecta cartas ni giros.</small>
                   </label>
                   <button class="secondary-button" type="button" id="adminTrainerSaveTramo">GUARDAR TRAMO</button>
                 </div>
@@ -460,7 +460,7 @@
 
               <section class="admin-trainer-section panel admin-trainer-tools-panel">
                 <div class="admin-trainer-section-heading">
-                  <div><span class="eyebrow">RECOMPENSA / REGALO</span><h3>Entregar cartas al entrenador</h3></div>
+                  <div><span class="eyebrow">REGALO</span><h3>Entregar cartas</h3></div>
                   <span class="type-count">REGISTRO ADMINISTRATIVO</span>
                 </div>
                 <div class="admin-trainer-tool-form admin-trainer-gift-form">
@@ -468,15 +468,15 @@
                     <select id="adminTrainerGiftCard">
                       <option value="">Cargando cartas...</option>
                     </select>
-                    <small>Puedes entregar cartas normales, de tramo o Fiesta.</small>
+                    <small>Normales, de tramo o Fiesta.</small>
                   </label>
                   <label class="admin-field admin-gift-quantity" for="adminTrainerGiftQuantity">CANTIDAD
                     <input id="adminTrainerGiftQuantity" type="number" min="1" max="20" step="1" value="1">
-                    <small>Entre 1 y 20 copias por operación.</small>
+                    <small>Máximo 20 copias.</small>
                   </label>
                   <button class="primary-button" type="button" id="adminTrainerGrantCard">ENTREGAR CARTA ↗</button>
                 </div>
-                <p class="admin-trainer-tool-note">Las copias entregadas reciben los usos definidos en el catálogo, quedan marcadas como regalo administrativo y aparecen en el historial. Esta herramienta permite superar el límite normal de baraja como recompensa especial.</p>
+                <p class="admin-trainer-tool-note">Se aplican los usos del catálogo. Los regalos quedan registrados y pueden superar el límite normal.</p>
               </section>
 
               <section class="admin-trainer-section panel">
@@ -540,7 +540,7 @@
                 <button class="inline-link" type="button" id="adminRoulettesBack">← TODAS LAS HERRAMIENTAS</button>
                 <div class="eyebrow">ADMINISTRACIÓN / SORTEOS</div>
                 <h2>EDITOR DE <em>RULETAS</em></h2>
-                <p>Configura qué cartas aparecen en cada ruleta y cuánto peso tiene cada una en el sorteo.</p>
+                <p>Selecciona cartas y ajusta sus probabilidades.</p>
               </div>
             </div>
 
@@ -549,8 +549,8 @@
                 <div class="admin-catalog-loading">Cargando ruletas...</div>
               </div>
               <div class="admin-roulette-info-note">
-                <b>PROBABILIDADES</b>
-                <span>El peso es relativo: una carta con peso 2 tiene el doble de probabilidad que una con peso 1, siempre que ambas estén habilitadas. La probabilidad se calcula sobre la suma de los pesos activos.</span>
+                <b>PESO DE CARTA</b>
+                <span>El peso es relativo: 2 equivale al doble de probabilidad que 1.</span>
               </div>
             </div>
 
@@ -579,7 +579,7 @@
                 <div class="admin-catalog-loading">Cargando cartas elegibles...</div>
               </div>
               <div class="admin-roulette-save-row">
-                <span id="adminRouletteSaveStatus" role="status">Los cambios todavía no se han guardado.</span>
+                <span id="adminRouletteSaveStatus" role="status">Sin guardar.</span>
                 <button class="primary-button" type="button" id="adminRouletteSave">GUARDAR RULETA ↗</button>
               </div>
               <div class="admin-roulette-info-note">
@@ -595,7 +595,7 @@
                 <button class="inline-link" type="button" id="adminCatalogBack">← TODAS LAS HERRAMIENTAS</button>
                 <div class="eyebrow">ADMINISTRACIÓN / CARTAS</div>
                 <h2>CATÁLOGO DE <em>CARTAS</em></h2>
-                <p>Gestiona las cartas que utiliza el evento. Las modificaciones se guardan en Supabase.</p>
+                <p>Gestiona las cartas del evento.</p>
               </div>
               <button class="primary-button admin-new-card-button" type="button" id="adminCreateCard">+ NUEVA CARTA</button>
             </div>
@@ -618,14 +618,14 @@
               <div class="admin-card-grid" id="adminCardGrid">
                 <div class="admin-catalog-loading">Cargando catálogo...</div>
               </div>
-              <p class="admin-catalog-footnote">Las cartas desactivadas dejan de estar disponibles para nuevos giros, pero no se borran de los inventarios existentes. No se permite eliminar cartas con historial.</p>
+              <p class="admin-catalog-footnote">Desactivar una carta impide nuevos giros; no elimina copias existentes. Las cartas con historial no se pueden borrar.</p>
             </div>
 
             <div id="adminCardEditorView" hidden>
               <form class="admin-card-form panel" id="adminCardForm">
                 <div class="admin-card-form-heading">
                   <div><span class="eyebrow">FICHA DE CARTA</span><h3 id="adminCardEditorTitle">Nueva carta</h3></div>
-                  <span class="admin-module-count">LOS CAMBIOS SE GUARDAN EN LA NUBE</span>
+                  <span class="admin-module-count">GUARDADO EN LA NUBE</span>
                 </div>
                 <div class="admin-card-form-grid">
                   <label class="admin-field">NOMBRE DE LA CARTA
@@ -633,7 +633,7 @@
                   </label>
                   <label class="admin-field">CÓDIGO INTERNO DE LA CARTA
                     <input id="adminCardSlug" type="text" maxlength="64" required placeholder="cambio-tactico">
-                    <small>Es un código técnico estable que usa la aplicación para identificar esta carta; no es el nombre que verán los jugadores. Se genera al crearla y queda bloqueado después para evitar desajustes en la ruleta y los datos guardados. El nombre visible sí puedes cambiarlo.</small>
+                    <small>Código interno fijo tras crear la carta. El nombre visible sí se puede cambiar.</small>
                   </label>
                   <label class="admin-field">CATEGORÍA
                     <select id="adminCardCategory">
@@ -652,7 +652,7 @@
                   </label>
                   <label class="admin-field">USOS POR COPIA
                     <input id="adminCardUses" type="number" min="1" max="99" value="1" required>
-                    <small>Se aplica a las copias nuevas; no altera los usos restantes ya entregados.</small>
+                    <small>Solo afecta a copias nuevas.</small>
                   </label>
                   <label class="admin-field">OBJETIVO PREDETERMINADO
                     <select id="adminCardScope">
@@ -673,13 +673,13 @@
                 <div class="admin-image-editor">
                   <div class="admin-image-preview-wrap">
                     <img id="adminCardImagePreview" alt="Vista previa de la ilustración" hidden>
-                    <div id="adminCardImageEmpty"><span>▧</span><b>SIN ILUSTRACIÓN</b><small>PNG TRANSPARENTE RECOMENDADO</small></div>
+                    <div id="adminCardImageEmpty"><span>▧</span><b>SIN ILUSTRACIÓN</b><small>PNG TRANSPARENTE</small></div>
                   </div>
                   <div class="admin-image-controls">
                     <span class="eyebrow">ILUSTRACIÓN DE LA CARTA</span>
                     <label for="adminCardImageFile">ADJUNTAR IMAGEN PNG</label>
                     <input id="adminCardImageFile" type="file" accept="image/png,.png">
-                    <small id="adminCardImageHelp">PNG hasta 5 MB. La imagen se subirá al almacenamiento de TypeLink al guardar.</small>
+                    <small id="adminCardImageHelp">PNG · máximo 5 MB.</small>
                     <button class="inline-link" type="button" id="adminCardRemoveImage">QUITAR ILUSTRACIÓN</button>
                   </div>
                 </div>
@@ -688,12 +688,12 @@
                   <label><input id="adminCardActive" type="checkbox" checked> Carta activa para el evento</label>
                   <label><input id="adminCardRouletteEligible" type="checkbox" checked> Puede aparecer en la ruleta</label>
                   <label class="admin-card-no-effect-option"><input id="adminCardAllowNoEffect" type="checkbox"> Permitir usar sin efecto automático</label>
-                  <small class="admin-card-no-effect-help">Para cartas narrativas, de reto o de uso manual. El movimiento queda registrado, pero no modifica automáticamente la plataforma. Si la carta sí tiene efectos activos, estos seguirán aplicándose.</small>
+                  <small class="admin-card-no-effect-help">Uso narrativo o manual. Registra la jugada sin aplicar efectos automáticos.</small>
                 </div>
-                <small id="adminCardRouletteHelp" class="admin-card-roulette-help">Si está activada, podrás añadir esta carta a una ruleta desde Administración → Ruletas. Las cartas con evolución se excluyen automáticamente.</small>
-                <div class="admin-card-form-note"><b>IMPORTANTE</b><span>La categoría de una carta que ya tenga copias en inventarios o reglas conectadas no podrá cambiarse. Desactivar una carta no elimina las copias existentes.</span></div>
+                <small id="adminCardRouletteHelp" class="admin-card-roulette-help">Las cartas con evolución se excluyen de las ruletas.</small>
+                <div class="admin-card-form-note"><b>IMPORTANTE</b><span>No puedes cambiar la categoría si hay copias o reglas conectadas. Desactivar no elimina copias existentes.</span></div>
                 <div class="admin-card-form-actions">
-                  <span id="adminCardFormStatus" role="status">Completa los datos de la carta.</span>
+                  <span id="adminCardFormStatus" role="status">Revisa los datos y guarda.</span>
                   <div><button class="secondary-button" type="button" id="adminCardCancel">CANCELAR</button><button class="primary-button" type="submit" id="adminCardSave">GUARDAR CARTA ↗</button></div>
                 </div>
               </form>
@@ -706,7 +706,7 @@
                 <button class="inline-link" type="button" id="adminProgressionBack">← TODAS LAS HERRAMIENTAS</button>
                 <div class="eyebrow">ADMINISTRACIÓN / REGLAS DEL EVENTO</div>
                 <h2>PROGRESIÓN <em>TYPELINK</em></h2>
-                <p>Define las recompensas y los límites generales que se aplicarán cuando cada entrenador avance de tramo.</p>
+                <p>Configura las recompensas por tramo.</p>
               </div>
               <button class="secondary-button" type="button" id="adminProgressionRefresh">↻ ACTUALIZAR</button>
             </div>
@@ -719,37 +719,37 @@
               <span class="admin-platform-state is-online" id="adminProgressionStatus">CONFIGURACIÓN CARGADA</span>
             </div>
             <div class="admin-progression-current-grid">
-              <article class="panel"><span class="eyebrow">LÍMITE DE BARAJA NORMAL</span><strong id="adminProgressionCurrentLimit">5</strong><small>Cartas normales por entrenador, antes de efectos.</small></article>
-              <article class="panel"><span class="eyebrow">CARTAS POR AVANCE</span><strong id="adminProgressionCurrentCards">2</strong><small>Cartas de tramo entregadas en cada avance.</small></article>
-              <article class="panel"><span class="eyebrow">GIROS POR AVANCE</span><strong id="adminProgressionCurrentSpins">3</strong><small>Giros normales nuevos por entrenador.</small></article>
+              <article class="panel"><span class="eyebrow">LÍMITE DE BARAJA NORMAL</span><strong id="adminProgressionCurrentLimit">5</strong><small>Cartas normales por entrenador.</small></article>
+              <article class="panel"><span class="eyebrow">CARTAS POR AVANCE</span><strong id="adminProgressionCurrentCards">2</strong><small>Cartas por avance.</small></article>
+              <article class="panel"><span class="eyebrow">GIROS POR AVANCE</span><strong id="adminProgressionCurrentSpins">3</strong><small>Giros por entrenador.</small></article>
             </div>
             <section class="admin-progression-editor panel">
               <div class="admin-platform-panel-heading">
                 <div><span class="eyebrow">EDITOR DE REGLAS</span><h3>Modificar parámetros</h3></div>
-                <span class="admin-module-count">CAMBIOS PARA PRÓXIMOS AVANCES</span>
+                <span class="admin-module-count">PRÓXIMOS AVANCES</span>
               </div>
               <div class="admin-progression-form-grid">
                 <label class="admin-progression-field">LÍMITE DE CARTAS NORMALES
                   <input id="adminProgressionNormalLimit" type="number" min="1" max="20" step="1" value="5" required>
-                  <small>Entre 1 y 20. Los efectos de cartas pueden modificar temporalmente el límite efectivo de cada jugador.</small>
+                  <small>Entre 1 y 20. Los efectos pueden modificarlo.</small>
                 </label>
                 <label class="admin-progression-field">CARTAS DE TRAMO POR AVANCE
                   <input id="adminProgressionCardsPerTramo" type="number" min="1" max="10" step="1" value="2" required>
-                  <small>Entre 1 y 10. Debe haber esa cantidad de cartas de tramo activas en el catálogo.</small>
+                  <small>Entre 1 y 10. Requiere suficientes cartas activas.</small>
                 </label>
                 <label class="admin-progression-field">GIROS NORMALES POR AVANCE
                   <input id="adminProgressionSpinsPerTramo" type="number" min="1" max="20" step="1" value="3" required>
-                  <small>Entre 1 y 20. El jugador deberá tener suficientes espacios libres en su baraja.</small>
+                  <small>Entre 1 y 20. Requiere espacios libres.</small>
                 </label>
               </div>
               <div class="admin-progression-catalog">
                 <div><span class="eyebrow">CATÁLOGO DE CARTAS DE TRAMO</span><strong id="adminProgressionActiveCardsCount">2 CARTAS ACTIVAS</strong></div>
                 <div id="adminProgressionActiveCardsList" class="admin-progression-card-list"><span class="admin-progression-card-chip">Cargando catálogo...</span></div>
-                <small id="adminProgressionCatalogHint">Las cartas de tramo se administran desde el Catálogo de cartas.</small>
+                <small id="adminProgressionCatalogHint">Gestiona estas cartas desde el Catálogo.</small>
               </div>
-              <div class="admin-progression-warning"><b>IMPORTANTE</b><span>Guardar las reglas no modifica los tramos actuales, las cartas ya entregadas ni los giros pendientes. Los nuevos valores se aplicarán al siguiente avance de cada entrenador.</span></div>
+              <div class="admin-progression-warning"><b>IMPORTANTE</b><span>Los cambios no afectan el progreso ni las recompensas actuales. Se aplican en el próximo avance.</span></div>
               <div class="admin-progression-save-row">
-                <span id="adminProgressionSaveStatus" role="status">Los cambios todavía no se han guardado.</span>
+                <span id="adminProgressionSaveStatus" role="status">Sin guardar.</span>
                 <button class="primary-button" type="button" id="adminProgressionSave">GUARDAR REGLAS ↗</button>
               </div>
             </section>
@@ -760,25 +760,25 @@
                 <button class="inline-link" type="button" id="adminPlatformBack">← TODAS LAS HERRAMIENTAS</button>
                 <div class="eyebrow">ADMINISTRACIÓN / MONITORIZACIÓN</div>
                 <h2>ESTADO DE <em>LA PLATAFORMA</em></h2>
-                <p>Datos reales consultados en Supabase. Este panel es de solo lectura y está reservado al administrador.</p>
+                <p>Solo lectura · Datos de Supabase.</p>
               </div>
               <button class="secondary-button" type="button" id="adminPlatformRefresh">↻ ACTUALIZAR</button>
             </div>
             <div class="admin-platform-overall panel">
-              <div><span class="eyebrow">ESTADO GENERAL</span><strong id="adminPlatformOverallStatus">CONSULTANDO SERVICIOS</strong><small id="adminPlatformLastCheck">Esperando la primera lectura...</small></div>
+              <div><span class="eyebrow">ESTADO GENERAL</span><strong id="adminPlatformOverallStatus">CONSULTANDO SERVICIOS</strong><small id="adminPlatformLastCheck">Sin lectura.</small></div>
               <span class="admin-platform-state is-pending" id="adminPlatformOverallPill">CARGANDO</span>
             </div>
             <div class="admin-platform-health-grid">
-              <article class="admin-platform-health-card panel"><div><span class="eyebrow">API DE SUPABASE</span><span class="admin-platform-state is-pending" id="adminPlatformApiState">PENDIENTE</span></div><strong>Conexión administrativa</strong><small>Respuesta de la consulta protegida.</small></article>
-              <article class="admin-platform-health-card panel"><div><span class="eyebrow">POSTGRESQL</span><span class="admin-platform-state is-pending" id="adminPlatformDatabaseState">PENDIENTE</span></div><strong>Base de datos</strong><small>Lectura del tamaño y las tablas públicas.</small></article>
-              <article class="admin-platform-health-card panel"><div><span class="eyebrow">STORAGE</span><span class="admin-platform-state is-pending" id="adminPlatformStorageState">PENDIENTE</span></div><strong>Archivos y buckets</strong><small>Lectura de metadatos de almacenamiento.</small></article>
-              <article class="admin-platform-health-card panel"><div><span class="eyebrow">SUPABASE AUTH</span><span class="admin-platform-state is-pending" id="adminPlatformAuthState">PENDIENTE</span></div><strong>Cuentas y perfiles</strong><small>Recuento de cuentas registradas.</small></article>
+              <article class="admin-platform-health-card panel"><div><span class="eyebrow">API DE SUPABASE</span><span class="admin-platform-state is-pending" id="adminPlatformApiState">PENDIENTE</span></div><strong>Conexión</strong><small>Consulta protegida.</small></article>
+              <article class="admin-platform-health-card panel"><div><span class="eyebrow">POSTGRESQL</span><span class="admin-platform-state is-pending" id="adminPlatformDatabaseState">PENDIENTE</span></div><strong>Base de datos</strong><small>Tamaño y tablas.</small></article>
+              <article class="admin-platform-health-card panel"><div><span class="eyebrow">STORAGE</span><span class="admin-platform-state is-pending" id="adminPlatformStorageState">PENDIENTE</span></div><strong>Storage</strong><small>Archivos y buckets.</small></article>
+              <article class="admin-platform-health-card panel"><div><span class="eyebrow">SUPABASE AUTH</span><span class="admin-platform-state is-pending" id="adminPlatformAuthState">PENDIENTE</span></div><strong>Cuentas</strong><small>Usuarios y perfiles.</small></article>
             </div>
             <div class="admin-platform-resource-grid">
-              <article class="admin-platform-resource panel"><span class="eyebrow">TAMAÑO DE BASE DE DATOS</span><strong id="adminPlatformDbSize">—</strong><small id="adminPlatformDbMeta">Esperando datos...</small></article>
-              <article class="admin-platform-resource panel"><span class="eyebrow">ESPACIO EN STORAGE</span><strong id="adminPlatformStorageSize">—</strong><small id="adminPlatformStorageMeta">Esperando datos...</small></article>
+              <article class="admin-platform-resource panel"><span class="eyebrow">TAMAÑO DE BASE DE DATOS</span><strong id="adminPlatformDbSize">—</strong><small id="adminPlatformDbMeta">Sin datos.</small></article>
+              <article class="admin-platform-resource panel"><span class="eyebrow">ESPACIO EN STORAGE</span><strong id="adminPlatformStorageSize">—</strong><small id="adminPlatformStorageMeta">Sin datos.</small></article>
               <article class="admin-platform-resource panel"><span class="eyebrow">CUENTAS REGISTRADAS</span><strong id="adminPlatformUsers">—</strong><small id="adminPlatformProfiles">Perfiles: —</small></article>
-              <article class="admin-platform-resource panel"><span class="eyebrow">ACTIVIDAD RECIENTE</span><strong id="adminPlatformActivityCount">—</strong><small id="adminPlatformActivityMeta">Esperando datos...</small></article>
+              <article class="admin-platform-resource panel"><span class="eyebrow">ACTIVIDAD RECIENTE</span><strong id="adminPlatformActivityCount">—</strong><small id="adminPlatformActivityMeta">Sin datos.</small></article>
             </div>
             <div class="admin-platform-data-grid">
               <section class="admin-platform-data-panel panel">
@@ -791,10 +791,10 @@
               </section>
             </div>
             <section class="admin-platform-modules-panel panel">
-              <div class="admin-platform-panel-heading"><div><span class="eyebrow">TYPELINK 2</span><h3>Estado de los módulos</h3></div><span class="admin-module-count">LECTURA DE CONFIGURACIÓN</span></div>
+              <div class="admin-platform-panel-heading"><div><span class="eyebrow">TYPELINK 2</span><h3>Estado de los módulos</h3></div><span class="admin-module-count">CONFIGURACIÓN</span></div>
               <div class="admin-platform-modules" id="adminPlatformModules"><div class="admin-catalog-loading">Comprobando módulos...</div></div>
             </section>
-            <p class="admin-platform-footnote"><b>NOTA SOBRE LAS MEDICIONES:</b> el tamaño de PostgreSQL es el tamaño lógico de la base de datos y no equivale al disco total asignado por Supabase (que también contempla WAL y archivos del sistema). El espacio de Storage suma el tamaño de los objetos activos según sus metadatos. Este monitor no necesita ni expone claves secretas.</p>
+            <p class="admin-platform-footnote"><b>MEDICIONES:</b> PostgreSQL muestra el tamaño lógico. Storage suma los objetos activos. No se muestran claves secretas.</p>
           </section>
 
         </section>
