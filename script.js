@@ -195,10 +195,15 @@ function createDeckItem(card,index,route=false,allowActions=false){
       actionButton.addEventListener("click",()=>openCardAction(card.instance_id,"transfer"));
     }else{
       const hasEffects=Boolean(cardEffectsById[card.card_id]?.length);
+      const allowsNoEffect=card.allow_no_effect_play===true;
       actionButton.className="deck-action-button use";
-      actionButton.textContent=hasEffects?"USAR":"PENDIENTE";
-      actionButton.disabled=!hasEffects;
-      actionButton.title=hasEffects?"Usar esta carta":"Esta carta todavía no tiene un efecto configurado";
+      actionButton.textContent=hasEffects?"USAR":allowsNoEffect?"LANZAR":"PENDIENTE";
+      actionButton.disabled=!hasEffects&&!allowsNoEffect;
+      actionButton.title=hasEffects
+        ?"Usar esta carta"
+        :allowsNoEffect
+          ?"Lanzar carta sin efecto automático; el movimiento quedará registrado"
+          :"Esta carta todavía no tiene efectos y aún no permite un uso sin efecto";
       actionButton.addEventListener("click",()=>openCardAction(card.instance_id,"use"));
     }
     actions.append(actionButton);
@@ -607,6 +612,7 @@ function mapInventoryRow(row){
     target_scope:joined.target_scope||"self",
     disposition:joined.disposition||"consume",
     counts_toward_normal_limit:joined.counts_toward_normal_limit!==false,
+    allow_no_effect_play:joined.allow_no_effect_play===true,
     source:row.source,
     tramo_number:row.tramo_number,
     status:row.status,
@@ -672,7 +678,7 @@ async function loadCardEngineConfig(){
 async function loadCloudInventory(){
   if(!authClient||!currentAuthUser)return;
   const {data,error}=await authClient.from("player_cards")
-    .select("id,card_id,source,tramo_number,status,remaining_uses,obtained_at,card_catalog(id,slug,name,category,rarity,description,image_path,uses_per_card,target_scope,disposition,counts_toward_normal_limit)")
+    .select("id,card_id,source,tramo_number,status,remaining_uses,obtained_at,card_catalog(id,slug,name,category,rarity,description,image_path,uses_per_card,target_scope,disposition,counts_toward_normal_limit,allow_no_effect_play)")
     .eq("owner_id",currentAuthUser.id)
     .order("obtained_at",{ascending:true});
   if(error){
@@ -1141,9 +1147,14 @@ async function openCardAction(instanceId,mode){
     setText("cardActionEyebrow",transfer?"TRANSFERENCIA DE CARTA":"USO DE CARTA");
     setText("cardActionTitle",transfer?"Transferir carta":"Usar carta");
     setText("cardActionArrow",transfer?"⇢":"✦");
+    const noAutomaticEffect=mode==="use"
+      &&card.allow_no_effect_play===true
+      &&!cardEffectsById[card.card_id]?.length;
     setText("cardActionDescription",transfer
       ?"La carta pasará al inventario del entrenador seleccionado sin activar su efecto."
-      :"La carta activará su efecto configurado. Cada uso resta una carga; al llegar a cero, la carta se agotará.");
+      :noAutomaticEffect
+        ?"Esta carta no aplica efectos automáticos en la plataforma. Al lanzarla, el movimiento quedará registrado en el muro y, si tiene objetivo, se notificará al entrenador seleccionado. Cada uso consume una carga."
+        :"La carta activará su efecto configurado. Cada uso resta una carga; al llegar a cero, la carta se agotará.");
     confirmButton.textContent=transfer?"CONFIRMAR TRANSFERENCIA":"USAR CARTA";
 
     if(card.target_scope==="opponent"||card.target_scope==="either"){
@@ -2377,6 +2388,7 @@ function openAdminCardEditor(card){
   document.getElementById("adminCardDisposition").value=card?.disposition||"consume";
   document.getElementById("adminCardDescription").value=card?.description||"";
   document.getElementById("adminCardCounts").checked=card?.counts_toward_normal_limit!==false;
+  document.getElementById("adminCardAllowNoEffect").checked=card?.allow_no_effect_play===true;
   if(card?.category!=="normal")document.getElementById("adminCardCounts").disabled=true;
   document.getElementById("adminCardActive").checked=card?Boolean(card.is_active):true;
   const rouletteEligibleInput=document.getElementById("adminCardRouletteEligible");
@@ -2444,6 +2456,7 @@ async function saveAdminCard(event){
       target_scope:document.getElementById("adminCardScope").value,
       disposition:document.getElementById("adminCardDisposition").value,
       counts_toward_normal_limit:document.getElementById("adminCardCounts").checked,
+      allow_no_effect_play:document.getElementById("adminCardAllowNoEffect").checked,
       roulette_eligible:document.getElementById("adminCardRouletteEligible").checked,
       is_active:document.getElementById("adminCardActive").checked
     };
