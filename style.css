@@ -1581,3 +1581,110 @@ button:disabled{cursor:not-allowed}
   font-size:8px;
   line-height:1.6;
 }
+
+
+/* Target trainer identity panel inside the card-action preview */
+.card-action-preview{
+  grid-template-columns:minmax(0,1fr) 28px minmax(0,.78fr);
+  min-height:104px;
+}
+.card-action-target-profile[hidden]{display:none!important}
+.card-action-target-profile{
+  min-width:0;
+  align-self:stretch;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:9px;
+  padding:8px 10px;
+  border:1px solid #405462;
+  background:linear-gradient(145deg,#1b2a35,#14202a);
+  border-radius:3px;
+}
+.card-action-target-profile-head{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-width:0;
+}
+.card-action-target-avatar{
+  width:43px;
+  height:43px;
+  flex:none;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  border:1px solid #6b8392;
+  border-radius:50%;
+  background:#263743;
+  color:#e5edf2;
+  font:800 13px 'Barlow Condensed';
+}
+.card-action-target-avatar img{
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+  border-radius:50%;
+}
+.card-action-target-identity{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+.card-action-target-identity small{
+  color:#8196a4;
+  font-size:6px;
+  font-weight:900;
+  letter-spacing:.8px;
+}
+.card-action-target-identity strong{
+  color:#edf2f5;
+  font:800 15px 'Barlow Condensed';
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.card-action-target-identity span{
+  color:#788c99;
+  font-size:6px;
+  font-weight:800;
+  letter-spacing:.6px;
+}
+.card-action-target-effect-count{
+  display:flex;
+  align-items:baseline;
+  gap:7px;
+  padding-top:7px;
+  border-top:1px solid #354753;
+}
+.card-action-target-effect-count strong{
+  color:#dce8ef;
+  font:900 22px 'Barlow Condensed';
+  line-height:1;
+}
+.card-action-target-effect-count span{
+  color:#91a5b2;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.75px;
+}
+@media(max-width:560px){
+  .card-action-preview{
+    grid-template-columns:minmax(0,1fr) 22px minmax(0,.85fr);
+    gap:6px;
+    padding:10px;
+  }
+  .card-action-target-profile{padding:7px;gap:7px}
+  .card-action-target-avatar{width:36px;height:36px}
+  .card-action-target-identity strong{font-size:13px}
+  .card-action-target-effect-count strong{font-size:19px}
+  .card-action-target-effect-count span{font-size:6px}
+}
+@media(max-width:380px){
+  .card-action-preview{grid-template-columns:minmax(0,1fr) 18px minmax(0,.9fr)}
+  .card-action-preview-item img{width:48px;height:64px}
+  .card-action-target-profile-head{gap:6px}
+  .card-action-target-avatar{width:31px;height:31px}
+}
