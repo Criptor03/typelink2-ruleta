@@ -47,6 +47,8 @@ let activeSessionUserId = null;
 let inventoryChannel = null;
 let profilesChannel = null;
 let activityChannel = null;
+let notificationChannel = null;
+let notificationCache = [];
 let currentTramo = 0;
 let tramoSpinsRemaining = 0;
 let bonusTramoSpinsRemaining = 0;
@@ -811,6 +813,204 @@ async function loadActivityFeed(){
   renderActivityFeed(visibleEntries,profiles);
 }
 
+
+function setNotificationBadge(count){
+  const badge=document.getElementById("navNotificationCount");
+  if(!badge)return;
+  const total=Math.max(0,Number(count)||0);
+  badge.hidden=total===0;
+  badge.textContent=total>99?"99+":String(total);
+  badge.setAttribute("aria-label",total+" notificaciones sin leer");
+}
+function notificationDate(value){
+  const date=new Date(value);
+  return Number.isNaN(date.getTime())?"":date.toLocaleString("es-CO",{dateStyle:"medium",timeStyle:"short"});
+}
+function notificationPlaceholder(message){
+  const box=document.createElement("div");
+  box.className="activity-empty panel";
+  box.textContent=message;
+  return box;
+}
+function renderNotifications(rows,profiles,unreadCount){
+  const container=document.getElementById("notificationsList");
+  if(!container)return;
+  container.replaceChildren();
+  const unread=Math.max(0,Number(unreadCount)||0);
+  setText("notificationsTotal",rows.length+" "+(rows.length===1?"NOTIFICACIÓN":"NOTIFICACIONES"));
+  setText("notificationsUnreadLabel",unread
+    ? "Tienes "+unread+" "+(unread===1?"aviso sin leer.":"avisos sin leer.")
+    : "Tu bandeja está al día.");
+  const markAll=document.getElementById("markAllNotificationsRead");
+  if(markAll)markAll.disabled=unread===0;
+  if(!rows.length){
+    container.append(notificationPlaceholder("Todavía no tienes notificaciones. Cuando otro entrenador utilice una carta contra ti, aparecerá aquí."));
+    return;
+  }
+  rows.forEach(notification=>{
+    const payload=notification.payload&&typeof notification.payload==="object"?notification.payload:{};
+    const actor=profiles[notification.actor_id]||{};
+    const actorName=actor.display_name||"Entrenador";
+    const unreadItem=!notification.read_at;
+    const item=document.createElement("article");
+    item.className="notification-item panel"+(unreadItem?" unread":"");
+
+    const avatar=document.createElement("div");
+    avatar.className="notification-avatar";
+    applyAvatar(avatar,actor.avatar_url,initials(actorName));
+
+    const content=document.createElement("div");
+    content.className="notification-content";
+
+    const header=document.createElement("div");
+    header.className="notification-header";
+    const identity=document.createElement("div");
+    identity.className="notification-identity";
+    const name=document.createElement("strong");
+    name.textContent=actorName;
+    const state=document.createElement("span");
+    state.className="notification-state"+(unreadItem?" unread":"");
+    state.textContent=unreadItem?"SIN LEER":"LEÍDA";
+    identity.append(name,state);
+    const time=document.createElement("time");
+    time.textContent=notificationDate(notification.created_at);
+    header.append(identity,time);
+
+    const title=document.createElement("h3");
+    title.className="notification-title";
+    title.textContent=notification.title||"Nueva notificación";
+    const body=document.createElement("p");
+    body.className="notification-body";
+    body.textContent=notification.body||"Un entrenador ha utilizado una carta sobre ti.";
+
+    content.append(header,title,body);
+
+    const cardName=payload.card_name||"Carta TypeLink";
+    const cardRow=document.createElement("div");
+    cardRow.className="notification-card-row";
+    if(payload.image_path){
+      const image=document.createElement("img");
+      image.className="notification-card-image";
+      image.src=payload.image_path;
+      image.alt=cardName;
+      image.loading="lazy";
+      cardRow.append(image);
+    }
+    const cardMeta=document.createElement("div");
+    cardMeta.className="notification-card-meta";
+    const cardTitle=document.createElement("strong");
+    cardTitle.textContent=cardName;
+    const rarity=document.createElement("small");
+    rarity.textContent=[payload.rarity,payload.category].filter(Boolean).join(" · ")||"Carta utilizada";
+    cardMeta.append(cardTitle,rarity);
+    cardRow.append(cardMeta);
+    content.append(cardRow);
+
+    if(typeof payload.custom_message==="string"&&payload.custom_message.trim()){
+      const note=document.createElement("div");
+      note.className="notification-custom-note";
+      const label=document.createElement("span");
+      label.className="notification-custom-label";
+      label.textContent="MENSAJE DEL ENTRENADOR";
+      const message=document.createElement("p");
+      message.textContent=payload.custom_message;
+      note.append(label,message);
+      content.append(note);
+    }
+
+    const footer=document.createElement("div");
+    footer.className="notification-footer";
+    const date=document.createElement("span");
+    date.textContent=notificationDate(notification.created_at);
+    footer.append(date);
+    if(unreadItem){
+      const readButton=document.createElement("button");
+      readButton.type="button";
+      readButton.className="notification-read-button";
+      readButton.textContent="MARCAR COMO LEÍDA";
+      readButton.addEventListener("click",()=>markNotificationAsRead(notification.id,readButton));
+      footer.append(readButton);
+    }
+    content.append(footer);
+    item.append(avatar,content);
+    container.append(item);
+  });
+}
+async function loadNotifications(){
+  const container=document.getElementById("notificationsList");
+  if(!currentAuthUser||!authClient){
+    setNotificationBadge(0);
+    setText("notificationsTotal","0 NOTIFICACIONES");
+    setText("notificationsUnreadLabel","Inicia sesión para consultar tus avisos.");
+    const markAll=document.getElementById("markAllNotificationsRead");
+    if(markAll)markAll.disabled=true;
+    if(container)container.replaceChildren(notificationPlaceholder("Inicia sesión con Discord para consultar tus notificaciones."));
+    return;
+  }
+  const [listResult,unreadResult]=await Promise.all([
+    authClient.from("notifications")
+      .select("id,actor_id,notification_type,title,body,payload,read_at,created_at")
+      .order("created_at",{ascending:false})
+      .limit(60),
+    authClient.from("notifications")
+      .select("id",{count:"exact",head:true})
+      .is("read_at",null)
+  ]);
+  if(listResult.error){
+    console.error("No se pudieron cargar las notificaciones:",listResult.error.message);
+    if(container)container.replaceChildren(notificationPlaceholder("No pudimos cargar tus notificaciones. Inténtalo de nuevo."));
+    return;
+  }
+  notificationCache=listResult.data||[];
+  const unreadCount=unreadResult.error?notificationCache.filter(item=>!item.read_at).length:Number(unreadResult.count||0);
+  if(unreadResult.error)console.warn("No se pudo actualizar el contador de notificaciones:",unreadResult.error.message);
+  setNotificationBadge(unreadCount);
+
+  const actorIds=[...new Set(notificationCache.map(item=>item.actor_id).filter(Boolean))];
+  let profiles={};
+  if(actorIds.length){
+    const result=await authClient.from("profiles")
+      .select("id,display_name,avatar_url")
+      .in("id",actorIds);
+    if(!result.error)profiles=Object.fromEntries((result.data||[]).map(profile=>[profile.id,profile]));
+    else console.warn("No se pudieron cargar los perfiles de las notificaciones:",result.error.message);
+  }
+  renderNotifications(notificationCache,profiles,unreadCount);
+}
+async function markNotificationAsRead(notificationId,button){
+  if(!authClient||!currentAuthUser||!notificationId)return;
+  if(button){button.disabled=true;button.textContent="GUARDANDO...";}
+  const {error}=await authClient.from("notifications")
+    .update({read_at:new Date().toISOString()})
+    .eq("id",notificationId)
+    .eq("recipient_id",currentAuthUser.id)
+    .is("read_at",null);
+  if(error){
+    console.error("No se pudo marcar la notificación como leída:",error.message);
+    if(button){button.disabled=false;button.textContent="MARCAR COMO LEÍDA";}
+    notify("No se pudo actualizar la notificación.");
+    return;
+  }
+  await loadNotifications();
+}
+async function markAllNotificationsRead(){
+  if(!authClient||!currentAuthUser)return;
+  const button=document.getElementById("markAllNotificationsRead");
+  if(button){button.disabled=true;button.textContent="GUARDANDO...";}
+  const {error}=await authClient.from("notifications")
+    .update({read_at:new Date().toISOString()})
+    .eq("recipient_id",currentAuthUser.id)
+    .is("read_at",null);
+  if(error){
+    console.error("No se pudieron marcar las notificaciones como leídas:",error.message);
+    notify("No se pudieron actualizar las notificaciones.");
+  }else{
+    await loadNotifications();
+    notify("Todas tus notificaciones están marcadas como leídas.");
+  }
+  if(button)button.textContent="MARCAR TODO COMO LEÍDO";
+}
+
 async function loadPlayers(){
   const container=document.getElementById("playersList");
   if(!container)return;
@@ -1082,6 +1282,7 @@ function setupRealtime(){
   if(inventoryChannel)authClient.removeChannel(inventoryChannel);
   if(profilesChannel)authClient.removeChannel(profilesChannel);
   if(activityChannel)authClient.removeChannel(activityChannel);
+  if(notificationChannel)authClient.removeChannel(notificationChannel);
   inventoryChannel=authClient.channel("typelink-player-cards-"+currentAuthUser.id)
     .on("postgres_changes",{event:"*",schema:"public",table:"player_cards",filter:"owner_id=eq."+currentAuthUser.id},()=>loadCloudInventory())
     .subscribe();
@@ -1094,6 +1295,9 @@ function setupRealtime(){
     .on("postgres_changes",{event:"*",schema:"public",table:"player_effects",filter:"owner_id=eq."+currentAuthUser.id},()=>loadProfileMechanics())
     .on("postgres_changes",{event:"*",schema:"public",table:"player_type_status",filter:"owner_id=eq."+currentAuthUser.id},()=>loadProfileMechanics())
     .on("postgres_changes",{event:"*",schema:"public",table:"player_roulette_unlocks",filter:"owner_id=eq."+currentAuthUser.id},()=>loadRouletteAccess())
+    .subscribe();
+  notificationChannel=authClient.channel("typelink-private-notifications-"+currentAuthUser.id)
+    .on("postgres_changes",{event:"*",schema:"public",table:"notifications",filter:"recipient_id=eq."+currentAuthUser.id},()=>loadNotifications())
     .subscribe();
 }
 
@@ -2401,7 +2605,10 @@ async function activateUserSession(user){
     if(inventoryChannel&&authClient)authClient.removeChannel(inventoryChannel);
     if(profilesChannel&&authClient)authClient.removeChannel(profilesChannel);
     if(activityChannel&&authClient)authClient.removeChannel(activityChannel);
-    inventoryChannel=null;profilesChannel=null;activityChannel=null;
+    if(notificationChannel&&authClient)authClient.removeChannel(notificationChannel);
+    inventoryChannel=null;profilesChannel=null;activityChannel=null;notificationChannel=null;
+    notificationCache=[];
+    setNotificationBadge(0);
     activeSessionUserId=null;currentProfile=null;isAdmin=false;adminAccessChecked=false;cloudMode=false;cloudDeck=[];cloudRoute=[];cloudSpecial=[];cloudInventory=[];
     currentTramo=0;tramoSpinsRemaining=0;bonusTramoSpinsRemaining=0;
     normalCardLimit=5;cardsPerTramo=2;normalSpinsPerTramo=3;
@@ -2417,7 +2624,7 @@ async function activateUserSession(user){
   activeSessionUserId=user.id;currentAuthUser=user;cloudMode=true;
   cloudDeck=[];cloudRoute=[];cloudSpecial=[];cloudInventory=[];
   renderAuthState(user);renderDeck();
-  await Promise.all([loadAdminAccess(),loadMyProfile(),loadCloudInventory(),loadPlayers(),loadActivityFeed(),loadPublicNormalCards(),loadRouletteAccess()]);
+  await Promise.all([loadAdminAccess(),loadMyProfile(),loadCloudInventory(),loadPlayers(),loadActivityFeed(),loadNotifications(),loadPublicNormalCards(),loadRouletteAccess()]);
   renderAdminAccess();
   setupRealtime();
 }
@@ -2773,6 +2980,7 @@ function setPage(page){
   if(page==="roulette")drawWheel();
   if(page==="players")loadPlayers();
   if(page==="activity")loadActivityFeed();
+  if(page==="notifications")loadNotifications();
   if(page==="deck"&&cloudMode)loadCloudInventory();
   if(page==="profile"&&currentAuthUser)loadMyProfile();
   if(page==="admin"&&isAdmin){renderAdminAccess();showAdminOverview();}
@@ -2832,6 +3040,7 @@ function initSupabaseAuth(){
 }
 
 document.querySelectorAll("[data-page]").forEach(button=>button.addEventListener("click",()=>setPage(button.dataset.page)));
+document.getElementById("markAllNotificationsRead").addEventListener("click",markAllNotificationsRead);
 document.getElementById("openAdminProgression").addEventListener("click",async()=>{
   if(!isAdmin){notify("Acceso reservado al administrador.");return;}
   showAdminOverview();
