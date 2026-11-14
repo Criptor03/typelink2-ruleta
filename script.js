@@ -64,6 +64,8 @@ let demoRouteState = loadRouteState();
 let rotation = 0;
 let spinning = false;
 let normalCardLimit = 5;
+let cardsPerTramo = 2;
+let normalSpinsPerTramo = 3;
 let playerTypeStatus = Object.create(null);
 let incomingCardEffects = [];
 const pendingTypeUpdates = new Set();
@@ -265,7 +267,7 @@ function renderDeck(){
     :normalCount>=normalCardLimit
       ?"Tu baraja está completa. Utiliza o libera una carta para continuar."
       :totalSpins<=0
-        ?"No tienes giros disponibles. Avanza de tramo para recibir 3 giros."
+        ?"No tienes giros disponibles. Avanza de tramo para recibir "+normalSpinsPerTramo+" giros."
         :"Cada giro consume 1 crédito y entrega una carta normal.");
   setText("spinBudget",currentAuthUser
     ?("GIROS DEL TRAMO: "+tramoSpinsRemaining+" · EXTRA: "+bonusTramoSpinsRemaining)
@@ -276,17 +278,17 @@ function renderDeck(){
     tramoHint="Inicia sesión con Discord para avanzar de tramo.";
   }else if(pendingSpins){
     tramoHint="Aún tienes "+totalSpins+" giros pendientes. Utilízalos antes de avanzar al siguiente tramo.";
-  }else if(freeSlots<3){
-    tramoHint="Te quedan cartas por utilizar, así que no puedes avanzar de tramo hasta tener suficiente espacio. Libera al menos 3 espacios en tu baraja.";
+  }else if(freeSlots<normalSpinsPerTramo){
+    tramoHint="Te quedan cartas por utilizar. Libera al menos "+normalSpinsPerTramo+" espacio(s) en tu baraja antes de avanzar de tramo.";
   }else{
-    tramoHint="Tienes espacio suficiente. Al avanzar recibirás 2 cartas de tramo y 3 giros de la ruleta normal.";
+    tramoHint="Tienes espacio suficiente. Al avanzar recibirás "+cardsPerTramo+" carta(s) de tramo y "+normalSpinsPerTramo+" giros de la ruleta normal.";
   }
   setText("tramoProgressHint",tramoHint);
   setText("tramoProgressCount","TRAMO "+currentTramo+" · GIROS "+tramoSpinsRemaining+" NORMALES · "+bonusTramoSpinsRemaining+" EXTRA");
   ["tramoButton","tramoButtonFull"].forEach(id=>{
     const button=document.getElementById(id);
     if(!button)return;
-    button.disabled=spinning||!currentAuthUser||pendingSpins||freeSlots<3;
+    button.disabled=spinning||!currentAuthUser||pendingSpins||freeSlots<normalSpinsPerTramo;
     button.textContent=currentTramo>0?"AVANZAR DE TRAMO":"INICIAR PRIMER TRAMO";
     button.title=tramoHint;
   });
@@ -615,7 +617,7 @@ async function loadCardEngineConfig(){
   const [rulesResult,effectsResult,settingsResult,playerEffectsResult,progressResult]=await Promise.all([
     authClient.from("card_evolution_rules").select("id,slug,name,description,source_card_id,result_card_id,same_tramo_only,trigger_type").eq("is_active",true).eq("trigger_type","manual"),
     authClient.from("card_effects").select("id,card_id,effect_key,operation,effect_value,parameters,duration_type,duration_value,duration_unit").eq("is_active",true),
-    authClient.from("event_settings").select("normal_card_limit,current_tramo").eq("singleton",true).single(),
+    authClient.from("event_settings").select("normal_card_limit,current_tramo,cards_per_tramo,normal_spins_per_tramo").eq("singleton",true).single(),
     authClient.from("player_effects").select("effect_value,expires_at,expires_after_tramo")
       .eq("owner_id",currentAuthUser.id).eq("effect_key","normal_card_limit").eq("operation","add").eq("status","active"),
     authClient.from("player_tramo_progress").select("current_tramo,spins_remaining,bonus_spins_remaining")
@@ -638,7 +640,13 @@ async function loadCardEngineConfig(){
       return sum+(timeOk&&tramoOk?(Number(effect.effect_value)||0):0);
     },0);
     normalCardLimit=Math.max(0,base+bonus);
-  }else normalCardLimit=5;
+    cardsPerTramo=Math.max(1,Number(settingsResult.data.cards_per_tramo)||2);
+    normalSpinsPerTramo=Math.max(1,Number(settingsResult.data.normal_spins_per_tramo)||3);
+  }else{
+    normalCardLimit=5;
+    cardsPerTramo=2;
+    normalSpinsPerTramo=3;
+  }
   if(rulesResult.error){
     console.warn("No se pudieron cargar las evoluciones:",rulesResult.error.message);
     renderDeck();return;
@@ -1100,12 +1108,14 @@ function showAdminOverview(){
   const trainersWorkspace=document.getElementById("adminTrainersWorkspace");
   const rouletteWorkspace=document.getElementById("adminRouletteWorkspace");
   const mechanicsWorkspace=document.getElementById("adminMechanicsWorkspace");
+  const progressionWorkspace=document.getElementById("adminProgressionWorkspace");
   const platformWorkspace=document.getElementById("adminPlatformWorkspace");
   if(overview)overview.hidden=false;
   if(catalogWorkspace)catalogWorkspace.hidden=true;
   if(trainersWorkspace)trainersWorkspace.hidden=true;
   if(rouletteWorkspace)rouletteWorkspace.hidden=true;
   if(mechanicsWorkspace)mechanicsWorkspace.hidden=true;
+  if(progressionWorkspace)progressionWorkspace.hidden=true;
   if(platformWorkspace)platformWorkspace.hidden=true;
   const list=document.getElementById("adminCatalogListView");
   const editor=document.getElementById("adminCardEditorView");
@@ -2390,6 +2400,7 @@ async function activateUserSession(user){
     inventoryChannel=null;profilesChannel=null;activityChannel=null;
     activeSessionUserId=null;currentProfile=null;isAdmin=false;adminAccessChecked=false;cloudMode=false;cloudDeck=[];cloudRoute=[];cloudSpecial=[];cloudInventory=[];
     currentTramo=0;tramoSpinsRemaining=0;bonusTramoSpinsRemaining=0;
+    normalCardLimit=5;cardsPerTramo=2;normalSpinsPerTramo=3;
     rouletteAccessByPool={legendary:0,fiesta:0};
     playerTypeStatus=Object.create(null);incomingCardEffects=[];
     evolutionRulesBySource=Object.create(null);cardEffectsById=Object.create(null);
@@ -2431,7 +2442,7 @@ async function spin(){
   if(spinning)return;
   if(!currentAuthUser||!authClient){notify("Inicia sesión con Discord para obtener cartas.");return;}
   if(activeNormalCards().length>=normalCardLimit){notify("Tu baraja ya tiene el límite de "+normalCardLimit+" cartas normales.");return;}
-  if(tramoSpinsRemaining+bonusTramoSpinsRemaining<=0){notify("No tienes giros disponibles. Avanza de tramo para recibir 3 giros.");return;}
+  if(tramoSpinsRemaining+bonusTramoSpinsRemaining<=0){notify("No tienes giros disponibles. Avanza de tramo para recibir "+normalSpinsPerTramo+" giros.");return;}
   spinning=true;renderDeck();
   try{
     // The server selects and awards the card in one protected transaction.
@@ -2527,12 +2538,13 @@ async function startNewTramo(){
     if(error)throw error;
     await loadCloudInventory();
     await loadProfileMechanics();
-    const cardCount=Array.isArray(data?.cards)?data.cards.length:2;
+    const cardCount=Array.isArray(data?.cards)?data.cards.length:cardsPerTramo;
+    const grantedSpins=Number(data?.normal_spins_remaining??normalSpinsPerTramo);
     const evolutions=Array.isArray(data?.automatic_evolutions)?data.automatic_evolutions:[];
     const evolvedCount=Number(data?.automatic_evolutions_count??evolutions.length);
     const tramo=data?.tramo_number||currentTramo;
     const evolutionNames=evolutions.slice(0,2).map(item=>(item.source_name||"Carta")+" → "+(item.result_name||"evolución")).join("; ");
-    notify("¡Tramo "+tramo+" iniciado! Recibiste "+cardCount+" cartas de tramo y 3 giros normales."+
+    notify("¡Tramo "+tramo+" iniciado! Recibiste "+cardCount+" cartas de tramo y "+grantedSpins+" giros normales."+
       (evolvedCount>0?" Evoluciones automáticas: "+evolvedCount+(evolutionNames?" · "+evolutionNames:"")+".":""));
   }catch(error){
     console.error("No se pudo avanzar de tramo:",error);
@@ -2543,6 +2555,84 @@ async function startNewTramo(){
   }
 }
 
+
+
+function renderAdminProgressionSettings(data){
+  const settings=data?.settings||{},cards=data?.tramo_cards||{};
+  const activeCards=Array.isArray(cards.active_cards)?cards.active_cards:[];
+  const normalLimit=Number(settings.normal_card_limit||5);
+  const cardsPer=Number(settings.cards_per_tramo||2);
+  const spinsPer=Number(settings.normal_spins_per_tramo||3);
+  document.getElementById("adminProgressionNormalLimit").value=String(normalLimit);
+  document.getElementById("adminProgressionCardsPerTramo").value=String(cardsPer);
+  document.getElementById("adminProgressionSpinsPerTramo").value=String(spinsPer);
+  setText("adminProgressionCurrentLimit",normalLimit);
+  setText("adminProgressionCurrentCards",cardsPer);
+  setText("adminProgressionCurrentSpins",spinsPer);
+  setText("adminProgressionActiveCardsCount",Number(cards.active_count||0)+" CARTAS ACTIVAS · "+Number(cards.total_count||0)+" EN CATÁLOGO");
+  const list=document.getElementById("adminProgressionActiveCardsList");
+  list.replaceChildren();
+  if(!activeCards.length){
+    const empty=document.createElement("span");empty.className="admin-progression-card-chip is-empty";empty.textContent="No hay cartas de tramo activas";list.append(empty);
+  }else{
+    activeCards.forEach(card=>{
+      const chip=document.createElement("span");chip.className="admin-progression-card-chip";chip.textContent=card.name||card.slug||"Carta de tramo";list.append(chip);
+    });
+  }
+  const enough=Number(cards.active_count||0)>=cardsPer;
+  setText("adminProgressionCatalogHint",enough
+    ?"El catálogo tiene suficientes cartas activas para la entrega configurada."
+    :"Faltan cartas activas. Activa o crea más cartas de tramo antes de guardar esta cantidad.");
+  setAdminPlatformIndicator("adminProgressionStatus",enough?"online":"warning",enough?"CONFIGURACIÓN CARGADA":"REVISAR CATÁLOGO");
+  setText("adminProgressionSaveStatus","Última configuración guardada: "+formatAdminPlatformDate(settings.updated_at));
+}
+async function loadAdminProgressionSettings(){
+  if(!authClient||!currentAuthUser||!isAdmin){notify("Acceso reservado al administrador.");return;}
+  const refresh=document.getElementById("adminProgressionRefresh");
+  if(refresh){refresh.disabled=true;refresh.textContent="CONSULTANDO...";}
+  setText("adminProgressionSaveStatus","Consultando reglas del evento...");
+  try{
+    const {data,error}=await authClient.rpc("admin_get_event_progression_settings");
+    if(error)throw error;
+    if(!data?.settings)throw new Error("Supabase no devolvió la configuración del evento.");
+    renderAdminProgressionSettings(data);
+  }catch(error){
+    console.error("No se pudo cargar la progresión del evento:",error);
+    setAdminPlatformIndicator("adminProgressionStatus","offline","SIN DATOS");
+    setText("adminProgressionSaveStatus","No se pudo cargar la configuración: "+(error.message||"error desconocido."));
+  }finally{
+    if(refresh){refresh.disabled=false;refresh.textContent="↻ ACTUALIZAR";}
+  }
+}
+async function saveAdminProgressionSettings(){
+  if(!authClient||!currentAuthUser||!isAdmin){notify("Acceso reservado al administrador.");return;}
+  const normalLimit=Number(document.getElementById("adminProgressionNormalLimit").value);
+  const cardsPer=Number(document.getElementById("adminProgressionCardsPerTramo").value);
+  const spinsPer=Number(document.getElementById("adminProgressionSpinsPerTramo").value);
+  if(!Number.isInteger(normalLimit)||normalLimit<1||normalLimit>20){setText("adminProgressionSaveStatus","El límite de baraja debe ser un entero entre 1 y 20.");return;}
+  if(!Number.isInteger(cardsPer)||cardsPer<1||cardsPer>10){setText("adminProgressionSaveStatus","Las cartas por tramo deben ser un entero entre 1 y 10.");return;}
+  if(!Number.isInteger(spinsPer)||spinsPer<1||spinsPer>20){setText("adminProgressionSaveStatus","Los giros por avance deben ser un entero entre 1 y 20.");return;}
+  const button=document.getElementById("adminProgressionSave");
+  button.disabled=true;button.textContent="GUARDANDO...";
+  setText("adminProgressionSaveStatus","Validando y guardando las reglas en Supabase...");
+  try{
+    const {data,error}=await authClient.rpc("admin_save_event_progression_settings",{
+      p_normal_card_limit:normalLimit,p_cards_per_tramo:cardsPer,p_normal_spins_per_tramo:spinsPer
+    });
+    if(error)throw error;
+    if(!data?.settings)throw new Error("El servidor no confirmó la nueva configuración.");
+    renderAdminProgressionSettings(data);
+    setText("adminProgressionSaveStatus","¡Reglas guardadas correctamente! Se aplicarán en los próximos avances.");
+    notify("Progresión del evento actualizada.");
+    await loadCloudInventory();
+  }catch(error){
+    console.error("No se pudo guardar la progresión del evento:",error);
+    setText("adminProgressionSaveStatus",error.message||"No se pudieron guardar las reglas.");
+    setAdminPlatformIndicator("adminProgressionStatus","warning","NO GUARDADO");
+  }finally{
+    button.disabled=false;button.textContent="GUARDAR REGLAS ↗";
+  }
+}
 
 function formatAdminPlatformBytes(value){
   const bytes=Math.max(0,Number(value)||0);
@@ -2601,7 +2691,7 @@ function renderAdminPlatformModules(data){
     {name:"Catálogo de cartas",value:Number(catalog.active||0)+"/"+Number(catalog.total||0)+" activas",note:Number(catalog.inactive||0)+" desactivadas",state:Number(catalog.active||0)>0?"online":"warning"},
     {name:"Ruletas",value:activePools+"/"+pools.length+" abiertas",note:activePoolCards+" cartas habilitadas. Las ruletas especiales pueden permanecer cerradas hasta configurarlas.",state:activePools>0?"online":"warning"},
     {name:"Muro de cartas",value:Number(activity.total||0).toLocaleString("es-CO")+" movimientos",note:Number(activity.last_7_days||0)+" en los últimos 7 días · último: "+formatAdminPlatformDate(activity.last_activity_at),state:Number(activity.total||0)>0?"online":"warning"},
-    {name:"Progresión del evento",value:settings.singleton?("Tramo global "+Number(settings.current_tramo||0)):"Sin configuración",note:settings.singleton?("Límite de baraja: "+Number(settings.normal_card_limit||0)+" · cartas por tramo: "+Number(settings.cards_per_tramo||0)):"No se encontró la configuración principal del evento.",state:settings.singleton?"online":"warning"}
+    {name:"Progresión del evento",value:settings.singleton?(Number(settings.cards_per_tramo||0)+" cartas · "+Number(settings.normal_spins_per_tramo||3)+" giros por avance"):"Sin configuración",note:settings.singleton?("Límite base de baraja: "+Number(settings.normal_card_limit||0)+" · avance individual por entrenador"):"No se encontró la configuración principal del evento.",state:settings.singleton?"online":"warning"}
   ];
   modules.forEach(module=>{
     const row=document.createElement("article");row.className="admin-platform-module";
@@ -2736,6 +2826,18 @@ function initSupabaseAuth(){
 }
 
 document.querySelectorAll("[data-page]").forEach(button=>button.addEventListener("click",()=>setPage(button.dataset.page)));
+document.getElementById("openAdminProgression").addEventListener("click",async()=>{
+  if(!isAdmin){notify("Acceso reservado al administrador.");return;}
+  showAdminOverview();
+  document.getElementById("adminOverview").hidden=true;
+  document.getElementById("adminProgressionWorkspace").hidden=false;
+  await loadAdminProgressionSettings();
+  window.scrollTo({top:0,behavior:"smooth"});
+});
+document.getElementById("adminProgressionBack").addEventListener("click",showAdminOverview);
+document.getElementById("adminProgressionRefresh").addEventListener("click",loadAdminProgressionSettings);
+document.getElementById("adminProgressionSave").addEventListener("click",saveAdminProgressionSettings);
+
 document.getElementById("openAdminPlatformStatus").addEventListener("click",async()=>{
   if(!isAdmin){notify("Acceso reservado al administrador.");return;}
   showAdminOverview();
