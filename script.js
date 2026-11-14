@@ -760,6 +760,13 @@ function renderActivityFeed(entries,profiles){
       });
       if(cards.childElementCount)body.append(cards);
     }
+    if(typeof details.custom_message==="string"&&details.custom_message.trim()){
+      const note=document.createElement("div");note.className="activity-custom-note";
+      const noteLabel=document.createElement("span");noteLabel.className="activity-custom-note-label";
+      noteLabel.textContent="MENSAJE DEL ENTRENADOR";
+      const noteText=document.createElement("p");noteText.textContent=details.custom_message;
+      note.append(noteLabel,noteText);body.append(note);
+    }
     item.append(avatar,body);container.append(item);
   });
 }
@@ -876,6 +883,9 @@ async function openCardAction(instanceId,mode){
   const targetWrap=document.getElementById("cardActionTargetWrap");
   const resultPreview=document.getElementById("cardActionResultPreview");
   const targetSelect=document.getElementById("cardActionTarget");
+  const messageWrap=document.getElementById("cardActionMessageWrap");
+  const messageInput=document.getElementById("cardActionMessage");
+  const messageCount=document.getElementById("cardActionMessageCount");
   const confirmButton=document.getElementById("confirmCardAction");
   const feedback=document.getElementById("cardActionFeedback");
   confirmButton.disabled=false;
@@ -889,6 +899,12 @@ async function openCardAction(instanceId,mode){
   resultPreview.hidden=true;
   feedback.textContent="";
   targetSelect.replaceChildren();
+  if(messageInput)messageInput.value="";
+  if(messageCount)messageCount.textContent="0";
+  if(messageWrap)messageWrap.hidden=mode!=="use";
+  if(messageInput){
+    messageInput.oninput=()=>{if(messageCount)messageCount.textContent=String(messageInput.value.length);};
+  }
 
   if(mode==="evolve"){
     const rule=evolutionRulesBySource[card.card_id];
@@ -946,6 +962,10 @@ function closeCardAction(){
   pendingCardAction=null;
   const button=document.getElementById("confirmCardAction");
   if(button){button.disabled=false;button.textContent="CONFIRMAR";}
+  const messageInput=document.getElementById("cardActionMessage");
+  const messageCount=document.getElementById("cardActionMessageCount");
+  if(messageInput)messageInput.value="";
+  if(messageCount)messageCount.textContent="0";
 }
 
 async function confirmCardAction(){
@@ -954,6 +974,7 @@ async function confirmCardAction(){
   const button=document.getElementById("confirmCardAction");
   const targetSelect=document.getElementById("cardActionTarget");
   const feedback=document.getElementById("cardActionFeedback");
+  const messageInput=document.getElementById("cardActionMessage");
   let targetId=null;
 
   if(mode!=="evolve"&&(card.target_scope==="opponent"||card.target_scope==="either")){
@@ -968,18 +989,27 @@ async function confirmCardAction(){
     }
   }
 
+  const customMessage=mode==="use"?(messageInput?.value||"").trim():"";
+  if(customMessage.length>280){
+    feedback.textContent="El mensaje no puede superar los 280 caracteres.";
+    return;
+  }
+
   button.disabled=true;button.textContent="PROCESANDO...";
   feedback.textContent="Validando la acción en el servidor...";
   try{
-    const rpcName=mode==="evolve"?"evolve_card":"play_card";
+    const rpcName=mode==="evolve"?"evolve_card":mode==="use"?"play_card_with_message":"play_card";
     const args=mode==="evolve"
       ?{p_card_instance_id:instanceId}
-      :{p_card_instance_id:instanceId,p_target_id:targetId};
+      :mode==="use"
+        ?{p_card_instance_id:instanceId,p_target_id:targetId,p_custom_message:customMessage||null}
+        :{p_card_instance_id:instanceId,p_target_id:targetId};
     const {data,error}=await authClient.rpc(rpcName,args);
     if(error)throw error;
     closeCardAction();
     await loadCloudInventory();
     if(mode==="use")await loadRouletteAccess();
+    await loadActivityFeed();
 
     if(mode==="evolve"){
       showResult({
