@@ -266,6 +266,8 @@ function renderDeck(){
   const freeSlots=Math.max(0,normalCardLimit-normalCount);
   const pendingSpins=totalSpins>0;
   spinButton.disabled=spinning||!currentAuthUser||pendingSpins===false||normalCount>=normalCardLimit;
+  const shuffleWheelButton=document.getElementById("shuffleWheelButton");
+  if(shuffleWheelButton)shuffleWheelButton.disabled=spinning||CARDS.length<2;
   spinButton.querySelector("span").textContent=
     !currentAuthUser?"INICIA SESIÓN":
     spinning?"CONECTANDO...":
