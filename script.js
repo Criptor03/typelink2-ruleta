@@ -706,12 +706,44 @@ function initials(name){
 function makeActivityPlaceholder(message){
   const box=document.createElement("div");box.className="activity-empty panel";box.textContent=message;return box;
 }
+function activityTargetLabel(entry,details,targetName){
+  if(entry.target_id&&entry.target_id!==entry.actor_id)return "PARA "+targetName;
+  if(entry.target_id===entry.actor_id)return "USO PROPIO";
+  if(details.target_scope==="all_players")return "PARA TODOS LOS ENTRENADORES";
+  return "CONSUMO PROPIO";
+}
+
+function openActivityCardPreview(imagePath,cardName,rarity,trigger){
+  if(!imagePath)return;
+  const modal=document.getElementById("activityCardModal");
+  const image=document.getElementById("activityCardModalImage");
+  if(!modal||!image)return;
+  activityCardModalTrigger=trigger||null;
+  image.src=imagePath;
+  image.alt=cardName||"Carta TypeLink";
+  setText("activityCardModalName",cardName||"Carta TypeLink");
+  setText("activityCardModalRarity",rarity||"CARTA TYPELINK");
+  modal.hidden=false;
+  document.getElementById("closeActivityCardModal")?.focus();
+}
+
+function closeActivityCardPreview(){
+  const modal=document.getElementById("activityCardModal");
+  const image=document.getElementById("activityCardModalImage");
+  if(modal)modal.hidden=true;
+  if(image){image.removeAttribute("src");image.alt="";}
+  if(activityCardModalTrigger?.isConnected)activityCardModalTrigger.focus();
+  activityCardModalTrigger=null;
+}
+
+let activityCardModalTrigger=null;
+
 function renderActivityFeed(entries,profiles){
   const container=document.getElementById("activityFeed");
   if(!container)return;
   container.replaceChildren();
   if(!entries.length){
-    container.append(makeActivityPlaceholder("Aún no hay movimientos. Cuando un entrenador avance de tramo, gire la ruleta o juegue una carta, aparecerá aquí."));
+    container.append(makeActivityPlaceholder("Todavía no hay cartas en el chat. Cuando un entrenador lance una carta a otro o la utilice sobre sí mismo, aparecerá aquí."));
     return;
   }
   entries.forEach(entry=>{
@@ -720,109 +752,129 @@ function renderActivityFeed(entries,profiles){
     const target=profiles[entry.target_id]||{};
     const actorName=actor.display_name||"Entrenador";
     const targetName=target.display_name||"otro entrenador";
-    const item=document.createElement("article");item.className="activity-item panel";
-    const avatar=document.createElement("div");avatar.className="activity-avatar";
+    const cardName=details.card_name||details.name||"Carta TypeLink";
+    const rarity=details.rarity||"Carta TypeLink";
+    const imagePath=details.image_path||"";
+    const targetLabel=activityTargetLabel(entry,details,targetName);
+
+    const item=document.createElement("article");
+    item.className="activity-item activity-chat-item panel";
+
+    const avatar=document.createElement("div");
+    avatar.className="activity-avatar";
     if(actor.avatar_url){
-      const avatarImage=document.createElement("img");avatarImage.src=actor.avatar_url;avatarImage.alt="";avatar.append(avatarImage);
-    }else avatar.textContent=initials(actorName);
-    const body=document.createElement("div");body.className="activity-body";
-    const header=document.createElement("div");header.className="activity-header";
-    const who=document.createElement("strong");who.textContent=actorName;
+      const avatarImage=document.createElement("img");
+      avatarImage.src=actor.avatar_url;
+      avatarImage.alt="";
+      avatar.append(avatarImage);
+    }else{
+      avatar.textContent=initials(actorName);
+    }
+
+    const body=document.createElement("div");
+    body.className="activity-body";
+
+    const header=document.createElement("div");
+    header.className="activity-header";
+    const who=document.createElement("strong");
+    who.textContent=actorName;
     const when=document.createElement("time");
     const date=new Date(entry.created_at);
     when.textContent=Number.isNaN(date.getTime())?"":date.toLocaleString("es-CO",{dateStyle:"medium",timeStyle:"short"});
     header.append(who,when);
-    const line=document.createElement("p");line.className="activity-message";
-    let symbol="✦",message="";
-    const cardName=details.card_name||details.name||"una carta";
-    if(entry.activity_type==="tramo_award"){
-      symbol="Ⅱ";
-      const tramoCardCount=Array.isArray(details.cards)?details.cards.length:Number(details.cards_granted??2);
-      const grantedSpins=Number(details.normal_spins_granted||0);
-      message="ha avanzado al tramo "+(details.tramo_number||"?")+" y ha recibido "+tramoCardCount+" "+(tramoCardCount===1?"carta":"cartas")+" de tramo";
-      if(grantedSpins>0)message+=" y "+grantedSpins+" "+(grantedSpins===1?"giro normal":"giros normales");
-    }else if(entry.activity_type==="roulette_spin"){
-      symbol="◉";
-      const specialName=details.roulette_pool==="legendary"?"la Ruleta Legendaria":
-        details.roulette_pool==="fiesta"?"la Ruleta Fiesta":"la ruleta";
-      message="ha girado "+specialName+" y ha obtenido "+cardName;
-    }else if(entry.activity_type==="roulette_unlock"){
-      symbol="✦";
-      const poolName=details.pool_slug==="legendary"?"Ruleta Legendaria":"Ruleta Fiesta";
-      const spins=Number(details.spins_granted||1);
-      message="ha canjeado "+cardName+" y ha desbloqueado "+spins+" "+(spins===1?"giro":"giros")+" para "+poolName;
-    }else if(entry.activity_type==="transfer"){
-      symbol="⇢";message="ha enviado "+cardName+" a "+targetName;
-    }else if(entry.activity_type==="evolution"){
-      symbol="⬡";
-      message=details.evolution_trigger==="tramo_advance"
-        ?"ha avanzado de tramo y "+(details.source_name||"una carta")+" ha evolucionado a "+(details.result_name||"una nueva carta")
-        :"ha evolucionado "+(details.source_name||"una carta")+" → "+(details.result_name||"nueva carta");
-    }else if(entry.activity_type==="admin_grant"){
-      symbol="＋";message="ha entregado "+cardName+(Number(details.quantity)>1?" ×"+details.quantity:"")+" a "+targetName;
-    }else if(entry.activity_type==="admin_remove"){
-      symbol="−";message="ha retirado "+cardName+" del inventario de "+targetName;
-    }else if(entry.activity_type==="tramo_adjustment"){
-      symbol="Ⅱ";message="ha ajustado el tramo de "+targetName+" de "+details.old_tramo+" a "+details.new_tramo;
-    }else{
-      symbol="✦";
-      message="ha utilizado "+cardName+(entry.target_id&&entry.target_id!==entry.actor_id?" sobre "+targetName:entry.target_id?" sobre sí mismo":"");
-    }
-    const mark=document.createElement("span");mark.className="activity-symbol";mark.textContent=symbol;
-    const messageText=document.createElement("span");messageText.textContent=message;
-    line.append(mark,messageText);
-    body.append(header,line);
-    const imagePath=details.image_path||details.result_image_path||details.source_image_path;
+
+    const customMessage=typeof details.custom_message==="string"?details.custom_message.trim():"";
+    const bubble=document.createElement("div");
+    bubble.className="activity-chat-bubble"+(customMessage?"":" is-automatic");
+    const bubbleText=document.createElement("p");
+    bubbleText.textContent=customMessage||(
+      entry.target_id&&entry.target_id!==entry.actor_id
+        ?"Ha lanzado una carta a "+targetName+"."
+        :targetLabel==="PARA TODOS LOS ENTRENADORES"
+          ?"Ha lanzado una carta para todos los entrenadores."
+          :"Ha utilizado una carta para sí mismo."
+    );
+    bubble.append(bubbleText);
+
+    const recipient=document.createElement("div");
+    recipient.className="activity-recipient";
+    recipient.textContent=targetLabel;
+
+    const cardPreview=imagePath?document.createElement("button"):document.createElement("div");
+    cardPreview.className="activity-card-preview"+(imagePath?"":" is-no-image");
     if(imagePath){
-      const cardImageEl=document.createElement("img");cardImageEl.className="activity-card-image";cardImageEl.src=imagePath;cardImageEl.alt=cardName;body.append(cardImageEl);
+      cardPreview.type="button";
+      cardPreview.title="Toca para ampliar la carta";
+      cardPreview.setAttribute("aria-label","Ampliar "+cardName);
+      cardPreview.dataset.imagePath=imagePath;
+      cardPreview.dataset.cardName=cardName;
+      cardPreview.dataset.cardRarity=rarity;
+
+      const cardImageEl=document.createElement("img");
+      cardImageEl.className="activity-card-preview-image";
+      cardImageEl.src=imagePath;
+      cardImageEl.alt=cardName;
+      cardPreview.append(cardImageEl);
+    }else{
+      const missingArt=document.createElement("span");
+      missingArt.className="activity-card-preview-placeholder";
+      missingArt.textContent="▧";
+      cardPreview.append(missingArt);
     }
-    if(Array.isArray(details.cards)&&details.cards.length){
-      const cards=document.createElement("div");cards.className="activity-card-thumbs";
-      details.cards.forEach(card=>{
-        if(!card.image_path)return;
-        const image=document.createElement("img");image.src=card.image_path;image.alt=card.name||"Carta de tramo";image.title=card.name||"Carta de tramo";cards.append(image);
-      });
-      if(cards.childElementCount)body.append(cards);
-    }
-    if(typeof details.custom_message==="string"&&details.custom_message.trim()){
-      const note=document.createElement("div");note.className="activity-custom-note";
-      const noteLabel=document.createElement("span");noteLabel.className="activity-custom-note-label";
-      noteLabel.textContent="MENSAJE DEL ENTRENADOR";
-      const noteText=document.createElement("p");noteText.textContent=details.custom_message;
-      note.append(noteLabel,noteText);body.append(note);
-    }
-    item.append(avatar,body);container.append(item);
+
+    const cardCopy=document.createElement("div");
+    cardCopy.className="activity-card-preview-copy";
+    const cardLabel=document.createElement("small");
+    cardLabel.textContent="CARTA LANZADA";
+    const cardTitle=document.createElement("strong");
+    cardTitle.textContent=cardName;
+    const cardMeta=document.createElement("span");
+    cardMeta.textContent=rarity.toUpperCase()+(details.category?" · "+String(details.category).toUpperCase():"");
+    const cardAction=document.createElement("span");
+    cardAction.className="activity-card-preview-action";
+    cardAction.textContent=imagePath?"TOCAR PARA VER EN GRANDE ↗":"ILUSTRACIÓN NO DISPONIBLE";
+    cardCopy.append(cardLabel,cardTitle,cardMeta,cardAction);
+    cardPreview.append(cardCopy);
+
+    body.append(header,bubble,recipient,cardPreview);
+    item.append(avatar,body);
+    container.append(item);
   });
 }
+
 async function loadActivityFeed(){
   const container=document.getElementById("activityFeed");
   if(!container)return;
   if(!currentAuthUser||!authClient){
-    container.replaceChildren(makeActivityPlaceholder("Inicia sesión con Discord para ver los movimientos de todos los entrenadores."));
+    container.replaceChildren(makeActivityPlaceholder("Inicia sesión con Discord para ver las cartas lanzadas por la comunidad."));
     return;
   }
   const {data,error}=await authClient.from("card_activity")
     .select("id,actor_id,target_id,activity_type,details,created_at")
-    .in("activity_type",["tramo_award","roulette_spin","roulette_unlock","play","transfer","evolution","admin_grant","admin_remove","tramo_adjustment"])
+    .eq("activity_type","play")
     .order("created_at",{ascending:false})
-    .limit(60);
+    .limit(80);
   if(error){
     console.error("No se pudo cargar el muro de cartas:",error.message);
-    container.replaceChildren(makeActivityPlaceholder("No pudimos cargar el muro de cartas. Inténtalo de nuevo."));
+    container.replaceChildren(makeActivityPlaceholder("No pudimos cargar el chat de cartas. Inténtalo de nuevo."));
     return;
   }
-  const profileIds=[...new Set((data||[]).flatMap(row=>[row.actor_id,row.target_id]).filter(Boolean))];
+  const visibleEntries=(data||[]).filter(entry=>{
+    const details=entry.details&&typeof entry.details==="object"?entry.details:{};
+    if(Number(details.unlock_count||0)>0)return false;
+    const hasPlayerTarget=Boolean(entry.target_id);
+    const affectsAllPlayers=details.target_scope==="all_players";
+    const personalConsumption=details.disposition==="consume"&&details.target_scope!=="event";
+    return hasPlayerTarget||affectsAllPlayers||personalConsumption;
+  });
+  const profileIds=[...new Set(visibleEntries.flatMap(row=>[row.actor_id,row.target_id]).filter(Boolean))];
   let profiles={};
   if(profileIds.length){
     const result=await authClient.from("profiles").select("id,display_name,avatar_url").in("id",profileIds);
     if(!result.error)profiles=Object.fromEntries((result.data||[]).map(profile=>[profile.id,profile]));
   }
-  const visibleEntries=(data||[]).filter(entry=>
-    !(entry.activity_type==="play"&&Number(entry.details?.unlock_count||0)>0)
-  );
   renderActivityFeed(visibleEntries,profiles);
 }
-
 
 function setNotificationBadge(count){
   const badge=document.getElementById("navNotificationCount");
