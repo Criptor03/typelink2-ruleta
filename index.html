@@ -228,7 +228,7 @@
 
         <section class="page-view" id="page-activity" hidden>
           <div class="page-heading"><div><div class="eyebrow">06 / COMUNIDAD</div><h1>MURO DE <em>CARTAS</em></h1><p>Los movimientos de todos los entrenadores, en directo.</p></div><span class="page-stamp">COMMUNITY<br>FEED</span></div>
-          <div class="activity-intro panel"><div><span class="eyebrow">ACTIVIDAD EN VIVO</span><h2>La comunidad TypeLink</h2><p>Aquí aparecerán los giros de ruleta, los avances de tramo, las cartas utilizadas, los envíos a otros entrenadores y las evoluciones.</p></div><span class="activity-live-tag"><i></i> EN DIRECTO</span></div>
+          <div class="activity-intro panel"><div><span class="eyebrow">CHAT DE CARTAS · EN VIVO</span><h2>La comunidad TypeLink</h2><p>Solo aparecen las cartas que un entrenador lanza a otro o utiliza sobre sí mismo. Los mensajes personales se muestran junto a su perfil y puedes tocar cada carta para verla en grande.</p></div><span class="activity-live-tag"><i></i> EN DIRECTO</span></div>
           <div id="activityFeed" class="activity-feed"><div class="activity-empty panel">Inicia sesión para ver los movimientos de la comunidad.</div></div>
         </section>
 
@@ -823,6 +823,20 @@
         <p id="spinRewardDescription"></p>
       </div>
       <button class="spin-reward-accept" id="spinRewardAccept" type="button">ACEPTAR Y CONTINUAR ↗</button>
+    </div>
+  </div>
+  <div class="activity-card-modal" id="activityCardModal" hidden>
+    <div class="activity-card-dialog" role="dialog" aria-modal="true" aria-labelledby="activityCardModalName">
+      <button class="modal-close" id="closeActivityCardModal" type="button" aria-label="Cerrar">×</button>
+      <div class="activity-card-modal-art-wrap">
+        <img id="activityCardModalImage" src="" alt="Carta ampliada">
+      </div>
+      <div class="activity-card-modal-copy">
+        <span class="eyebrow">CARTA DEL MURO</span>
+        <h2 id="activityCardModalName">Carta TypeLink</h2>
+        <p id="activityCardModalRarity">CARTA TYPELINK</p>
+        <small>Toca fuera de la carta o pulsa × para volver al chat.</small>
+      </div>
     </div>
   </div>
   <div class="card-action-modal" id="cardActionModal" hidden>
