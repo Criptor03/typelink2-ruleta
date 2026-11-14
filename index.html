@@ -263,7 +263,9 @@
               <button class="admin-module admin-module-button panel" type="button" id="openAdminRoulettes">
                 <span class="admin-module-icon">◉</span><span class="admin-module-copy"><strong>Ruletas y recompensas</strong><small>Editar Normal, Legendaria y Fiesta, añadir cartas y ajustar probabilidades.</small></span><span class="admin-module-state">ABRIR EDITOR ↗</span>
               </button>
-              <article class="admin-module panel"><span class="admin-module-icon">Ⅱ</span><div><h3>Progresión del evento</h3><p>Configurar tramos, límites de cartas, giros y reglas globales.</p></div><span class="admin-module-state">EN PREPARACIÓN</span></article>
+              <button class="admin-module admin-module-button panel" type="button" id="openAdminProgression">
+                <span class="admin-module-icon">Ⅱ</span><span class="admin-module-copy"><strong>Progresión del evento</strong><small>Configurar el límite de la baraja, las cartas de tramo y los giros que recibe cada entrenador.</small></span><span class="admin-module-state">ABRIR CONFIGURACIÓN ↗</span>
+              </button>
               <button class="admin-module admin-module-button panel" type="button" id="openAdminPlatformStatus">
                 <span class="admin-module-icon">◎</span><span class="admin-module-copy"><strong>Estado de la plataforma</strong><small>Conexión real, base de datos, cuentas, espacio ocupado y archivos almacenados.</small></span><span class="admin-module-state">ABRIR MONITOR ↗</span>
               </button>
@@ -688,6 +690,61 @@
                 </div>
               </form>
             </div>
+          </section>
+
+          <section class="admin-progression-workspace" id="adminProgressionWorkspace" hidden>
+            <div class="admin-catalog-heading admin-progression-heading">
+              <div>
+                <button class="inline-link" type="button" id="adminProgressionBack">← TODAS LAS HERRAMIENTAS</button>
+                <div class="eyebrow">ADMINISTRACIÓN / REGLAS DEL EVENTO</div>
+                <h2>PROGRESIÓN <em>TYPELINK</em></h2>
+                <p>Define las recompensas y los límites generales que se aplicarán cuando cada entrenador avance de tramo.</p>
+              </div>
+              <button class="secondary-button" type="button" id="adminProgressionRefresh">↻ ACTUALIZAR</button>
+            </div>
+            <div class="admin-progression-summary panel">
+              <div>
+                <span class="eyebrow">REGLAS ACTIVAS</span>
+                <h3>Configuración general del evento</h3>
+                <p>Los tramos son individuales: cada entrenador conserva su propio progreso y sus giros pendientes.</p>
+              </div>
+              <span class="admin-platform-state is-online" id="adminProgressionStatus">CONFIGURACIÓN CARGADA</span>
+            </div>
+            <div class="admin-progression-current-grid">
+              <article class="panel"><span class="eyebrow">LÍMITE DE BARAJA NORMAL</span><strong id="adminProgressionCurrentLimit">5</strong><small>Cartas normales por entrenador, antes de efectos.</small></article>
+              <article class="panel"><span class="eyebrow">CARTAS POR AVANCE</span><strong id="adminProgressionCurrentCards">2</strong><small>Cartas de tramo entregadas en cada avance.</small></article>
+              <article class="panel"><span class="eyebrow">GIROS POR AVANCE</span><strong id="adminProgressionCurrentSpins">3</strong><small>Giros normales nuevos por entrenador.</small></article>
+            </div>
+            <section class="admin-progression-editor panel">
+              <div class="admin-platform-panel-heading">
+                <div><span class="eyebrow">EDITOR DE REGLAS</span><h3>Modificar parámetros</h3></div>
+                <span class="admin-module-count">CAMBIOS PARA PRÓXIMOS AVANCES</span>
+              </div>
+              <div class="admin-progression-form-grid">
+                <label class="admin-progression-field">LÍMITE DE CARTAS NORMALES
+                  <input id="adminProgressionNormalLimit" type="number" min="1" max="20" step="1" value="5" required>
+                  <small>Entre 1 y 20. Los efectos de cartas pueden modificar temporalmente el límite efectivo de cada jugador.</small>
+                </label>
+                <label class="admin-progression-field">CARTAS DE TRAMO POR AVANCE
+                  <input id="adminProgressionCardsPerTramo" type="number" min="1" max="10" step="1" value="2" required>
+                  <small>Entre 1 y 10. Debe haber esa cantidad de cartas de tramo activas en el catálogo.</small>
+                </label>
+                <label class="admin-progression-field">GIROS NORMALES POR AVANCE
+                  <input id="adminProgressionSpinsPerTramo" type="number" min="1" max="20" step="1" value="3" required>
+                  <small>Entre 1 y 20. El jugador deberá tener suficientes espacios libres en su baraja.</small>
+                </label>
+              </div>
+              <div class="admin-progression-catalog">
+                <div><span class="eyebrow">CATÁLOGO DE CARTAS DE TRAMO</span><strong id="adminProgressionActiveCardsCount">2 CARTAS ACTIVAS</strong></div>
+                <div id="adminProgressionActiveCardsList" class="admin-progression-card-list"><span class="admin-progression-card-chip">Cargando catálogo...</span></div>
+                <small id="adminProgressionCatalogHint">Las cartas de tramo se administran desde el Catálogo de cartas.</small>
+              </div>
+              <div class="admin-progression-warning"><b>IMPORTANTE</b><span>Guardar las reglas no modifica los tramos actuales, las cartas ya entregadas ni los giros pendientes. Los nuevos valores se aplicarán al siguiente avance de cada entrenador.</span></div>
+              <div class="admin-progression-save-row">
+                <span id="adminProgressionSaveStatus" role="status">Los cambios todavía no se han guardado.</span>
+                <button class="primary-button" type="button" id="adminProgressionSave">GUARDAR REGLAS ↗</button>
+              </div>
+            </section>
           </section>
           <section class="admin-platform-workspace" id="adminPlatformWorkspace" hidden>
             <div class="admin-catalog-heading admin-platform-heading">
