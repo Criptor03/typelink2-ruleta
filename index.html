@@ -264,7 +264,9 @@
                 <span class="admin-module-icon">◉</span><span class="admin-module-copy"><strong>Ruletas y recompensas</strong><small>Editar Normal, Legendaria y Fiesta, añadir cartas y ajustar probabilidades.</small></span><span class="admin-module-state">ABRIR EDITOR ↗</span>
               </button>
               <article class="admin-module panel"><span class="admin-module-icon">Ⅱ</span><div><h3>Progresión del evento</h3><p>Configurar tramos, límites de cartas, giros y reglas globales.</p></div><span class="admin-module-state">EN PREPARACIÓN</span></article>
-              <article class="admin-module panel"><span class="admin-module-icon">◎</span><div><h3>Estado de la plataforma</h3><p>Supervisar la conexión de cuentas, actividad y módulos de TypeLink 2.</p></div><span class="admin-module-state">EN PREPARACIÓN</span></article>
+              <button class="admin-module admin-module-button panel" type="button" id="openAdminPlatformStatus">
+                <span class="admin-module-icon">◎</span><span class="admin-module-copy"><strong>Estado de la plataforma</strong><small>Conexión real, base de datos, cuentas, espacio ocupado y archivos almacenados.</small></span><span class="admin-module-state">ABRIR MONITOR ↗</span>
+              </button>
             </div>
             <div class="admin-security-note"><b>PROTECCIÓN DEL PANEL</b><span>El menú y esta pantalla solo se habilitan para cuentas registradas en la lista privada de administradores. Las acciones de gestión también se validan en el servidor.</span></div>
           </div>
@@ -687,6 +689,49 @@
               </form>
             </div>
           </section>
+          <section class="admin-platform-workspace" id="adminPlatformWorkspace" hidden>
+            <div class="admin-catalog-heading admin-platform-heading">
+              <div>
+                <button class="inline-link" type="button" id="adminPlatformBack">← TODAS LAS HERRAMIENTAS</button>
+                <div class="eyebrow">ADMINISTRACIÓN / MONITORIZACIÓN</div>
+                <h2>ESTADO DE <em>LA PLATAFORMA</em></h2>
+                <p>Datos reales consultados en Supabase. Este panel es de solo lectura y está reservado al administrador.</p>
+              </div>
+              <button class="secondary-button" type="button" id="adminPlatformRefresh">↻ ACTUALIZAR</button>
+            </div>
+            <div class="admin-platform-overall panel">
+              <div><span class="eyebrow">ESTADO GENERAL</span><strong id="adminPlatformOverallStatus">CONSULTANDO SERVICIOS</strong><small id="adminPlatformLastCheck">Esperando la primera lectura...</small></div>
+              <span class="admin-platform-state is-pending" id="adminPlatformOverallPill">CARGANDO</span>
+            </div>
+            <div class="admin-platform-health-grid">
+              <article class="admin-platform-health-card panel"><div><span class="eyebrow">API DE SUPABASE</span><span class="admin-platform-state is-pending" id="adminPlatformApiState">PENDIENTE</span></div><strong>Conexión administrativa</strong><small>Respuesta de la consulta protegida.</small></article>
+              <article class="admin-platform-health-card panel"><div><span class="eyebrow">POSTGRESQL</span><span class="admin-platform-state is-pending" id="adminPlatformDatabaseState">PENDIENTE</span></div><strong>Base de datos</strong><small>Lectura del tamaño y las tablas públicas.</small></article>
+              <article class="admin-platform-health-card panel"><div><span class="eyebrow">STORAGE</span><span class="admin-platform-state is-pending" id="adminPlatformStorageState">PENDIENTE</span></div><strong>Archivos y buckets</strong><small>Lectura de metadatos de almacenamiento.</small></article>
+              <article class="admin-platform-health-card panel"><div><span class="eyebrow">SUPABASE AUTH</span><span class="admin-platform-state is-pending" id="adminPlatformAuthState">PENDIENTE</span></div><strong>Cuentas y perfiles</strong><small>Recuento de cuentas registradas.</small></article>
+            </div>
+            <div class="admin-platform-resource-grid">
+              <article class="admin-platform-resource panel"><span class="eyebrow">TAMAÑO DE BASE DE DATOS</span><strong id="adminPlatformDbSize">—</strong><small id="adminPlatformDbMeta">Esperando datos...</small></article>
+              <article class="admin-platform-resource panel"><span class="eyebrow">ESPACIO EN STORAGE</span><strong id="adminPlatformStorageSize">—</strong><small id="adminPlatformStorageMeta">Esperando datos...</small></article>
+              <article class="admin-platform-resource panel"><span class="eyebrow">CUENTAS REGISTRADAS</span><strong id="adminPlatformUsers">—</strong><small id="adminPlatformProfiles">Perfiles: —</small></article>
+              <article class="admin-platform-resource panel"><span class="eyebrow">ACTIVIDAD RECIENTE</span><strong id="adminPlatformActivityCount">—</strong><small id="adminPlatformActivityMeta">Esperando datos...</small></article>
+            </div>
+            <div class="admin-platform-data-grid">
+              <section class="admin-platform-data-panel panel">
+                <div class="admin-platform-panel-heading"><div><span class="eyebrow">ALMACENAMIENTO</span><h3>Buckets registrados</h3></div><span class="admin-module-count" id="adminPlatformBucketCount">0 BUCKETS</span></div>
+                <div class="admin-platform-buckets" id="adminPlatformBuckets"><div class="admin-catalog-loading">Consultando Storage...</div></div>
+              </section>
+              <section class="admin-platform-data-panel panel">
+                <div class="admin-platform-panel-heading"><div><span class="eyebrow">ARCHIVOS</span><h3>Últimos archivos subidos</h3></div><span class="admin-module-count">MÁX. 10 REGISTROS</span></div>
+                <div class="admin-platform-files" id="adminPlatformFiles"><div class="admin-catalog-loading">Consultando archivos...</div></div>
+              </section>
+            </div>
+            <section class="admin-platform-modules-panel panel">
+              <div class="admin-platform-panel-heading"><div><span class="eyebrow">TYPELINK 2</span><h3>Estado de los módulos</h3></div><span class="admin-module-count">LECTURA DE CONFIGURACIÓN</span></div>
+              <div class="admin-platform-modules" id="adminPlatformModules"><div class="admin-catalog-loading">Comprobando módulos...</div></div>
+            </section>
+            <p class="admin-platform-footnote"><b>NOTA SOBRE LAS MEDICIONES:</b> el tamaño de PostgreSQL es el tamaño lógico de la base de datos y no equivale al disco total asignado por Supabase (que también contempla WAL y archivos del sistema). El espacio de Storage suma el tamaño de los objetos activos según sus metadatos. Este monitor no necesita ni expone claves secretas.</p>
+          </section>
+
         </section>
 
         <footer class="app-footer"><span>POKÉMON TYPELINK 2</span><span>TESelia · UNOVA REGION</span><span>BETA 0.3</span></footer>
