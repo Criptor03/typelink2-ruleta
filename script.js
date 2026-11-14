@@ -255,7 +255,7 @@ function renderDeck(){
   ["capacityFill","capacityFillFull","homeCapacityFill"].forEach(id=>{
     const el=document.getElementById(id);if(el)el.style.width=width;
   });
-  setText("homeDeckHint",normalCount?("Tienes "+normalCount+" de "+normalCardLimit+" cartas normales disponibles."):"Sin cartas todavía.");
+  setText("homeDeckHint",normalCount?(normalCount+"/"+normalCardLimit+" cartas normales."):"Sin cartas todavía.");
   setText("profileNormalCount",normalCount+"/"+normalCardLimit);
   setText("profileRouteCount",route.length);
 
@@ -1599,7 +1599,7 @@ function renderAdminTrainerDetail(data){
   const note="Límite de baraja normal: "+Number(stats.normal_available||0)+" / "+Number(data.normal_card_limit||5)+
     " · Cartas de tramo: "+Number(stats.tramo_available||0)+
     " · Fiesta: "+Number(stats.fiesta_available||0)+
-    ". El vaciado de inventario no cambia estos avances ni los giros.";
+    "";
   setText("adminTrainerProgressNote",note);
 
   const inventory=document.getElementById("adminTrainerInventory");
@@ -2198,9 +2198,9 @@ function updateAdminEvolutionMethodNote(){
   const trigger=document.getElementById("adminEvolutionTrigger")?.value;
   const sameTramo=document.getElementById("adminEvolutionSameTramo")?.checked;
   let message=trigger==="tramo_advance"
-    ?"La carta se transformará automáticamente cuando su entrenador avance al siguiente tramo. La copia anterior quedará registrada como usada y recibirá la carta resultado con sus usos configurados."
-    :"La evolución manual aparecerá como botón en la baraja del entrenador. El jugador decidirá cuándo utilizarla.";
-  if(sameTramo)message+=" Las copias antiguas que no tengan registrado el tramo en que se obtuvieron no cumplirán esta condición.";
+    ?"Evoluciona automáticamente al avanzar de tramo."
+    :"El entrenador elige cuándo evolucionar desde su baraja.";
+  if(sameTramo)message+=" Solo copias del mismo tramo.";
   setText("adminEvolutionMethodNote",message);
 }
 function createAdminEffectRow(effect={}){
@@ -2549,10 +2549,10 @@ function openAdminCardEditor(card){
   rouletteEligibleInput.checked=card?card.roulette_eligible!==false&&!hasActiveEvolution:true;
   rouletteEligibleInput.disabled=hasActiveEvolution;
   rouletteHelp.textContent=hasActiveEvolution
-    ?"Esta carta tiene una evolución activa, por eso queda excluida automáticamente de todas las ruletas."
-    :"Activa esta opción para permitir que la carta se añada a una ruleta. La inclusión concreta se configura en Administración → Ruletas.";
+    ?"Excluida: tiene una evolución activa."
+    :"Activa esta opción para incluirla en una ruleta.";
   document.getElementById("adminCardImageFile").value="";
-  document.getElementById("adminCardImageHelp").textContent=adminEditingImagePath?"Ilustración actual vinculada. Puedes reemplazarla con otro PNG.":"PNG hasta 5 MB. La imagen se subirá al almacenamiento de TypeLink al guardar.";
+  document.getElementById("adminCardImageHelp").textContent=adminEditingImagePath?"PNG actual. Puedes reemplazarlo.":"PNG · máximo 5 MB.";
   document.getElementById("adminCardFormStatus").textContent="Completa los datos de la carta.";
   document.getElementById("adminCardFormStatus").classList.remove("is-error");
   showAdminCardImage(adminEditingImagePath);
@@ -2708,10 +2708,10 @@ function updateSpecialRouletteAccessUI(){
         :("CANJEA "+item.ticket.toUpperCase());
     }
     setText(item.hintId,!currentAuthUser
-      ?"Inicia sesión con Discord para ver tus accesos."
+      ?"Inicia sesión para ver tus accesos."
       :count>0
-        ?"Tienes "+count+" "+(count===1?"giro disponible":"giros disponibles")+". El acceso se consume al recibir un premio."
-        :"Canjea "+item.ticket+" en tu baraja para conseguir 1 giro.");
+        ?count+" "+(count===1?"giro disponible.":"giros disponibles.")
+        :"Canjea "+item.ticket+" para obtener 1 giro.");
   });
 }
 function mapRouletteCardRecord(card){
@@ -2765,7 +2765,7 @@ function shuffleWheelCards(){
   shuffleRouletteItems(CARDS);
   rotation=0;
   drawWheel();
-  notify("¡Ruleta mezclada! Las probabilidades de cada carta siguen siendo las mismas.");
+  notify("Ruleta mezclada. Probabilidades sin cambios.");
 }
 async function getPublicRouletteCards(poolSlug){
   if(!authClient||!currentAuthUser)return [];
@@ -2908,7 +2908,7 @@ async function spinSpecialRoulette(poolSlug){
   try{
     const prizeCards=await getPublicRouletteCards(poolSlug);
     if(!prizeCards.length){
-      throw new Error(poolName+" todavía no está abierta o no tiene premios activos. Tu acceso se conserva.");
+      throw new Error(poolName+" cerrada o sin premios. Tu acceso se conserva.");
     }
     setWheelCards(prizeCards,poolSlug);
     const {data,error}=await authClient.rpc("draw_special_roulette_card",{p_pool_slug:poolSlug});
