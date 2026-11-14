@@ -724,7 +724,11 @@ function renderActivityFeed(entries,profiles){
     let symbol="✦",message="";
     const cardName=details.card_name||details.name||"una carta";
     if(entry.activity_type==="tramo_award"){
-      symbol="Ⅱ";message="ha avanzado al tramo "+(details.tramo_number||"?")+" y ha recibido 2 cartas de tramo";
+      symbol="Ⅱ";
+      const tramoCardCount=Array.isArray(details.cards)?details.cards.length:Number(details.cards_granted??2);
+      const grantedSpins=Number(details.normal_spins_granted||0);
+      message="ha avanzado al tramo "+(details.tramo_number||"?")+" y ha recibido "+tramoCardCount+" "+(tramoCardCount===1?"carta":"cartas")+" de tramo";
+      if(grantedSpins>0)message+=" y "+grantedSpins+" "+(grantedSpins===1?"giro normal":"giros normales");
     }else if(entry.activity_type==="roulette_spin"){
       symbol="◉";
       const specialName=details.roulette_pool==="legendary"?"la Ruleta Legendaria":
@@ -848,7 +852,7 @@ async function loadPlayers(){
     const since=document.createElement("small");since.textContent="Entrenador desde "+formatDate(profile.created_at);
     info.append(name,since);
     const stats=document.createElement("div");stats.className="player-directory-stats";
-    const normal=document.createElement("span");normal.textContent=(counts.normal[profile.id]||0)+" / 5 CARTAS";
+    const normal=document.createElement("span");normal.textContent=(counts.normal[profile.id]||0)+" CARTAS NORMALES";
     const tramo=document.createElement("span");tramo.textContent=(counts.tramo[profile.id]||0)+" TRAMO";
     stats.append(normal,tramo);
     const button=document.createElement("button");button.className="player-view-button";button.type="button";button.textContent="VER PERFIL ↗";
