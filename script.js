@@ -861,7 +861,6 @@ async function loadActivityFeed(){
   }
   const visibleEntries=(data||[]).filter(entry=>{
     const details=entry.details&&typeof entry.details==="object"?entry.details:{};
-    if(Number(details.unlock_count||0)>0)return false;
     const hasPlayerTarget=Boolean(entry.target_id);
     const affectsAllPlayers=details.target_scope==="all_players";
     const personalConsumption=details.disposition==="consume"&&details.target_scope!=="event";
