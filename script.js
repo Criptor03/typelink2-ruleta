@@ -1277,7 +1277,7 @@ async function openCardAction(instanceId,mode){
     setText("cardActionDescription",transfer
       ?"La carta pasará al inventario del entrenador."
       :noAutomaticEffect
-        ?"No aplica efectos automáticos. Se registra en el muro, notifica al objetivo y consume una carga."
+        ?"Sin efecto automático. Se registra, avisa al objetivo y consume una carga."
         :"Activa su efecto y consume una carga por uso.");
     confirmButton.textContent=transfer
       ?"CONFIRMAR TRANSFERENCIA"
@@ -2371,7 +2371,7 @@ async function saveAdminMechanics(){
   }:{enabled:false};
   const targetScope=document.getElementById("adminMechanicsTargetScope").value;
   if(effects.some(effect=>effect.effect_key==="unlock_roulette")&&targetScope!=="self"){
-    notify("Desbloquear una ruleta solo puede afectar a quien utiliza la carta. Selecciona «A quien la utiliza».");
+    notify("El desbloqueo debe afectar a quien utiliza la carta.");
     return;
   }
   const button=document.getElementById("adminSaveMechanics");
@@ -2553,7 +2553,7 @@ function openAdminCardEditor(card){
     :"Activa esta opción para incluirla en una ruleta.";
   document.getElementById("adminCardImageFile").value="";
   document.getElementById("adminCardImageHelp").textContent=adminEditingImagePath?"PNG actual. Puedes reemplazarlo.":"PNG · máximo 5 MB.";
-  document.getElementById("adminCardFormStatus").textContent="Completa los datos de la carta.";
+  document.getElementById("adminCardFormStatus").textContent="Revisa los datos.";
   document.getElementById("adminCardFormStatus").classList.remove("is-error");
   showAdminCardImage(adminEditingImagePath);
   document.getElementById("adminCatalogListView").hidden=true;
@@ -3169,7 +3169,7 @@ async function loadAdminPlatformStatus(){
 
 function setPage(page){
   if(page==="admin"&&(!currentAuthUser||!isAdmin)){
-    notify("Este apartado es privado y solo está disponible para administradores autorizados.");
+    notify("Solo disponible para administradores autorizados.");
     page="home";
   }
   document.querySelectorAll(".page-view").forEach(view=>{view.hidden=view.id!=="page-"+page;});
