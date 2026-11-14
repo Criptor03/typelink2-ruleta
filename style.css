@@ -2541,3 +2541,57 @@ button:disabled{cursor:not-allowed}
   .admin-trainer-type-icon{width:21px;height:21px}
   .admin-trainer-type-icon img{width:15px;height:15px}
 }
+
+/* Public participant profile — Generation V type status */
+.public-profile-types-section{padding-top:16px}
+.public-profile-types-section .panel-topline{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.public-profile-types-section .panel-topline b{font-size:8px;letter-spacing:1px}
+.public-profile-types-section .panel-topline span{font-size:8px;font-weight:900;color:#617987}
+.public-player-types-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:7px;
+  margin-top:11px;
+}
+.public-player-type{
+  min-width:0;
+  min-height:44px;
+  display:grid;
+  grid-template-columns:26px minmax(0,1fr);
+  align-items:center;
+  gap:7px;
+  padding:6px 7px;
+  border:1px solid #d7dfe4;
+  border-radius:5px;
+  background:#f4f7f8;
+}
+.public-player-type-icon{
+  width:26px;height:26px;flex:none;
+  display:grid;place-items:center;
+  border:1px solid color-mix(in srgb,var(--type-color) 68%,#d8e4ec);
+  border-radius:6px;
+  background:color-mix(in srgb,var(--type-color) 78%,#fff);
+  box-shadow:0 2px 5px #17212b16,inset 0 1px #ffffff55;
+}
+.public-player-type-icon img{display:block;width:18px;height:18px;object-fit:contain}
+.public-player-type-icon.is-missing{color:#18242c;font:900 14px 'Barlow Condensed'}
+.public-player-type-copy{min-width:0;display:flex;flex-direction:column;gap:2px}
+.public-player-type-copy strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#263744;font-size:9px;font-weight:900}
+.public-player-type-copy small{font-size:6px;font-weight:900;letter-spacing:.5px;color:#39724f}
+.public-player-type.is-disabled{background:#f0f2f3;border-color:#dce1e4}
+.public-player-type.is-disabled .public-player-type-icon{filter:grayscale(1);opacity:.55;background:#e2e6e8;border-color:#cbd2d6}
+.public-player-type.is-disabled .public-player-type-copy strong{color:#76838b}
+.public-player-type.is-disabled .public-player-type-copy small{color:#89939a}
+.public-player-types-legend{display:flex;align-items:center;gap:14px;margin-top:10px;color:#6f7d86;font-size:7px;font-weight:800}
+.public-player-types-legend span{display:inline-flex;align-items:center;gap:5px}
+.public-player-types-legend i{width:8px;height:8px;display:inline-block;border-radius:50%}
+.public-player-types-legend i.is-available{background:#55966a}
+.public-player-types-legend i.is-blocked{background:#aeb8bf}
+@media(max-width:560px){
+  .public-player-types-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .public-player-type{grid-template-columns:22px minmax(0,1fr);gap:5px;padding:6px}
+  .public-player-type-icon{width:22px;height:22px}
+  .public-player-type-icon img{width:15px;height:15px}
+  .public-player-type-copy strong{font-size:8px}
+  .public-player-type-copy small{font-size:5px}
+}
