@@ -3391,6 +3391,25 @@ document.getElementById("cancelCardAction").addEventListener("click",closeCardAc
 document.getElementById("confirmCardAction").addEventListener("click",confirmCardAction);
 document.getElementById("cardActionModal").addEventListener("click",event=>{if(event.target.id==="cardActionModal")closeCardAction();});
 document.getElementById("publicProfileModal").addEventListener("click",event=>{if(event.target.id==="publicProfileModal")closePublicPlayer();});
+document.getElementById("closeActivityCardModal").addEventListener("click",closeActivityCardPreview);
+document.getElementById("activityCardModal").addEventListener("click",event=>{
+  if(event.target.id==="activityCardModal")closeActivityCardPreview();
+});
+document.getElementById("activityFeed").addEventListener("click",event=>{
+  const preview=event.target.closest?.(".activity-card-preview[data-image-path]");
+  if(!preview)return;
+  openActivityCardPreview(
+    preview.dataset.imagePath,
+    preview.dataset.cardName,
+    preview.dataset.cardRarity,
+    preview
+  );
+});
+document.addEventListener("keydown",event=>{
+  if(event.key==="Escape"&&!document.getElementById("activityCardModal").hidden){
+    closeActivityCardPreview();
+  }
+});
 document.getElementById("profileDisplayName").addEventListener("keydown",event=>{if(event.key==="Enter")saveProfile();});
 document.getElementById("resetButton").addEventListener("click",()=>{
   if(cloudMode){notify("Tu baraja real está protegida y no se reinicia desde la demo.");return;}
