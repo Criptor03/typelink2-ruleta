@@ -1144,18 +1144,24 @@ async function openCardAction(instanceId,mode){
     confirmButton.textContent="CONFIRMAR EVOLUCIÓN";
   }else{
     const transfer=mode==="transfer";
-    setText("cardActionEyebrow",transfer?"TRANSFERENCIA DE CARTA":"USO DE CARTA");
-    setText("cardActionTitle",transfer?"Transferir carta":"Usar carta");
-    setText("cardActionArrow",transfer?"⇢":"✦");
     const noAutomaticEffect=mode==="use"
       &&card.allow_no_effect_play===true
       &&!cardEffectsById[card.card_id]?.length;
+    setText("cardActionEyebrow",transfer
+      ?"TRANSFERENCIA DE CARTA"
+      :noAutomaticEffect?"CARTA SIN EFECTO AUTOMÁTICO":"USO DE CARTA");
+    setText("cardActionTitle",transfer
+      ?"Transferir carta"
+      :noAutomaticEffect?"Lanzar carta":"Usar carta");
+    setText("cardActionArrow",transfer?"⇢":noAutomaticEffect?"↗":"✦");
     setText("cardActionDescription",transfer
       ?"La carta pasará al inventario del entrenador seleccionado sin activar su efecto."
       :noAutomaticEffect
         ?"Esta carta no aplica efectos automáticos en la plataforma. Al lanzarla, el movimiento quedará registrado en el muro y, si tiene objetivo, se notificará al entrenador seleccionado. Cada uso consume una carga."
         :"La carta activará su efecto configurado. Cada uso resta una carga; al llegar a cero, la carta se agotará.");
-    confirmButton.textContent=transfer?"CONFIRMAR TRANSFERENCIA":"USAR CARTA";
+    confirmButton.textContent=transfer
+      ?"CONFIRMAR TRANSFERENCIA"
+      :noAutomaticEffect?"LANZAR CARTA":"USAR CARTA";
 
     if(card.target_scope==="opponent"||card.target_scope==="either"){
       targetWrap.hidden=false;
