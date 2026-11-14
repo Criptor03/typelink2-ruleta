@@ -1804,3 +1804,389 @@ button:disabled{cursor:not-allowed}
   .roulette-heading-actions{gap:7px;flex-direction:column;align-items:flex-end}
   .roulette-shuffle-button{min-height:31px;padding:7px 9px;font-size:7px}
 }
+
+
+/* TypeLink 2 — administrator contrast pass */
+#page-admin{
+  color:#e7eef3;
+}
+#page-admin .admin-owner-card,
+#page-admin .admin-workspace,
+#page-admin .admin-progression-workspace,
+#page-admin .admin-platform-workspace,
+#page-admin .admin-catalog-workspace,
+#page-admin .admin-trainers-workspace,
+#page-admin .admin-roulette-workspace,
+#page-admin .admin-mechanics-workspace{
+  background:linear-gradient(145deg,#151f29,#101820)!important;
+  border-color:#354753!important;
+  color:#e7eef3!important;
+}
+#page-admin .admin-owner-card,
+#page-admin .admin-owner-status,
+#page-admin .admin-catalog-stats>.panel,
+#page-admin .admin-trainer-stats>.panel,
+#page-admin .admin-mechanics-stats>.panel,
+#page-admin .admin-trainer-detail-stats>.panel,
+#page-admin .admin-platform-health-card,
+#page-admin .admin-platform-resource,
+#page-admin .admin-progression-current-grid>article{
+  background:linear-gradient(145deg,#1a2833,#15212b)!important;
+  border:1px solid #354956!important;
+  color:#e4edf2!important;
+}
+#page-admin :is(h1,h2,h3,h4),
+#page-admin .admin-owner-card strong,
+#page-admin .admin-owner-status strong,
+#page-admin .admin-module-copy strong,
+#page-admin .admin-module h3,
+#page-admin .admin-catalog-heading h2,
+#page-admin .admin-card-form-heading h3,
+#page-admin .admin-card-item-copy strong,
+#page-admin .admin-trainer-row-identity strong,
+#page-admin .admin-trainer-identity h3,
+#page-admin .admin-trainer-detail-stats strong,
+#page-admin .admin-trainer-section-heading h3,
+#page-admin .admin-trainer-card-body strong,
+#page-admin .admin-trainer-effect-copy strong,
+#page-admin .admin-trainer-unlock-copy strong,
+#page-admin .admin-trainer-activity-copy strong,
+#page-admin .admin-roulette-pool-card>strong,
+#page-admin .admin-roulette-editor-heading h3,
+#page-admin .admin-roulette-toolbar strong,
+#page-admin .admin-roulette-card-info strong,
+#page-admin .admin-mechanics-list-copy strong,
+#page-admin .admin-mechanics-card-copy h3,
+#page-admin .admin-platform-overall strong,
+#page-admin .admin-platform-health-card>strong,
+#page-admin .admin-platform-resource>strong,
+#page-admin .admin-platform-panel-heading h3,
+#page-admin .admin-platform-bucket-copy strong,
+#page-admin .admin-platform-file-copy strong,
+#page-admin .admin-platform-bucket-stats strong,
+#page-admin .admin-platform-module-copy strong,
+#page-admin .admin-progression-summary h3,
+#page-admin .admin-progression-current-grid strong{
+  color:#eef3f6!important;
+}
+#page-admin .admin-catalog-heading p,
+#page-admin .admin-module-copy small,
+#page-admin .admin-module p,
+#page-admin .admin-module-count,
+#page-admin .admin-owner-card small,
+#page-admin .admin-owner-status small,
+#page-admin .admin-card-item-copy small,
+#page-admin .admin-card-item-copy code,
+#page-admin .admin-catalog-footnote,
+#page-admin .admin-field small,
+#page-admin .admin-image-controls>small,
+#page-admin .admin-card-roulette-help,
+#page-admin .admin-card-form-note,
+#page-admin .admin-card-form-actions>span,
+#page-admin .admin-trainer-row-identity small,
+#page-admin .admin-trainer-row-stats span,
+#page-admin .admin-trainer-identity p,
+#page-admin .admin-trainer-identity small,
+#page-admin .admin-trainer-progress-note,
+#page-admin .admin-trainer-card-body small,
+#page-admin .admin-trainer-card-body span,
+#page-admin .admin-trainer-type small,
+#page-admin .admin-trainer-effect-copy small,
+#page-admin .admin-trainer-effect-copy span,
+#page-admin .admin-trainer-unlock-copy small,
+#page-admin .admin-trainer-unlock-copy span,
+#page-admin .admin-trainer-activity-copy small,
+#page-admin .admin-trainer-activity-copy span,
+#page-admin .admin-trainer-tool-note,
+#page-admin .admin-roulette-pool-card>small,
+#page-admin .admin-roulette-info-note,
+#page-admin .admin-roulette-editor-heading p,
+#page-admin .admin-roulette-toolbar>span,
+#page-admin .admin-roulette-card-info small,
+#page-admin .admin-roulette-save-row>span,
+#page-admin .admin-mechanics-list-copy small,
+#page-admin .admin-mechanics-list-copy span,
+#page-admin .admin-mechanics-card-copy code,
+#page-admin .admin-mechanics-card-copy small,
+#page-admin .admin-mechanics-help,
+#page-admin .admin-mechanics-inline-note,
+#page-admin .admin-mechanics-help-panel,
+#page-admin .admin-evolution-method-note,
+#page-admin .admin-mechanics-save-row>span,
+#page-admin .admin-platform-overall small,
+#page-admin .admin-platform-health-card>small,
+#page-admin .admin-platform-resource>small,
+#page-admin .admin-platform-bucket-copy small,
+#page-admin .admin-platform-file-copy small,
+#page-admin .admin-platform-bucket-stats small,
+#page-admin .admin-platform-file-size,
+#page-admin .admin-platform-module-copy>span,
+#page-admin .admin-platform-module-copy small,
+#page-admin .admin-platform-footnote,
+#page-admin .admin-progression-summary p,
+#page-admin .admin-progression-current-grid small,
+#page-admin .admin-progression-field small,
+#page-admin .admin-progression-catalog>small,
+#page-admin .admin-progression-save-row>span{
+  color:#aab9c4!important;
+}
+#page-admin .admin-access-copy h2,
+#page-admin .admin-access-copy p,
+#page-admin .admin-access-badge,
+#page-admin .admin-security-note,
+#page-admin .admin-security-note b{
+  color:#e4edf2!important;
+}
+#page-admin .admin-catalog-stats strong,
+#page-admin .admin-trainer-stats strong,
+#page-admin .admin-mechanics-stats strong,
+#page-admin .admin-trainer-detail-stats strong{
+  color:#f0f4f7!important;
+}
+#page-admin .admin-field,
+#page-admin .admin-card-flags label,
+#page-admin .admin-image-controls label,
+#page-admin .admin-roulette-active-toggle,
+#page-admin .admin-roulette-include,
+#page-admin .admin-roulette-weight,
+#page-admin .admin-roulette-member-active,
+#page-admin .admin-mechanics-evolution-toggle,
+#page-admin .admin-mechanics-check-row,
+#page-admin .admin-progression-field,
+#page-admin .admin-progression-catalog>div:first-child strong{
+  color:#c4d0d8!important;
+}
+#page-admin .admin-catalog-toolbar input,
+#page-admin .admin-catalog-toolbar select,
+#page-admin .admin-field input,
+#page-admin .admin-field select,
+#page-admin .admin-field textarea,
+#page-admin .admin-workspace input,
+#page-admin .admin-workspace select,
+#page-admin .admin-workspace textarea,
+#page-admin .admin-progression-workspace input,
+#page-admin .admin-progression-workspace select,
+#page-admin .admin-progression-workspace textarea,
+#page-admin .admin-platform-workspace input,
+#page-admin .admin-roulette-weight input{
+  background:#0d161f!important;
+  border-color:#465b69!important;
+  color:#eef3f6!important;
+  caret-color:#eef3f6;
+}
+#page-admin .admin-catalog-toolbar input::placeholder,
+#page-admin .admin-field input::placeholder,
+#page-admin .admin-field textarea::placeholder,
+#page-admin .admin-workspace input::placeholder,
+#page-admin .admin-workspace textarea::placeholder,
+#page-admin .admin-progression-workspace input::placeholder,
+#page-admin .admin-progression-workspace textarea::placeholder{
+  color:#8295a2!important;
+  opacity:1;
+}
+#page-admin .admin-field input[readonly]{
+  background:#1a2731!important;
+  color:#b7c5ce!important;
+}
+#page-admin .admin-image-preview-wrap,
+#page-admin .admin-card-item-image,
+#page-admin .admin-trainer-card-image,
+#page-admin .admin-trainer-effect-image,
+#page-admin .admin-mechanics-list-art,
+#page-admin .admin-mechanics-card-art,
+#page-admin .admin-roulette-card-image{
+  background:#1b2a35!important;
+  color:#aabac5!important;
+  border-color:#405561!important;
+}
+#page-admin .admin-card-item-copy code,
+#page-admin .admin-mechanics-card-copy code{
+  color:#a8bbc8!important;
+  background:#1b2933;
+}
+#page-admin .admin-card-form-note,
+#page-admin .admin-trainer-progress-note,
+#page-admin .admin-roulette-info-note,
+#page-admin .admin-mechanics-help-panel,
+#page-admin .admin-evolution-method-note,
+#page-admin .admin-progression-catalog,
+#page-admin .admin-progression-warning,
+#page-admin .admin-progression-card-chip,
+#page-admin .admin-card-no-effect-help{
+  background:#1a2933!important;
+  border-color:#3b505d!important;
+  color:#b7c5ce!important;
+}
+#page-admin .admin-card-form-note b,
+#page-admin .admin-roulette-info-note b,
+#page-admin .admin-mechanics-help-panel>b,
+#page-admin .admin-mechanics-help-panel strong,
+#page-admin .admin-progression-warning b{
+  color:#e1eaf0!important;
+}
+#page-admin .admin-catalog-loading,
+#page-admin .admin-catalog-loading.is-error{
+  background:#17232d!important;
+  border-color:#3b4c58!important;
+  color:#b7c5ce!important;
+}
+#page-admin .admin-card-status.is-active,
+#page-admin .admin-card-roulette-status.is-included,
+#page-admin .admin-roulette-pool-status.is-active{
+  background:#1d342a!important;
+  border-color:#426b53!important;
+  color:#a9d5b5!important;
+}
+#page-admin .admin-card-status.is-inactive,
+#page-admin .admin-roulette-pool-status.is-inactive,
+#page-admin .admin-roulette-card-row[data-catalog-active="false"] .admin-roulette-catalog-state{
+  background:#30291e!important;
+  border-color:#766443!important;
+  color:#dec78f!important;
+}
+#page-admin .admin-card-roulette-status.is-excluded,
+#page-admin .admin-trainer-reset-note{
+  background:#332428!important;
+  border-color:#78464d!important;
+  color:#e3b0b3!important;
+}
+#page-admin .admin-card-roulette-status.is-pending,
+#page-admin .admin-roulette-probability{
+  color:#ddc38d!important;
+}
+#page-admin .admin-platform-state{
+  background:#1b2933!important;
+  border-color:#425560!important;
+  color:#c1cdd5!important;
+}
+#page-admin .admin-platform-state.is-online{
+  background:#1c3329!important;
+  border-color:#456b54!important;
+  color:#a9d7b6!important;
+}
+#page-admin .admin-platform-state.is-warning{
+  background:#30291e!important;
+  border-color:#766443!important;
+  color:#dfc68e!important;
+}
+#page-admin .admin-platform-state.is-offline{
+  background:#352226!important;
+  border-color:#78464c!important;
+  color:#e5a8ad!important;
+}
+#page-admin .admin-roulette-card-row,
+#page-admin .admin-trainer-card-item,
+#page-admin .admin-trainer-effect-item,
+#page-admin .admin-trainer-unlock-item,
+#page-admin .admin-trainer-activity-item,
+#page-admin .admin-mechanics-effect-row,
+#page-admin .admin-admin-mechanics-effect-row,
+#page-admin .admin-trainer-detail-heading,
+#page-admin .admin-roulette-pool-card,
+#page-admin .admin-catalog-card,
+#page-admin .admin-trainer-row,
+#page-admin .admin-mechanics-card,
+#page-admin .admin-platform-bucket,
+#page-admin .admin-platform-file,
+#page-admin .admin-progression-setting,
+#page-admin .admin-progress-card{
+  background:#17242e!important;
+  border-color:#3b4e5b!important;
+  color:#e3ebf0!important;
+}
+#page-admin .admin-trainer-type{
+  background:#1d3429!important;
+  border-color:#456a53!important;
+}
+#page-admin .admin-trainer-type.disabled{
+  background:#202c35!important;
+  border-color:#44545f!important;
+}
+#page-admin .admin-trainer-type strong,
+#page-admin .admin-trainer-type small{
+  color:#c5d1d8!important;
+}
+#page-admin .admin-card-edit,
+#page-admin .admin-trainer-card-remove{
+  background:#202e38!important;
+  border-color:#566b78!important;
+  color:#dce6ec!important;
+}
+#page-admin .admin-card-edit:hover{
+  background:#344b59!important;
+  color:#fff!important;
+}
+#page-admin .admin-danger-button,
+#page-admin .admin-trainer-card-remove{
+  color:#efb1b5!important;
+}
+#page-admin .admin-danger-button:hover,
+#page-admin .admin-trainer-card-remove:hover{
+  background:#71383f!important;
+  border-color:#b9666d!important;
+  color:#fff!important;
+}
+#page-admin .admin-platform-bucket,
+#page-admin .admin-platform-file,
+#page-admin .admin-platform-module{
+  border-top-color:#354752!important;
+  border-bottom-color:#354752!important;
+}
+#page-admin .admin-platform-footnote b,
+#page-admin .admin-platform-module-copy strong{
+  color:#e3ebf0!important;
+}
+#page-admin .admin-trainer-unlock-item>b{
+  background:#1d342a!important;
+  border-color:#456b53!important;
+  color:#a9d7b6!important;
+}
+#page-admin .admin-trainer-activity-item>i{
+  background:#263844!important;
+  color:#cfdae1!important;
+}
+#page-admin .admin-progression-card-chip.is-empty{
+  background:#30291e!important;
+  border-color:#766443!important;
+  color:#dec78f!important;
+}
+#page-admin .admin-image-controls,
+#page-admin .admin-image-controls>small{
+  color:#aab9c4!important;
+}
+#page-admin input[type="checkbox"],
+#page-admin input[type="radio"]{
+  accent-color:#a8c2d1;
+}
+#page-admin option{
+  background:#111b24;
+  color:#e7eef3;
+}
+#page-admin .admin-save-row,
+#page-admin .admin-catalog-toolbar,
+#page-admin .admin-roulette-toolbar,
+#page-admin .admin-progression-editor,
+#page-admin .admin-mechanics-section,
+#page-admin .admin-trainer-section{
+  color:#e4edf2;
+}
+#page-admin .admin-save-row,
+#page-admin .admin-roulette-save-row,
+#page-admin .admin-mechanics-save-row,
+#page-admin .admin-progression-save-row{
+  border-top-color:#394b57!important;
+}
+#page-admin .admin-card-form-actions>span.is-error,
+#page-admin .admin-roulette-save-row>span.is-error,
+#page-admin .admin-mechanics-save-row>span.is-error{
+  color:#f0a5aa!important;
+}
+#page-admin .inline-link{
+  color:#bed0db!important;
+}
+#page-admin .inline-link:hover{
+  color:#f08b91!important;
+}
+#page-admin :focus-visible{
+  outline-color:#a9c4d3;
+}
