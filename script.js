@@ -1459,6 +1459,7 @@ function setupRealtime(){
     .subscribe();
   activityChannel=authClient.channel("typelink-community-activity")
     .on("postgres_changes",{event:"INSERT",schema:"public",table:"card_activity"},()=>loadActivityFeed())
+    .on("postgres_changes",{event:"UPDATE",schema:"public",table:"card_activity"},()=>loadActivityFeed())
     .on("postgres_changes",{event:"*",schema:"public",table:"player_tramo_progress",filter:"owner_id=eq."+currentAuthUser.id},()=>{if(!spinning)loadCloudInventory();})
     .on("postgres_changes",{event:"*",schema:"public",table:"player_effects",filter:"owner_id=eq."+currentAuthUser.id},()=>loadProfileMechanics())
     .on("postgres_changes",{event:"*",schema:"public",table:"player_type_status",filter:"owner_id=eq."+currentAuthUser.id},()=>loadProfileMechanics())
