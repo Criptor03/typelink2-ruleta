@@ -1141,37 +1141,14 @@ async function refreshCardActionTargetProfile(profile){
   }
   setCardActionTargetProfile(profile);
   try{
-    const [playerEffectsResult,eventEffectsResult,progressResult,settingsResult]=await Promise.all([
-      authClient.from("player_effects")
-        .select("id,source_card_instance_id,effect_key,duration_type,expires_at,expires_after_tramo,remaining_uses,starts_at")
-        .eq("owner_id",profile.id).eq("status","active"),
-      authClient.from("event_effects")
-        .select("id,source_card_instance_id,effect_key,duration_type,expires_at,expires_after_tramo,remaining_uses,starts_at")
-        .eq("status","active"),
-      authClient.from("player_tramo_progress").select("current_tramo").eq("owner_id",profile.id).maybeSingle(),
-      authClient.from("event_settings").select("current_tramo").eq("singleton",true).maybeSingle()
-    ]);
-    if(request!==cardActionTargetPreviewRequest)return;
-    if(playerEffectsResult.error)throw playerEffectsResult.error;
-    if(eventEffectsResult.error)throw eventEffectsResult.error;
-    if(progressResult.error)throw progressResult.error;
-    if(settingsResult.error)throw settingsResult.error;
-    const now=Date.now();
-    const playerTramo=Number(progressResult.data?.current_tramo)||0;
-    const eventTramo=Number(settingsResult.data?.current_tramo)||0;
-    const isCurrentlyActive=(effect,tramo)=>(
-      (!effect.starts_at||new Date(effect.starts_at).getTime()<=now)
-      &&(!effect.expires_at||new Date(effect.expires_at).getTime()>now)
-      &&(effect.expires_after_tramo==null||Number(effect.expires_after_tramo)>=tramo)
-      &&(effect.duration_type!=="charges"||effect.remaining_uses==null||Number(effect.remaining_uses)>0)
-    );
-    const activePlayerEffects=(playerEffectsResult.data||[]).filter(effect=>isCurrentlyActive(effect,playerTramo));
-    const activeEventEffects=(eventEffectsResult.data||[]).filter(effect=>isCurrentlyActive(effect,eventTramo));
-    const affectedCards=new Set();
-    [...activePlayerEffects,...activeEventEffects].forEach(effect=>{
-      affectedCards.add(effect.source_card_instance_id||("effect:"+effect.id));
+    const {data,error}=await authClient.rpc("get_trainer_active_card_effect_count",{
+      p_trainer_id:profile.id
     });
-    setText("cardActionTargetEffectCount",affectedCards.size);
+    if(request!==cardActionTargetPreviewRequest)return;
+    if(error)throw error;
+    const count=Number(data);
+    if(!Number.isInteger(count)||count<0)throw new Error("El servidor devolvió un contador no válido.");
+    setText("cardActionTargetEffectCount",count);
     setText("cardActionTargetStatus","EFECTOS ACTIVOS EN SU PERFIL");
   }catch(error){
     if(request!==cardActionTargetPreviewRequest)return;
