@@ -2642,3 +2642,284 @@ button:disabled{cursor:not-allowed}
 .public-player-types-legend{color:#93a3ad}
 .public-player-types-legend i.is-available{background:#5ba477}
 .public-player-types-legend i.is-blocked{background:#7d8b95}
+
+
+/* Ruta de Teselia y confirmación de avance de tramo */
+.page-view .tramo-tool{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:14px 24px;
+  align-items:center;
+  margin:0 0 16px;
+  padding:22px 24px;
+  background:#111b24;
+  border:1px solid #3b4c58;
+  color:#eaf0f4;
+}
+.tramo-tool-main{min-width:0}
+.page-view .tramo-tool h2{
+  margin:5px 0 13px;
+  color:#f2f6f8;
+  font:800 26px 'Barlow Condensed';
+}
+.tramo-next-stage{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:10px;
+  margin:0 0 10px;
+}
+.tramo-stage-number{
+  display:inline-flex;
+  align-items:center;
+  min-height:25px;
+  padding:5px 8px;
+  background:#263947;
+  border:1px solid #597081;
+  color:#dce8ef;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:1px;
+  white-space:nowrap;
+}
+.tramo-next-stage strong{
+  color:#edf3f6;
+  font:700 17px 'Barlow Condensed';
+  letter-spacing:.2px;
+}
+.page-view .tramo-tool p{
+  margin:0;
+  color:#afbdc7;
+  font-size:9px;
+  line-height:1.7;
+}
+.tramo-current-stage{
+  display:block;
+  margin-top:9px;
+  color:#8fa4b2;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.75px;
+}
+.tramo-progress-count{
+  margin-top:5px;
+  color:#aab8c1;
+}
+.page-view .tramo-tool .secondary-button{
+  min-width:205px;
+  min-height:48px;
+  padding:13px 16px;
+  border:1px solid #9aadb9;
+  background:#e5edf2;
+  color:#14212b;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:1px;
+  transition:background .16s,border-color .16s,transform .16s;
+}
+.page-view .tramo-tool .secondary-button:hover{
+  background:#fff;
+  border-color:#fff;
+  color:#101820;
+  transform:translateY(-1px);
+}
+.page-view .tramo-tool .secondary-button:disabled{
+  background:#273640;
+  border-color:#475b68;
+  color:#9aaab4;
+  opacity:1;
+  cursor:not-allowed;
+  transform:none;
+}
+.tramo-roadmap{
+  grid-column:1/-1;
+  border-top:1px solid #344651;
+  padding-top:12px;
+}
+.tramo-roadmap summary{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  cursor:pointer;
+  list-style:none;
+  color:#c1cdd5;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:1px;
+}
+.tramo-roadmap summary::-webkit-details-marker{display:none}
+.tramo-roadmap summary span:last-child{
+  color:#8095a2;
+  font-size:7px;
+}
+.tramo-roadmap[open] summary{margin-bottom:12px}
+.tramo-roadmap-list{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px;
+  margin:0;
+  padding:0;
+  list-style:none;
+}
+.tramo-roadmap-item{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-width:0;
+  padding:8px 9px;
+  border:1px solid #2c3e49;
+  border-radius:4px;
+  background:#16232d;
+}
+.tramo-roadmap-number{
+  display:grid;
+  place-items:center;
+  width:25px;
+  height:25px;
+  flex:none;
+  background:#263641;
+  color:#b8c6ce;
+  font:800 12px 'Barlow Condensed';
+}
+.tramo-roadmap-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+.tramo-roadmap-copy strong{
+  color:#c7d2d9;
+  font-size:8px;
+  line-height:1.45;
+  font-weight:700;
+}
+.tramo-roadmap-copy small{
+  color:#81949f;
+  font-size:6px;
+  font-weight:900;
+  letter-spacing:.9px;
+}
+.tramo-roadmap-item.is-complete{
+  border-color:#385c4b;
+  background:#14271f;
+}
+.tramo-roadmap-item.is-complete .tramo-roadmap-number{
+  background:#315b46;
+  color:#d9eee1;
+}
+.tramo-roadmap-item.is-complete .tramo-roadmap-copy small{color:#83c69a}
+.tramo-roadmap-item.is-active,.tramo-roadmap-item.is-next{
+  border-color:#718b9b;
+  background:#1e303d;
+}
+.tramo-roadmap-item.is-active .tramo-roadmap-number,
+.tramo-roadmap-item.is-next .tramo-roadmap-number{
+  background:#dce7ed;
+  color:#18242d;
+}
+.tramo-roadmap-item.is-active .tramo-roadmap-copy strong,
+.tramo-roadmap-item.is-next .tramo-roadmap-copy strong{color:#f2f6f8}
+.tramo-roadmap-item.is-active .tramo-roadmap-copy small{color:#c7d9e4}
+.tramo-roadmap-item.is-next .tramo-roadmap-copy small{color:#9fc1d3}
+
+.tramo-confirm-modal[hidden]{display:none!important}
+.tramo-confirm-modal{
+  position:fixed;
+  inset:0;
+  z-index:85;
+  display:grid;
+  place-items:center;
+  padding:18px;
+  background:#050a10d9;
+  backdrop-filter:blur(7px);
+}
+.tramo-confirm-dialog{
+  position:relative;
+  width:min(490px,100%);
+  max-height:min(88vh,740px);
+  overflow:auto;
+  padding:27px;
+  background:#111a23;
+  border:1px solid #435763;
+  color:#e8eef2;
+  box-shadow:0 30px 90px #000b;
+}
+.tramo-confirm-dialog h2{
+  margin:7px 34px 9px 0;
+  color:#f1f5f7;
+  font:800 29px 'Barlow Condensed';
+  line-height:1.05;
+}
+.tramo-confirm-intro,.tramo-confirm-warning{
+  color:#aab8c1;
+  font-size:9px;
+  line-height:1.7;
+}
+.tramo-confirm-target{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  margin:17px 0 11px;
+  padding:13px 14px;
+  background:#192832;
+  border:1px solid #3d5360;
+}
+.tramo-confirm-target small{
+  color:#91a7b4;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:1.1px;
+}
+.tramo-confirm-target strong{
+  color:#f0f5f7;
+  font:700 19px 'Barlow Condensed';
+}
+.tramo-confirm-rewards{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+}
+.tramo-confirm-rewards span{
+  padding:8px 10px;
+  border:1px solid #465a66;
+  background:#1b2a34;
+  color:#d4e0e7;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.8px;
+}
+.tramo-confirm-warning{margin:12px 0 0}
+.tramo-confirm-buttons{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:17px;
+}
+.tramo-confirm-cancel,.tramo-confirm-accept{
+  min-width:130px;
+  padding:12px 14px;
+  border:1px solid #536774;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:1px;
+  cursor:pointer;
+}
+.tramo-confirm-cancel{
+  background:#1a2933;
+  color:#cad5dc;
+}
+.tramo-confirm-cancel:hover{background:#263945}
+.tramo-confirm-accept{
+  background:#e6edf1;
+  border-color:#e6edf1;
+  color:#14212a;
+}
+.tramo-confirm-accept:hover{background:#fff;border-color:#fff}
+.tramo-confirm-accept:disabled{opacity:.5;cursor:wait}
+
+@media(max-width:700px){
+  .page-view .tramo-tool{grid-template-columns:1fr;padding:18px}
+  .page-view .tramo-tool .secondary-button{width:100%;min-width:0}
+  .tramo-roadmap-list{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+  .tramo-confirm-dialog{padding:20px}
+  .tramo-confirm-buttons{flex-direction:column-reverse}
+  .tramo-confirm-cancel,.tramo-confirm-accept{width:100%}
+}
