@@ -298,19 +298,20 @@ function renderDeck(){
     ?("GIROS DEL TRAMO: "+tramoSpinsRemaining+" · EXTRA: "+bonusTramoSpinsRemaining)
     :"INICIA SESIÓN PARA VER TUS GIROS");
 
-  const finalTramo = currentTramo >= TRAMO_MILESTONES.length;
-  const nextTramo = currentTramo + 1;
-  const nextStage = TRAMO_MILESTONES[currentTramo] || null;
-  const currentStage = currentTramo > 0 ? TRAMO_MILESTONES[Math.min(currentTramo,TRAMO_MILESTONES.length)-1] : null;
+  const tramoActual = Math.min(TRAMO_MILESTONES.length,Math.max(0,Number(currentTramo)||0));
+  const finalTramo = tramoActual >= TRAMO_MILESTONES.length;
+  const nextTramo = tramoActual + 1;
+  const nextStage = TRAMO_MILESTONES[tramoActual] || null;
+  const currentStage = tramoActual > 0 ? TRAMO_MILESTONES[tramoActual-1] : null;
 
   setText("tramoNextNumber",finalTramo
-    ? "TRAMO FINAL · 11 / 11"
-    : "TRAMO "+nextTramo+" / "+TRAMO_MILESTONES.length);
+    ? "TRAMO ACTUAL · 11 / 11"
+    : "SIGUIENTE TRAMO · "+nextTramo+" / "+TRAMO_MILESTONES.length);
   setText("tramoNextGoal",finalTramo
     ? "Derrotar a la Campeona Iris (Liga Pokémon)"
     : (nextStage?.goal||"Ruta de Teselia completada."));
   setText("tramoCurrentStage",currentStage
-    ? "TRAMO ACTUAL: "+currentTramo+" / "+TRAMO_MILESTONES.length+" · "+currentStage.goal
+    ? "TRAMO ACTUAL: "+tramoActual+" / "+TRAMO_MILESTONES.length+" · "+currentStage.goal
     : "AVENTURA SIN INICIAR · 0 / "+TRAMO_MILESTONES.length);
 
   let tramoHint="";
@@ -326,9 +327,9 @@ function renderDeck(){
     tramoHint="Al avanzar iniciarás el Tramo "+nextTramo+": "+(nextStage?.goal||"siguiente hito")+". Recibirás "+cardsPerTramo+" cartas de tramo y "+normalSpinsPerTramo+" giros normales.";
   }
   setText("tramoProgressHint",tramoHint);
-  setText("tramoProgressCount",currentStage
-    ? "TRAMO ACTUAL "+currentTramo+" / "+TRAMO_MILESTONES.length+" · "+currentStage.goal.toUpperCase()
-    : "AVENTURA SIN INICIAR · 0 / "+TRAMO_MILESTONES.length);
+  setText("tramoProgressCount",currentAuthUser
+    ? "GIROS DISPONIBLES: "+tramoSpinsRemaining+" NORMALES · "+bonusTramoSpinsRemaining+" EXTRA"
+    : "INICIA SESIÓN PARA VER TUS GIROS");
   renderTramoRoadmap();
 
   ["tramoButton","tramoButtonFull"].forEach(id=>{
@@ -3031,11 +3032,12 @@ function renderTramoRoadmap(){
   const list=document.getElementById("tramoRoadmapList");
   if(!list)return;
   list.replaceChildren();
+  const tramoActual=Math.min(TRAMO_MILESTONES.length,Math.max(0,Number(currentTramo)||0));
   TRAMO_MILESTONES.forEach(stage=>{
     const item=document.createElement("li");
-    const completed=stage.tramo<currentTramo;
-    const active=currentTramo>0&&stage.tramo===currentTramo;
-    const next=stage.tramo===currentTramo+1;
+    const completed=stage.tramo<tramoActual;
+    const active=tramoActual>0&&stage.tramo===tramoActual;
+    const next=stage.tramo===tramoActual+1;
     item.className="tramo-roadmap-item"+(completed?" is-complete":active?" is-active":next?" is-next":"");
     const number=document.createElement("span");
     number.className="tramo-roadmap-number";
@@ -3058,8 +3060,9 @@ function openTramoConfirmation(){
     notify("Inicia sesión para avanzar.");
     return;
   }
-  const nextTramo=currentTramo+1;
-  const stage=TRAMO_MILESTONES[currentTramo];
+  const tramoActual=Math.min(TRAMO_MILESTONES.length,Math.max(0,Number(currentTramo)||0));
+  const nextTramo=tramoActual+1;
+  const stage=TRAMO_MILESTONES[tramoActual];
   if(!stage){
     notify("Has llegado al último tramo de la aventura.");
     return;
@@ -3574,7 +3577,10 @@ document.getElementById("activityFeed").addEventListener("click",event=>{
   );
 });
 document.addEventListener("keydown",event=>{
-  if(event.key==="Escape"&&!document.getElementById("activityCardModal").hidden){
+  if(event.key!=="Escape")return;
+  if(!document.getElementById("tramoConfirmModal").hidden){
+    closeTramoConfirmation();
+  }else if(!document.getElementById("activityCardModal").hidden){
     closeActivityCardPreview();
   }
 });
