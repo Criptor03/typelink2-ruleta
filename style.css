@@ -2923,3 +2923,68 @@ button:disabled{cursor:not-allowed}
   .tramo-confirm-buttons{flex-direction:column-reverse}
   .tramo-confirm-cancel,.tramo-confirm-accept{width:100%}
 }
+
+
+/* Render card PNG alpha cleanly across TypeLink 2 */
+.card-art,
+.deck-thumb,
+.admin-card-item-image img,
+.admin-image-preview-wrap img,
+.admin-mechanics-card-art img,
+.card-action-preview-item img,
+.activity-card-image,
+.activity-card-thumbs img,
+.incoming-effect-image,
+.spin-reward-art-frame img,
+.activity-card-modal-art-wrap img{
+  background:transparent!important;
+}
+.deck-thumb{
+  border:0!important;
+  box-shadow:none!important;
+  filter:drop-shadow(0 2px 3px #0006);
+}
+.admin-card-item-image,
+.admin-image-preview-wrap,
+.admin-mechanics-card-art{
+  background:#111a23!important;
+  border-color:#3a4c58!important;
+}
+.admin-card-item-image img,
+.admin-image-preview-wrap img,
+.admin-mechanics-card-art img,
+.card-action-preview-item img,
+.activity-card-image,
+.activity-card-thumbs img,
+.incoming-effect-image,
+.spin-reward-art-frame img,
+.activity-card-modal-art-wrap img{
+  border:0!important;
+  box-shadow:none!important;
+  filter:drop-shadow(0 5px 9px #0007);
+}
+.card-action-preview-item img,
+.activity-card-image,
+.activity-card-thumbs img,
+.incoming-effect-image,
+.spin-reward-art-frame img{
+  object-fit:contain!important;
+}
+.incoming-effect-card{
+  background:#17232d!important;
+  border-color:#354955!important;
+}
+.spin-reward-art-frame img{
+  max-width:min(100%,403px);
+}
+#page-activity .activity-card-preview-image{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  filter:drop-shadow(0 5px 9px #0008);
+}
+.public-card-list .deck-item .deck-thumb,
+.full-deck-list .deck-item .deck-thumb,
+.deck-list .deck-item .deck-thumb{
+  background:transparent!important;
+}
