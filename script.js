@@ -28,6 +28,20 @@ const POKEMON_TYPES = [
   {slug:"acero",name:"Acero",color:"#B7B7CE",icon:"https://play.pokemonshowdown.com/sprites/typeicons/Steel.png"}
 ];
 
+const TRAMO_MILESTONES = [
+  {tramo:1,goal:"Entrega de Poké Balls"},
+  {tramo:2,goal:"Derrotar a Cheren (1.º Gimnasio)"},
+  {tramo:3,goal:"Derrotar a Hiedra (2.º Gimnasio)"},
+  {tramo:4,goal:"Derrotar a Camus (3.º Gimnasio)"},
+  {tramo:5,goal:"Derrotar a Camila (4.º Gimnasio)"},
+  {tramo:6,goal:"Derrotar a Yakón (5.º Gimnasio)"},
+  {tramo:7,goal:"Derrotar a Gerania (6.º Gimnasio)"},
+  {tramo:8,goal:"Derrotar a Lirio (7.º Gimnasio)"},
+  {tramo:9,goal:"Derrotar a Ciprián (8.º Gimnasio)"},
+  {tramo:10,goal:"Derrotar a Ghechis y Kyurem (Boquete Gigante)"},
+  {tramo:11,goal:"Derrotar a la Campeona Iris (Liga Pokémon)"}
+];
+
 const STORAGE_KEY = "typelink2-beta01-deck";
 const ROUTE_STORAGE_KEY = "typelink2-beta01-route";
 const canvas = document.getElementById("wheel");
@@ -65,6 +79,7 @@ let demoDeck = loadDeck();
 let demoRouteState = loadRouteState();
 let rotation = 0;
 let spinning = false;
+let tramoStartPending = false;
 let normalCardLimit = 5;
 let cardsPerTramo = 2;
 let normalSpinsPerTramo = 3;
@@ -283,23 +298,48 @@ function renderDeck(){
     ?("GIROS DEL TRAMO: "+tramoSpinsRemaining+" · EXTRA: "+bonusTramoSpinsRemaining)
     :"INICIA SESIÓN PARA VER TUS GIROS");
 
+  const finalTramo = currentTramo >= TRAMO_MILESTONES.length;
+  const nextTramo = currentTramo + 1;
+  const nextStage = TRAMO_MILESTONES[currentTramo] || null;
+  const currentStage = currentTramo > 0 ? TRAMO_MILESTONES[Math.min(currentTramo,TRAMO_MILESTONES.length)-1] : null;
+
+  setText("tramoNextNumber",finalTramo
+    ? "TRAMO FINAL · 11 / 11"
+    : "TRAMO "+nextTramo+" / "+TRAMO_MILESTONES.length);
+  setText("tramoNextGoal",finalTramo
+    ? "Derrotar a la Campeona Iris (Liga Pokémon)"
+    : (nextStage?.goal||"Ruta de Teselia completada."));
+  setText("tramoCurrentStage",currentStage
+    ? "TRAMO ACTUAL: "+currentTramo+" / "+TRAMO_MILESTONES.length+" · "+currentStage.goal
+    : "AVENTURA SIN INICIAR · 0 / "+TRAMO_MILESTONES.length);
+
   let tramoHint="";
   if(!currentAuthUser){
-    tramoHint="Inicia sesión para avanzar.";
+    tramoHint="Inicia sesión para avanzar y recibir las recompensas del siguiente tramo.";
+  }else if(finalTramo){
+    tramoHint="Has llegado al último hito de la aventura: la Liga Pokémon y la Campeona Iris.";
   }else if(pendingSpins){
     tramoHint="Tienes "+totalSpins+" giros pendientes. Úsalos antes de avanzar.";
   }else if(freeSlots<normalSpinsPerTramo){
-    tramoHint="Libera al menos "+normalSpinsPerTramo+" espacio(s) antes de avanzar.";
+    tramoHint="Libera al menos "+normalSpinsPerTramo+" espacio(s) en tu baraja antes de avanzar.";
   }else{
-    tramoHint="Listo para avanzar: recibirás "+cardsPerTramo+" cartas de tramo y "+normalSpinsPerTramo+" giros.";
+    tramoHint="Al avanzar iniciarás el Tramo "+nextTramo+": "+(nextStage?.goal||"siguiente hito")+". Recibirás "+cardsPerTramo+" cartas de tramo y "+normalSpinsPerTramo+" giros normales.";
   }
   setText("tramoProgressHint",tramoHint);
-  setText("tramoProgressCount","TRAMO "+currentTramo+" · GIROS "+tramoSpinsRemaining+" NORMALES · "+bonusTramoSpinsRemaining+" EXTRA");
+  setText("tramoProgressCount",currentStage
+    ? "TRAMO ACTUAL "+currentTramo+" / "+TRAMO_MILESTONES.length+" · "+currentStage.goal.toUpperCase()
+    : "AVENTURA SIN INICIAR · 0 / "+TRAMO_MILESTONES.length);
+  renderTramoRoadmap();
+
   ["tramoButton","tramoButtonFull"].forEach(id=>{
     const button=document.getElementById(id);
     if(!button)return;
-    button.disabled=spinning||!currentAuthUser||pendingSpins||freeSlots<normalSpinsPerTramo;
-    button.textContent=currentTramo>0?"AVANZAR DE TRAMO":"INICIAR PRIMER TRAMO";
+    button.disabled=spinning||tramoStartPending||!currentAuthUser||pendingSpins||freeSlots<normalSpinsPerTramo||finalTramo;
+    button.textContent=finalTramo
+      ? "TRAMO FINAL ALCANZADO"
+      : currentTramo>0
+        ? "AVANZAR AL TRAMO "+nextTramo
+        : "INICIAR TRAMO 1";
     button.title=tramoHint;
   });
 
@@ -2987,14 +3027,85 @@ async function spinSpecialRoulette(poolSlug){
   }
 }
 
+function renderTramoRoadmap(){
+  const list=document.getElementById("tramoRoadmapList");
+  if(!list)return;
+  list.replaceChildren();
+  TRAMO_MILESTONES.forEach(stage=>{
+    const item=document.createElement("li");
+    const completed=stage.tramo<currentTramo;
+    const active=currentTramo>0&&stage.tramo===currentTramo;
+    const next=stage.tramo===currentTramo+1;
+    item.className="tramo-roadmap-item"+(completed?" is-complete":active?" is-active":next?" is-next":"");
+    const number=document.createElement("span");
+    number.className="tramo-roadmap-number";
+    number.textContent=String(stage.tramo).padStart(2,"0");
+    const copy=document.createElement("span");
+    copy.className="tramo-roadmap-copy";
+    const title=document.createElement("strong");
+    title.textContent=stage.goal;
+    const state=document.createElement("small");
+    state.textContent=completed?"COMPLETADO":active?"EN CURSO":next?"SIGUIENTE":"PENDIENTE";
+    copy.append(title,state);
+    item.append(number,copy);
+    list.append(item);
+  });
+}
+
+function openTramoConfirmation(){
+  if(spinning||tramoStartPending)return;
+  if(!currentAuthUser||!authClient){
+    notify("Inicia sesión para avanzar.");
+    return;
+  }
+  const nextTramo=currentTramo+1;
+  const stage=TRAMO_MILESTONES[currentTramo];
+  if(!stage){
+    notify("Has llegado al último tramo de la aventura.");
+    return;
+  }
+  const totalSpins=Math.max(0,tramoSpinsRemaining)+Math.max(0,bonusTramoSpinsRemaining);
+  const freeSlots=Math.max(0,normalCardLimit-activeNormalCards().length);
+  if(totalSpins>0){
+    notify("Utiliza los giros pendientes antes de avanzar de tramo.");
+    return;
+  }
+  if(freeSlots<normalSpinsPerTramo){
+    notify("Libera al menos "+normalSpinsPerTramo+" espacio(s) en tu baraja antes de avanzar.");
+    return;
+  }
+  setText("tramoConfirmTitle","¿Seguro que quieres avanzar al Tramo "+nextTramo+"?");
+  setText("tramoConfirmGoal",stage.goal);
+  setText("tramoConfirmCards",cardsPerTramo+" CARTAS DE TRAMO");
+  setText("tramoConfirmSpins",normalSpinsPerTramo+" GIROS NORMALES");
+  const modal=document.getElementById("tramoConfirmModal");
+  modal.hidden=false;
+  document.getElementById("confirmTramoAdvance")?.focus();
+}
+
+function closeTramoConfirmation(){
+  const modal=document.getElementById("tramoConfirmModal");
+  if(modal)modal.hidden=true;
+}
+
 async function startNewTramo(){
-  if(spinning)return;
+  if(spinning||tramoStartPending)return;
   if(!currentAuthUser||!authClient){notify("Inicia sesión para avanzar.");return;}
+  tramoStartPending=true;
+  renderDeck();
   try{
     await loadCardEngineConfig();
     renderDeck();
+    if(currentTramo>=TRAMO_MILESTONES.length){
+      notify("Has llegado al último tramo de la aventura.");
+      return;
+    }
     if(tramoSpinsRemaining+bonusTramoSpinsRemaining>0){
       notify("Utiliza los giros pendientes antes de avanzar de tramo.");return;
+    }
+    const freeSlots=Math.max(0,normalCardLimit-activeNormalCards().length);
+    if(freeSlots<normalSpinsPerTramo){
+      notify("Libera al menos "+normalSpinsPerTramo+" espacio(s) en tu baraja antes de avanzar.");return;
     }
     spinning=true;renderDeck();
     const {data,error}=await authClient.rpc("start_new_tramo");
@@ -3014,6 +3125,7 @@ async function startNewTramo(){
     notify("No se pudo avanzar de tramo: "+(error.message||"error desconocido"));
     await loadCloudInventory();
   }finally{
+    tramoStartPending=false;
     spinning=false;renderDeck();
   }
 }
@@ -3429,8 +3541,17 @@ spinButton.addEventListener("click",spin);
 document.getElementById("shuffleWheelButton").addEventListener("click",shuffleWheelCards);
 document.getElementById("legendarySpinButton").addEventListener("click",()=>spinSpecialRoulette("legendary"));
 document.getElementById("fiestaSpinButton").addEventListener("click",()=>spinSpecialRoulette("fiesta"));
-document.getElementById("tramoButton").addEventListener("click",startNewTramo);
-document.getElementById("tramoButtonFull").addEventListener("click",startNewTramo);
+document.getElementById("tramoButton").addEventListener("click",openTramoConfirmation);
+document.getElementById("tramoButtonFull").addEventListener("click",openTramoConfirmation);
+document.getElementById("closeTramoConfirm").addEventListener("click",closeTramoConfirmation);
+document.getElementById("cancelTramoConfirm").addEventListener("click",closeTramoConfirmation);
+document.getElementById("confirmTramoAdvance").addEventListener("click",()=>{
+  closeTramoConfirmation();
+  startNewTramo();
+});
+document.getElementById("tramoConfirmModal").addEventListener("click",event=>{
+  if(event.target.id==="tramoConfirmModal")closeTramoConfirmation();
+});
 document.getElementById("saveProfileButton").addEventListener("click",saveProfile);
 document.getElementById("closePublicProfile").addEventListener("click",closePublicPlayer);
 document.getElementById("closeCardAction").addEventListener("click",closeCardAction);
