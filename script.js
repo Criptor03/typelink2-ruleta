@@ -3517,6 +3517,30 @@ document.getElementById("adminCardName").addEventListener("input",event=>{
   if(!slug.disabled&&slug.dataset.touched!=="true")slug.value=adminSlugFromName(event.target.value);
 });
 document.getElementById("adminCardSlug").addEventListener("input",event=>{event.target.dataset.touched="true";});
+async function pngHasTransparentPixels(file){
+  if(typeof createImageBitmap!=="function")return null;
+  let bitmap=null;
+  try{
+    bitmap=await createImageBitmap(file);
+    const canvas=document.createElement("canvas");
+    canvas.width=bitmap.width;
+    canvas.height=bitmap.height;
+    const context=canvas.getContext("2d",{willReadFrequently:true});
+    if(!context)return null;
+    context.drawImage(bitmap,0,0);
+    const pixels=context.getImageData(0,0,canvas.width,canvas.height).data;
+    for(let index=3;index<pixels.length;index+=4){
+      if(pixels[index]===0)return true;
+    }
+    return false;
+  }catch(error){
+    console.warn("No se pudo comprobar el canal alfa del PNG:",error);
+    return null;
+  }finally{
+    if(bitmap&&typeof bitmap.close==="function")bitmap.close();
+  }
+}
+
 document.getElementById("adminCardImageFile").addEventListener("change",event=>{
   const file=event.target.files?.[0]||null;
   adminPendingImageFile=file;
@@ -3530,7 +3554,20 @@ document.getElementById("adminCardImageFile").addEventListener("change",event=>{
     }
     adminImageObjectUrl=URL.createObjectURL(file);
     showAdminCardImage(adminImageObjectUrl);
-    document.getElementById("adminCardImageHelp").textContent=file.name+" · "+(file.size/1024/1024).toFixed(2)+" MB · Pendiente de subir al guardar.";
+    const imageHelp=document.getElementById("adminCardImageHelp");
+    const imageSize=(file.size/1024/1024).toFixed(2)+" MB";
+    imageHelp.textContent=file.name+" · "+imageSize+" · Comprobando transparencia...";
+    pngHasTransparentPixels(file).then(hasTransparency=>{
+      if(adminPendingImageFile!==file)return;
+      if(hasTransparency===false){
+        imageHelp.textContent=file.name+" · "+imageSize+" · AVISO: no hay píxeles transparentes. El fondo se verá en la web; exporta el PNG con fondo transparente.";
+        notify("Este PNG no tiene transparencia real. La web no puede quitar el fondo blanco automáticamente.");
+      }else if(hasTransparency===true){
+        imageHelp.textContent=file.name+" · "+imageSize+" · Transparencia detectada · Pendiente de subir al guardar.";
+      }else{
+        imageHelp.textContent=file.name+" · "+imageSize+" · No se pudo verificar el canal alfa; comprueba el fondo antes de guardar.";
+      }
+    });
   }
 });
 document.getElementById("adminCardRemoveImage").addEventListener("click",()=>{
