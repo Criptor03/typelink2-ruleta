@@ -2988,3 +2988,21 @@ button:disabled{cursor:not-allowed}
 .deck-list .deck-item .deck-thumb{
   background:transparent!important;
 }
+
+
+/* Incoming cards count: long per-tramo label */
+.card-action-target-effect-count{
+  align-items:flex-start;
+}
+.card-action-target-effect-count span{
+  max-width:190px;
+  white-space:normal;
+  line-height:1.4;
+  letter-spacing:.55px;
+}
+@media(max-width:560px){
+  .card-action-target-effect-count span{
+    max-width:150px;
+    font-size:6px;
+  }
+}
