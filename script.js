@@ -1190,6 +1190,7 @@ async function loadPlayers(){
 
 async function showPublicPlayer(playerId,currentTramo=0){
   const modal=document.getElementById("publicProfileModal");
+  modal.dataset.playerId=playerId;
   const {data:profile,error}=await authClient.from("profiles")
     .select("id,display_name,avatar_url,created_at").eq("id",playerId).single();
   if(error||!profile){notify("No pudimos abrir este perfil.");return;}
@@ -1311,7 +1312,16 @@ function renderPublicPlayerTypes(rows,error){
   });
   setText("publicPlayerTypesCount",enabledCount+" / "+POKEMON_TYPES.length+" DISPONIBLES");
 }
-function closePublicPlayer(){document.getElementById("publicProfileModal").hidden=true;}
+function closePublicPlayer(){
+  const modal=document.getElementById("publicProfileModal");
+  modal.hidden=true;
+  delete modal.dataset.playerId;
+}
+async function refreshPublicIncomingCards(playerId){
+  if(!authClient||!playerId)return;
+  const {data,error}=await authClient.rpc("get_trainer_incoming_cards",{p_trainer_id:playerId});
+  renderPublicIncomingCards(data||[],error);
+}
 
 
 
@@ -1637,9 +1647,22 @@ function setupRealtime(){
     .on("postgres_changes",{event:"*",schema:"public",table:"profiles"},()=>loadPlayers())
     .subscribe();
   activityChannel=authClient.channel("typelink-community-activity")
-    .on("postgres_changes",{event:"INSERT",schema:"public",table:"card_activity"},()=>loadActivityFeed())
+    .on("postgres_changes",{event:"INSERT",schema:"public",table:"card_activity"},payload=>{
+      loadActivityFeed();
+      const entry=payload.new||{};
+      const profileModal=document.getElementById("publicProfileModal");
+      const openPlayerId=profileModal?.dataset.playerId;
+      if(entry.activity_type==="tramo_award"||entry.activity_type==="tramo_adjustment"){
+        loadPlayers();
+        if(openPlayerId&&(entry.actor_id===openPlayerId||entry.target_id===openPlayerId)){
+          void refreshPublicIncomingCards(openPlayerId);
+        }
+      }else if(entry.activity_type==="play"&&openPlayerId&&entry.target_id===openPlayerId){
+        void refreshPublicIncomingCards(openPlayerId);
+      }
+    })
     .on("postgres_changes",{event:"UPDATE",schema:"public",table:"card_activity"},()=>loadActivityFeed())
-    .on("postgres_changes",{event:"*",schema:"public",table:"player_tramo_progress",filter:"owner_id=eq."+currentAuthUser.id},()=>{if(!spinning)loadCloudInventory();})
+    .on("postgres_changes",{event:"*",schema:"public",table:"player_tramo_progress",filter:"owner_id=eq."+currentAuthUser.id},()=>{if(!spinning){loadCloudInventory();loadPlayers();}})
     .on("postgres_changes",{event:"*",schema:"public",table:"player_effects",filter:"owner_id=eq."+currentAuthUser.id},()=>loadProfileMechanics())
     .on("postgres_changes",{event:"*",schema:"public",table:"player_type_status",filter:"owner_id=eq."+currentAuthUser.id},()=>loadProfileMechanics())
     .on("postgres_changes",{event:"*",schema:"public",table:"player_roulette_unlocks",filter:"owner_id=eq."+currentAuthUser.id},()=>loadRouletteAccess())
