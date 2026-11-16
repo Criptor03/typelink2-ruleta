@@ -1280,7 +1280,7 @@ async function refreshCardActionTargetProfile(profile){
   }
   setCardActionTargetProfile(profile);
   try{
-    const {data,error}=await authClient.rpc("get_trainer_active_card_effect_count",{
+    const {data,error}=await authClient.rpc("get_trainer_incoming_card_count",{
       p_trainer_id:profile.id
     });
     if(request!==cardActionTargetPreviewRequest)return;
@@ -1288,10 +1288,10 @@ async function refreshCardActionTargetProfile(profile){
     const count=Number(data);
     if(!Number.isInteger(count)||count<0)throw new Error("El servidor devolvió un contador no válido.");
     setText("cardActionTargetEffectCount",count);
-    setText("cardActionTargetStatus","EFECTOS ACTIVOS");
+    setText("cardActionTargetStatus","EN SU TRAMO ACTUAL");
   }catch(error){
     if(request!==cardActionTargetPreviewRequest)return;
-    console.warn("No se pudo consultar el contador de efectos del entrenador:",error.message);
+    console.warn("No se pudo consultar el contador de cartas recibidas en el tramo:",error.message);
     setText("cardActionTargetEffectCount","—");
     setText("cardActionTargetStatus","NO DISPONIBLE");
   }
