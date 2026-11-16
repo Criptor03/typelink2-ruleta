@@ -469,8 +469,8 @@
                 </div>
                 <div class="admin-trainer-tool-form">
                   <label class="admin-field" for="adminTrainerTramoInput">TRAMO ACTUAL DEL ENTRENADOR
-                    <input id="adminTrainerTramoInput" type="number" min="0" max="999" step="1" value="0">
-                    <small>Solo cambia el tramo. No afecta cartas ni giros.</small>
+                    <input id="adminTrainerTramoInput" type="number" min="0" max="12" step="1" value="0">
+                    <small>Tramos disponibles: 0 a 12. El Tramo 12 consagra al entrenador como campeón.</small>
                   </label>
                   <button class="secondary-button" type="button" id="adminTrainerSaveTramo">GUARDAR TRAMO</button>
                 </div>
@@ -824,7 +824,7 @@
   <div class="public-profile-modal" id="publicProfileModal" hidden>
     <div class="public-profile-dialog panel">
       <button class="modal-close" id="closePublicProfile" type="button" aria-label="Cerrar">×</button>
-      <div class="public-profile-heading"><div class="profile-avatar-large" id="publicPlayerAvatar">TL</div><div><span class="eyebrow">PERFIL DE ENTRENADOR</span><h2 id="publicPlayerName">Entrenador</h2><p id="publicPlayerJoined">Participante TypeLink 2</p></div></div>
+      <div class="public-profile-heading"><div class="profile-avatar-large" id="publicPlayerAvatar">TL</div><div><span class="eyebrow">PERFIL DE ENTRENADOR</span><h2 id="publicPlayerName">Entrenador</h2><p id="publicPlayerJoined">Participante TypeLink 2</p><small id="publicPlayerTramo" class="public-player-tramo">TRAMO ACTUAL · 0 / 12</small></div></div>
       <div class="public-profile-section public-profile-deck-section">
         <div class="panel-topline"><b>BARAJA PÚBLICA</b><span id="publicPlayerCardCount">0 CARTAS</span></div>
         <div id="publicPlayerCards" class="public-card-list"><div class="deck-empty">Este entrenador todavía no tiene cartas.</div></div>
@@ -833,6 +833,10 @@
         <div class="panel-topline"><b>LOS 17 TIPOS POKÉMON</b><span id="publicPlayerTypesCount">CARGANDO</span></div>
         <div id="publicPlayerTypes" class="public-player-types-grid"><div class="deck-empty">Consultando sus tipos...</div></div>
         <div class="public-player-types-legend"><span><i class="is-available"></i> Disponible</span><span><i class="is-blocked"></i> Bloqueado</span></div>
+      </div>
+      <div class="public-profile-section public-profile-incoming-section">
+        <div class="panel-topline"><b>CARTAS QUE LE HAN LANZADO EN ESTE TRAMO</b><span id="publicPlayerIncomingCount">0 CARTAS</span></div>
+        <div id="publicPlayerIncomingCards" class="public-incoming-cards"><div class="deck-empty">Todavía no le han lanzado cartas en este tramo.</div></div>
       </div>
     </div>
   </div>
