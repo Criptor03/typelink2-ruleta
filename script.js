@@ -39,7 +39,8 @@ const TRAMO_MILESTONES = [
   {tramo:8,goal:"Derrotar a Lirio (7.º Gimnasio)"},
   {tramo:9,goal:"Derrotar a Ciprián (8.º Gimnasio)"},
   {tramo:10,goal:"Derrotar a Ghechis y Kyurem (Boquete Gigante)"},
-  {tramo:11,goal:"Derrotar a la Campeona Iris (Liga Pokémon)"}
+  {tramo:11,goal:"Derrotar a la Campeona Iris (Liga Pokémon)"},
+  {tramo:12,goal:"Consagrarse campeón Pokémon"}
 ];
 
 const STORAGE_KEY = "typelink2-beta01-deck";
@@ -305,10 +306,10 @@ function renderDeck(){
   const currentStage = tramoActual > 0 ? TRAMO_MILESTONES[tramoActual-1] : null;
 
   setText("tramoNextNumber",finalTramo
-    ? "TRAMO ACTUAL · 11 / 11"
+    ? "TRAMO ACTUAL · 12 / 12"
     : "SIGUIENTE TRAMO · "+nextTramo+" / "+TRAMO_MILESTONES.length);
   setText("tramoNextGoal",finalTramo
-    ? "Derrotar a la Campeona Iris (Liga Pokémon)"
+    ? "Consagrarse campeón Pokémon"
     : (nextStage?.goal||"Ruta de Teselia completada."));
   setText("tramoCurrentStage",currentStage
     ? "TRAMO ACTUAL: "+tramoActual+" / "+TRAMO_MILESTONES.length+" · "+currentStage.goal
@@ -318,7 +319,7 @@ function renderDeck(){
   if(!currentAuthUser){
     tramoHint="Inicia sesión para avanzar y recibir las recompensas del siguiente tramo.";
   }else if(finalTramo){
-    tramoHint="Has llegado al último hito de la aventura: la Liga Pokémon y la Campeona Iris.";
+    tramoHint="¡Te has consagrado Campeón Pokémon! Desde este momento ningún rival puede lanzarte cartas.";
   }else if(pendingSpins){
     tramoHint="Tienes "+totalSpins+" giros pendientes. Úsalos antes de avanzar.";
   }else if(freeSlots<normalSpinsPerTramo){
@@ -1134,14 +1135,24 @@ async function loadPlayers(){
     console.error("No se pudieron cargar los jugadores:",error.message);
     container.replaceChildren();const message=document.createElement("div");message.className="empty-feature panel";message.textContent="No se pudo cargar la lista.";container.append(message);return;
   }
-  const {data:cards}=await authClient.from("player_cards").select("owner_id,card_catalog(category)");
+  const [cardsResult,progressResult]=await Promise.all([
+    authClient.from("player_cards").select("owner_id,card_catalog(category)"),
+    authClient.rpc("get_public_trainer_progress")
+  ]);
   const counts={normal:{},tramo:{}};
-  (cards||[]).forEach(row=>{
+  (cardsResult.data||[]).forEach(row=>{
     const joined=Array.isArray(row.card_catalog)?row.card_catalog[0]:row.card_catalog;
     if(!joined)return;
     const type=joined.category==="tramo"?"tramo":"normal";
     counts[type][row.owner_id]=(counts[type][row.owner_id]||0)+1;
   });
+  if(cardsResult.error)console.warn("No se pudieron cargar los contadores de cartas:",cardsResult.error.message);
+  if(progressResult.error)console.warn("No se pudo consultar el tramo de los participantes:",progressResult.error.message);
+  const currentTramos=Object.create(null);
+  (progressResult.data||[]).forEach(row=>{
+    currentTramos[row.trainer_id]=Math.max(0,Number(row.current_tramo)||0);
+  });
+
   container.replaceChildren();
   setText("playersCount",(profiles||[]).length+" ENTRENADORES");
   if(!profiles||!profiles.length){
@@ -1149,28 +1160,35 @@ async function loadPlayers(){
   }
   profiles.forEach(profile=>{
     const displayName=profile.display_name||"Entrenador";
+    const trainerTramo=currentTramos[profile.id]||0;
+    const isChampion=trainerTramo>=12;
     const card=document.createElement("button");
     card.type="button";
-    card.className="player-directory-card";
+    card.className="player-directory-card"+(isChampion?" is-champion":"");
     card.setAttribute("aria-label","Abrir perfil de "+displayName);
     const avatar=document.createElement("div");avatar.className="player-directory-avatar";
     applyAvatar(avatar,profile.avatar_url,displayName.slice(0,2).toUpperCase());
     const info=document.createElement("div");info.className="player-directory-info";
     const name=document.createElement("strong");name.textContent=displayName;
     const since=document.createElement("small");since.textContent="Desde "+formatDate(profile.created_at);
-    info.append(name,since);
+    const tramoBadge=document.createElement("small");
+    tramoBadge.className="player-current-tramo"+(isChampion?" is-champion":"");
+    tramoBadge.textContent=isChampion
+      ?"🏆 CAMPEÓN POKÉMON · TRAMO 12 / 12"
+      :"TRAMO ACTUAL · "+trainerTramo+" / 12"+(trainerTramo===0?" · SIN INICIAR":"");
+    info.append(name,since,tramoBadge);
     const stats=document.createElement("div");stats.className="player-directory-stats";
     const normal=document.createElement("span");normal.textContent=(counts.normal[profile.id]||0)+" normales";
     const tramo=document.createElement("span");tramo.textContent=(counts.tramo[profile.id]||0)+" tramo";
     stats.append(normal,tramo);
     const action=document.createElement("span");action.className="player-view-button";action.textContent="VER PERFIL ↗";
     card.append(avatar,info,stats,action);
-    card.addEventListener("click",()=>showPublicPlayer(profile.id));
+    card.addEventListener("click",()=>showPublicPlayer(profile.id,trainerTramo));
     container.append(card);
   });
 }
 
-async function showPublicPlayer(playerId){
+async function showPublicPlayer(playerId,currentTramo=0){
   const modal=document.getElementById("publicProfileModal");
   const {data:profile,error}=await authClient.from("profiles")
     .select("id,display_name,avatar_url,created_at").eq("id",playerId).single();
@@ -1179,11 +1197,12 @@ async function showPublicPlayer(playerId){
   setText("publicPlayerJoined","Entrenador desde "+formatDate(profile.created_at));
   applyAvatar(document.getElementById("publicPlayerAvatar"),profile.avatar_url,(profile.display_name||"TL").slice(0,2).toUpperCase());
 
-  const [cardsResult,typesResult]=await Promise.all([
+  const [cardsResult,typesResult,incomingResult]=await Promise.all([
     authClient.from("player_cards")
       .select("id,card_id,source,tramo_number,status,remaining_uses,obtained_at,card_catalog(id,name,category,rarity,image_path,uses_per_card,target_scope,disposition,counts_toward_normal_limit)")
       .eq("owner_id",playerId).order("obtained_at",{ascending:true}),
-    authClient.from("player_type_status").select("type_slug,is_enabled").eq("owner_id",playerId)
+    authClient.from("player_type_status").select("type_slug,is_enabled").eq("owner_id",playerId),
+    authClient.rpc("get_trainer_incoming_cards",{p_trainer_id:playerId})
   ]);
   if(cardsResult.error){notify("No pudimos cargar la baraja pública.");return;}
 
@@ -1197,8 +1216,67 @@ async function showPublicPlayer(playerId){
   }
 
   renderPublicPlayerTypes(typesResult.data||[],typesResult.error);
+  renderPublicIncomingCards(incomingResult.data||[],incomingResult.error);
+  const tramoLabel=currentTramo>=12
+    ?"🏆 CAMPEÓN POKÉMON · TRAMO 12 / 12"
+    :"TRAMO ACTUAL · "+Math.max(0,Number(currentTramo)||0)+" / 12";
+  setText("publicPlayerTramo",tramoLabel);
   modal.hidden=false;
 }
+
+function renderPublicIncomingCards(rows,error){
+  const container=document.getElementById("publicPlayerIncomingCards");
+  if(!container)return;
+  container.replaceChildren();
+  if(error){
+    console.error("No se pudieron cargar las cartas recibidas durante el tramo:",error.message);
+    setText("publicPlayerIncomingCount","NO DISPONIBLE");
+    const message=document.createElement("div");message.className="deck-empty";
+    message.textContent="No se pudo consultar el historial de cartas de este tramo.";
+    container.append(message);return;
+  }
+  const cards=Array.isArray(rows)?rows:[];
+  setText("publicPlayerIncomingCount",cards.length+" "+(cards.length===1?"CARTA":"CARTAS"));
+  if(!cards.length){
+    const empty=document.createElement("div");empty.className="deck-empty";
+    empty.textContent="Todavía no le han lanzado cartas en este tramo.";
+    container.append(empty);return;
+  }
+  const rarityLabels={common:"COMÚN",rare:"RARA",epic:"ÉPICA",legendary:"LEGENDARIA",tramo:"TRAMO",fiesta:"FIESTA"};
+  cards.forEach(card=>{
+    const item=document.createElement("article");item.className="public-incoming-card";
+    const artButton=document.createElement("button");artButton.type="button";artButton.className="public-incoming-card-art";
+    const image=document.createElement("img");
+    image.alt=card.card_name||"Carta recibida";
+    image.loading="lazy";image.decoding="async";
+    if(card.image_path){
+      image.src=card.image_path;
+      image.addEventListener("error",()=>{image.hidden=true;artButton.classList.add("is-missing");});
+      artButton.addEventListener("click",()=>openActivityCardPreview(card.image_path,card.card_name,rarityLabels[card.rarity]||"CARTA",artButton));
+    }else{
+      image.hidden=true;artButton.classList.add("is-missing");
+    }
+    artButton.append(image);
+    if(!card.image_path){const fallback=document.createElement("span");fallback.textContent="✦";artButton.append(fallback);}
+    const copy=document.createElement("div");copy.className="public-incoming-card-copy";
+    const rarity=document.createElement("small");rarity.className="public-incoming-card-rarity";
+    rarity.textContent=rarityLabels[card.rarity]||"CARTA TYPELINK";
+    const name=document.createElement("strong");name.textContent=card.card_name||"Carta TypeLink";
+    const sender=document.createElement("span");sender.className="public-incoming-card-sender";
+    sender.textContent="LANZADA POR "+(card.sender_name||"Entrenador");
+    const date=document.createElement("time");date.className="public-incoming-card-date";
+    const timestamp=new Date(card.created_at);
+    date.textContent=Number.isNaN(timestamp.getTime())?"":new Intl.DateTimeFormat("es-CO",{dateStyle:"short",timeStyle:"short"}).format(timestamp);
+    if(card.created_at)date.dateTime=card.created_at;
+    copy.append(rarity,name,sender,date);
+    if(card.custom_message){
+      const note=document.createElement("p");note.className="public-incoming-card-message";
+      note.textContent="“"+card.custom_message+"”";copy.append(note);
+    }
+    item.append(artButton,copy);container.append(item);
+  });
+}
+
 function renderPublicPlayerTypes(rows,error){
   const container=document.getElementById("publicPlayerTypes");
   if(!container)return;
@@ -1377,14 +1455,29 @@ async function openCardAction(instanceId,mode){
       targetSelect.append(prompt);
       if(card.target_scope==="opponent"||mode==="transfer")prompt.disabled=true;
       try{
-        const {data,error}=await authClient.from("profiles")
-          .select("id,display_name,avatar_url").order("display_name",{ascending:true});
-        if(error)throw error;
-        (data||[]).forEach(profile=>{
-          cardActionTargetProfiles[profile.id]=profile;
+        const [profilesResult,progressResult]=await Promise.all([
+          authClient.from("profiles")
+            .select("id,display_name,avatar_url").order("display_name",{ascending:true}),
+          authClient.rpc("get_public_trainer_progress")
+        ]);
+        if(profilesResult.error)throw profilesResult.error;
+        if(progressResult.error)console.warn("No se pudo consultar el tramo de los objetivos:",progressResult.error.message);
+        const progressMap=Object.create(null);
+        (progressResult.data||[]).forEach(row=>{
+          progressMap[row.trainer_id]=Math.max(0,Number(row.current_tramo)||0);
+        });
+        (profilesResult.data||[]).forEach(profile=>{
+          const trainerTramo=progressMap[profile.id]||0;
+          const enrichedProfile={...profile,current_tramo:trainerTramo};
+          cardActionTargetProfiles[profile.id]=enrichedProfile;
           if(profile.id===currentAuthUser.id)return;
+          const isChampion=mode==="use"&&trainerTramo>=12;
           const option=document.createElement("option");
-          option.value=profile.id;option.textContent=profile.display_name||"Entrenador";
+          option.value=profile.id;
+          option.disabled=isChampion;
+          option.textContent=isChampion
+            ?(profile.display_name||"Entrenador")+" · 🏆 CAMPEÓN (NO ADMITE CARTAS)"
+            :(profile.display_name||"Entrenador");
           targetSelect.append(option);
         });
         targetSelect.onchange=()=>{
@@ -1398,14 +1491,17 @@ async function openCardAction(instanceId,mode){
         if(card.target_scope==="either"&&mode!=="transfer"){
           targetSelect.value="";
           void refreshCardActionTargetProfile(cardActionTargetProfiles[currentAuthUser.id]||null);
-        }else if(targetSelect.options.length>1){
-          targetSelect.selectedIndex=1;
-          targetSelect.dispatchEvent(new Event("change"));
         }else{
-          setCardActionTargetProfile(null);
-          if(card.target_scope==="opponent"||mode==="transfer"){
-            confirmButton.disabled=true;
-            feedback.textContent="Todavía no hay otro entrenador disponible para seleccionar.";
+          const firstAvailable=[...targetSelect.options].find((option,index)=>index>0&&option.value&&!option.disabled);
+          if(firstAvailable){
+            targetSelect.value=firstAvailable.value;
+            targetSelect.dispatchEvent(new Event("change"));
+          }else{
+            setCardActionTargetProfile(null);
+            if(card.target_scope==="opponent"||mode==="transfer"){
+              confirmButton.disabled=true;
+              feedback.textContent="No hay entrenadores disponibles para recibir esta carta. Los campeones no pueden ser objetivo.";
+            }
           }
         }
       }catch(error){
