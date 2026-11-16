@@ -3006,3 +3006,124 @@ button:disabled{cursor:not-allowed}
     font-size:6px;
   }
 }
+
+
+/* Tramo 12 champion badge and received-card history */
+.player-current-tramo{
+  color:#8ca5b5!important;
+  font-size:7px!important;
+  font-weight:900;
+  letter-spacing:.7px;
+}
+.player-current-tramo.is-champion{
+  color:#d8bd78!important;
+}
+.player-directory-card.is-champion{
+  border-color:#7b6841;
+  background:linear-gradient(120deg,#202d34,#17232d);
+}
+.player-directory-card.is-champion .player-directory-info strong{
+  color:#f3e8c5;
+}
+.public-player-tramo{
+  display:block;
+  margin-top:6px;
+  color:#91a7b5;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.8px;
+}
+.public-profile-incoming-section{
+  border-top:1px solid #344651;
+  margin-top:5px;
+  padding-top:18px;
+}
+.public-incoming-cards{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;
+  margin-top:12px;
+}
+.public-incoming-card{
+  display:grid;
+  grid-template-columns:76px minmax(0,1fr);
+  align-items:center;
+  gap:11px;
+  min-width:0;
+  padding:9px;
+  background:#17232d;
+  border:1px solid #354955;
+  border-radius:4px;
+}
+.public-incoming-card-art{
+  display:grid;
+  place-items:center;
+  width:76px;
+  min-height:114px;
+  padding:0;
+  border:0;
+  background:transparent;
+  cursor:zoom-in;
+}
+.public-incoming-card-art img{
+  display:block;
+  width:100%;
+  height:auto;
+  aspect-ratio:403/603;
+  object-fit:contain;
+  background:transparent;
+  filter:drop-shadow(0 5px 8px #0007);
+}
+.public-incoming-card-art.is-missing{
+  background:#21313c;
+  border:1px dashed #506675;
+  color:#94a9b7;
+  cursor:default;
+}
+.public-incoming-card-copy{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:5px;
+  min-width:0;
+}
+.public-incoming-card-rarity{
+  color:#a5bac7;
+  font-size:6px;
+  font-weight:900;
+  letter-spacing:1px;
+}
+.public-incoming-card-copy strong{
+  color:#eef3f6;
+  font:800 17px 'Barlow Condensed';
+  overflow-wrap:anywhere;
+}
+.public-incoming-card-sender{
+  color:#9eb0bb;
+  font-size:7px;
+  font-weight:900;
+  line-height:1.45;
+  letter-spacing:.5px;
+}
+.public-incoming-card-date{
+  color:#768c9a;
+  font-size:7px;
+}
+.public-incoming-card-message{
+  margin:3px 0 0;
+  padding-left:7px;
+  border-left:2px solid #758d9d;
+  color:#c3d0d7;
+  font-size:8px;
+  line-height:1.5;
+  overflow-wrap:anywhere;
+}
+@media(max-width:700px){
+  .public-incoming-cards{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+  .player-current-tramo{font-size:6px!important}
+  .public-incoming-card{grid-template-columns:68px minmax(0,1fr);gap:9px}
+  .public-incoming-card-art{width:68px;min-height:102px}
+  .public-incoming-card-copy strong{font-size:16px}
+}
