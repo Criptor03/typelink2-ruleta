@@ -1,143 +1,43 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="560" height="540" viewBox="0 0 560 540" fill="none">
-  <title>Patrón minimalista Pokémon TypeLink 2: Poké Ball y 17 tipos</title>
-
-  <!-- Fine, low-contrast line art. Fairy is intentionally omitted: TypeLink 2 uses the 17 Gen V types. -->
-  <g stroke="#91A9B8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity=".20">
-
-    <!-- Poké Ball: complete shell, two halves, equatorial band and central catch button -->
-    <g transform="translate(55 90)" stroke-width="2.8">
-      <circle r="29"/>
-      <path d="M-28.6 0h57.2"/>
-      <path d="M-28.2-4.5h17.8M10.4-4.5h17.8M-28.2 4.5h17.8M10.4 4.5h17.8" opacity=".75"/>
-      <circle r="10.5" fill="#0b1016"/>
-      <circle r="6.2"/>
-      <circle r="2.1" fill="#91A9B8" stroke="none" opacity=".55"/>
+  <title>Patrón Pokémon TypeLink 2 minimalista</title>
+  <g stroke="#91A9B8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity=".19">
+    <!-- Poké Ball -->
+    <g transform="translate(92 112) scale(.82)">
+      <circle r="35"/>
+      <path d="M-34 0h68"/>
+      <circle r="10"/>
+      <path d="M-8 0a8 8 0 0 0 16 0"/>
     </g>
 
-    <!-- NORMAL: balanced star -->
-    <g transform="translate(145 90)">
-      <path d="m0-25 6.2 16.1L23-7l-13.3 10.3 4.5 16.8L0 10.8l-14.2 9.3 4.5-16.8L-23-7l16.8-1.9L0-25Z"/>
+    <!-- Fuego -->
+    <g transform="translate(462 82) scale(.78)">
+      <path d="M2-34C8-13 31-7 25 15 21 33 5 39-9 32-28 23-31 1-16-14-15-3-8 0-5-3-13-20-5-28 2-34Z"/>
+      <path d="M2 3C13 14 7 28-3 29-14 25-12 13-5 7"/>
     </g>
 
-    <!-- FIRE: rising flame -->
-    <g transform="translate(235 90)">
-      <path d="M2-28C8-13 23-7 21 9 19 23 8 29-4 27-20 24-27 10-21-4-17-12-11-17-8-24-5-14 1-11 2-28Z"/>
-      <path d="M1-4C12 5 10 19 1 22-8 21-11 12-6 5-4 2-1 0 1-4Z"/>
+    <!-- Planta -->
+    <g transform="translate(405 329) scale(.88)">
+      <path d="M-23 22C-25-2-7-26 24-28 25 2 8 26-23 22Z"/>
+      <path d="M-23 22 16-17"/>
+      <path d="m-7 6-2-17m15 4 14 1"/>
     </g>
 
-    <!-- WATER: droplet and flowing wave -->
-    <g transform="translate(325 90)">
-      <path d="M0-29C-6-17-22 0-22 12a22 22 0 0 0 44 0C22 0 6-17 0-29Z"/>
-      <path d="M-13 10c5-5 9 5 14 0s9 5 13 0"/>
+    <!-- Eléctrico -->
+    <g transform="translate(168 432) scale(.86)">
+      <path d="M7-31-18 5h19l-7 27 27-40H2l5-23Z"/>
     </g>
 
-    <!-- ELECTRIC: sharp lightning bolt -->
-    <g transform="translate(415 90)">
-      <path d="M5-29-18 4h17l-6 25L19-7H2l3-22Z"/>
-    </g>
-
-    <!-- GRASS: leaf with a visible central vein -->
-    <g transform="translate(505 90)">
-      <path d="M-22 22C-26-1-8-25 23-27 25 2 8 26-22 22Z"/>
-      <path d="M-22 22 16-17M-8 7-10-9M2-3l13 1"/>
-    </g>
-
-    <!-- ICE: six-armed snow crystal -->
-    <g transform="translate(55 270)">
-      <path d="M0-28V28M-24-14 24 14M-24 14 24-14"/>
-      <path d="m-6-22 6 6 6-6m-12 44 6-6 6 6M-24-6l8-1 1-8m30 30 1-8 8-1M-24 6l8 1 1 8m30-30 1 8 8 1"/>
-    </g>
-
-    <!-- FIGHTING: compact knuckle-and-fist emblem inspired by Pokémon Fighting Energy -->
-    <g transform="translate(145 270)" stroke-width="2.5">
-      <path d="M-24 5v-12c0-3 5-4 7-1l2 5v-14c0-4 7-5 8 0v13-15c0-5 8-5 9 0v16-11c0-5 8-5 9 0v15-6c0-5 8-5 9 0v18c0 12-8 19-20 19h-5c-12 0-20-7-20-18v-9c0-4 5-5 8 0Z"/>
-      <path d="M-17-7h5m4-10h5m4-1h5m4 5h5M-10 10h22M-19 28l-4 6h30"/>
-    </g>
-
-    <!-- POISON: toxic vial with bubbles -->
-    <g transform="translate(235 270)">
-      <path d="M-8-25h16M-5-25v11l-13 19c-7 11 0 22 12 22h28c12 0 19-11 12-22L21-14v-11"/>
-      <path d="M-14 8h28c7 0 10 6 5 11-7 7-25 7-34 0-5-4-4-11 1-11Z"/>
-      <circle cx="-4" cy="-2" r="2.2" fill="#91A9B8" stroke="none"/>
-      <circle cx="8" cy="-8" r="3" fill="#91A9B8" stroke="none"/>
-    </g>
-
-    <!-- GROUND: mountain and geological strata -->
-    <g transform="translate(325 270)">
-      <path d="m-28 20 17-35 12 20 10-14 18 29H-28Z"/>
-      <path d="m-11-15 5 10 7-2M1-9l5 8 5-3M-23 9h45M-18 16h37"/>
-    </g>
-
-    <!-- FLYING: swept bird wing with layered flight feathers -->
-    <g transform="translate(415 270)" stroke-width="2.6">
-      <path d="M-29 17C-9 10 5-7 28-25 25-3 15 15-3 25l-26-8Z"/>
-      <path d="M-29 17C-14 14-1 5 13-9M-20 18-8 2m-5 20L1 8m-1 16 15-14m-7 15L22 8"/>
-      <path d="M-25 8c6-1 11-4 15-8"/>
-    </g>
-
-    <!-- PSYCHIC: eye and inner spark -->
-    <g transform="translate(505 270)">
-      <path d="M-29 0S-17-19 0-19 29 0 29 0 17 19 0 19-29 0-29 0Z"/>
-      <circle r="8"/>
-      <path d="m0-31 2.7 6.2 6.3 2.8-6.3 2.7L0-13l-2.7-6.3L-9-22l6.3-2.8L0-31Z"/>
-    </g>
-
-    <!-- BUG: unmistakable beetle silhouette with antennae and six legs -->
-    <g transform="translate(55 450)" stroke-width="2.6">
-      <path d="M0-13c-12 0-18 11-18 25 0 13 8 22 18 22s18-9 18-22C18-2 12-13 0-13Z"/>
-      <path d="M0-13v47M-8-13l-7-12m23 12 7-12M-16-3l-13-8m29 11 15-8M-18 10l-13 5m31-5 15 5M-13 25l-12 11m25-11 12 11"/>
-      <path d="M-8-16q-8-9-4-16m20 16q8-9 4-16"/>
-      <path d="M-7-5q7-6 14 0M-9 7q9-7 18 0M-8 19q8-6 16 0"/>
-    </g>
-
-    <!-- ROCK: angular boulder with facets -->
-    <g transform="translate(145 450)">
-      <path d="m-27 10 5-20 17-15 18 5 13 17-4 20-19 14-21-5-9-16Z"/>
-      <path d="m-22-10 17 5 18-15m-18 15 4 21m14-21 9 3m-27-3-13 20"/>
-    </g>
-
-    <!-- GHOST: floating apparition -->
-    <g transform="translate(235 450)">
-      <path d="M-22 25v-29a22 22 0 0 1 44 0v29l-11-7-11 9-11-9-11 7Z"/>
-      <path d="M-8-5h.1M8-5h.1" stroke-width="5"/>
-      <path d="M-6 8q6 5 12 0"/>
-    </g>
-
-    <!-- DRAGON: curled dragon crest, horned head and scaled neck -->
-    <g transform="translate(325 450)" stroke-width="2.6">
-      <path d="M-23 17c-2-12 4-22 15-27l-4-15 15 9 10-13 1 17 17-2-11 13c8 9 7 21-2 29-9 8-23 10-34 2-5-4-8-8-7-13Z"/>
-      <path d="M-8-10c9 3 17 8 20 17 2 7-3 14-10 16m-5-33c-6 0-12-3-17-8m39 2 12-8m-8 17 13 3"/>
-      <path d="M-1-1c5 0 9 4 10 9M-13 9l-6 7m18 10 3 9"/>
-      <circle cx="8" cy="-8" r="2.5" fill="#91A9B8" stroke="none"/>
-    </g>
-
-    <!-- DARK: bold Darkness crescent with a sharp, inward-facing tip -->
-    <g transform="translate(415 450)" stroke-width="2.5">
-      <path d="M20-27C4-31-13-22-20-7-29 12-18 32 1 34 12 35 22 29 28 20 14 23 0 14-3 1-6-12 4-25 20-27Z"/>
-      <path d="M-16-7c-2 7 0 14 5 19m-1-30c-3 3-5 6-6 10" opacity=".75"/>
-    </g>
-
-    <!-- STEEL: angular Metal Energy emblem built from three forged chevrons -->
-    <g transform="translate(505 450)" stroke-width="3" stroke-linejoin="miter">
-      <path d="M-22-18 0-29 22-18 14-8 0-15-14-8Z"/>
-      <path d="M-25-7-25 17-7 28-1 16-13 9-13-3Z"/>
-      <path d="M25-7 25 17 7 28 1 16 13 9 13-3Z"/>
-      <path d="m-5-1 5-7 5 7-5 7-5-7Z"/>
-    </g>
-
+    <!-- Pequeños destellos, repartidos de forma irregular -->
+    <path d="m275 73 5 8-5 8-5-8 5-8Z"/>
+    <path d="m45 304 4 6-4 6-4-6 4-6Z"/>
+    <path d="m520 440 5 8-5 8-5-8 5-8Z"/>
+    <path d="m292 365 3 5-3 5-3-5 3-5Z"/>
   </g>
-
-  <!-- Tiny alignment marks between the larger symbols -->
-  <g fill="#91A9B8" opacity=".10">
-    <circle cx="100" cy="180" r="2"/>
-    <circle cx="190" cy="180" r="2"/>
-    <circle cx="280" cy="180" r="2"/>
-    <circle cx="370" cy="180" r="2"/>
-    <circle cx="460" cy="180" r="2"/>
-    <circle cx="100" cy="360" r="2"/>
-    <circle cx="190" cy="360" r="2"/>
-    <circle cx="280" cy="360" r="2"/>
-    <circle cx="370" cy="360" r="2"/>
-    <circle cx="460" cy="360" r="2"/>
+  <g fill="#91A9B8" opacity=".12">
+    <circle cx="244" cy="205" r="2.5"/>
+    <circle cx="500" cy="235" r="2"/>
+    <circle cx="72" cy="477" r="2.5"/>
+    <circle cx="320" cy="487" r="2"/>
+    <circle cx="350" cy="145" r="1.8"/>
   </g>
 </svg>
