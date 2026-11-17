@@ -3166,3 +3166,7 @@ body{
 @media(max-width:800px){
   .brand-logo{height:96px}
 }
+
+
+/* Wheel clarity: keep the roulette panel visible when special spins are redeemed. */
+#page-roulette .wheel-panel{scroll-margin-top:82px}
