@@ -168,28 +168,85 @@ function formatDate(dateValue){
 function drawWheel(){
   const size=canvas.width,center=size/2,radius=size/2-10;
   ctx.clearRect(0,0,size,size);
-  const totalWeight=CARDS.reduce((sum,card)=>sum+Math.max(1,Number(card.weight||1)),0);
-  let accumulatedWeight=0;
-  CARDS.forEach((card,i)=>{
-    const slice=totalWeight>0?TAU*Math.max(1,Number(card.weight||1))/totalWeight:0;
-    const start=rotation-Math.PI/2+(accumulatedWeight/totalWeight)*TAU,end=start+slice;
-    accumulatedWeight+=Math.max(1,Number(card.weight||1));
-    ctx.beginPath();ctx.moveTo(center,center);ctx.arc(center,center,radius,start,end);ctx.closePath();
-    ctx.fillStyle=i%2===0?"#e5e9ec":"#283541";ctx.fill();
+  if(!CARDS.length){
+    ctx.beginPath();ctx.arc(center,center,radius,0,TAU);
+    ctx.fillStyle="#283541";ctx.fill();
     ctx.strokeStyle="#8f9aa3";ctx.lineWidth=3;ctx.stroke();
-    const mid=start+slice/2,x=center+Math.cos(mid)*radius*.65,y=center+Math.sin(mid)*radius*.65;
-    ctx.save();ctx.translate(x,y);
-    const image=cardArtImages[card.id];
+    ctx.beginPath();ctx.arc(center,center,42,0,TAU);
+    ctx.fillStyle="#111820";ctx.fill();
+    ctx.strokeStyle="#f3f5f6";ctx.lineWidth=5;ctx.stroke();
+    return;
+  }
+
+  const weights=CARDS.map(card=>Math.max(1,Number(card.weight||1)));
+  const totalWeight=weights.reduce((sum,weight)=>sum+weight,0);
+  const cardRadius=radius*.67;
+  let accumulatedWeight=0;
+
+  CARDS.forEach((card,i)=>{
+    const slice=TAU*weights[i]/totalWeight;
+    const start=rotation-Math.PI/2+(accumulatedWeight/totalWeight)*TAU;
+    const end=start+slice;
+    accumulatedWeight+=weights[i];
+
+    ctx.beginPath();
+    ctx.moveTo(center,center);
+    ctx.arc(center,center,radius,start,end);
+    ctx.closePath();
+    ctx.fillStyle=i%2===0?"#e5e9ec":"#283541";
+    ctx.fill();
+    ctx.strokeStyle="#8f9aa3";
+    ctx.lineWidth=3;
+    ctx.stroke();
+
+    // The card stays inside its own slice. Narrower slices automatically get
+    // smaller cards, preventing collisions as the roulette catalog grows.
+    const mid=start+slice/2;
+    const arcSpace=2*cardRadius*Math.sin(Math.min(slice,Math.PI)/2);
+    const cardWidth=Math.min(62,Math.max(14,arcSpace*.72));
+    const cardHeight=cardWidth*1.5;
+    const x=center+Math.cos(mid)*cardRadius;
+    const y=center+Math.sin(mid)*cardRadius;
+
+    ctx.save();
+    ctx.translate(x,y);
+    // The card's top edge always points toward the outside of its sector.
+    ctx.rotate(mid+Math.PI/2);
+
+    const image=cardArtImages[card.id]||cardArtImages[card.slug];
     if(image&&image.complete&&image.naturalWidth){
-      ctx.shadowColor="#000";ctx.shadowBlur=9;ctx.drawImage(image,-31,-46.5,62,93);ctx.shadowBlur=0;
-      ctx.strokeStyle="#f1f4f6";ctx.lineWidth=2;ctx.strokeRect(-31,-46.5,62,93);
+      ctx.shadowColor="#000";
+      ctx.shadowBlur=Math.min(9,cardWidth*.15);
+      ctx.drawImage(image,-cardWidth/2,-cardHeight/2,cardWidth,cardHeight);
+      ctx.shadowBlur=0;
+      ctx.strokeStyle="#f1f4f6";
+      ctx.lineWidth=Math.max(1,cardWidth*.025);
+      ctx.strokeRect(-cardWidth/2,-cardHeight/2,cardWidth,cardHeight);
     }else{
-      ctx.fillStyle=card.color;ctx.font="bold 15px Arial";ctx.textAlign="center";ctx.textBaseline="middle";
-      ctx.fillText(card.name.length>13?card.name.slice(0,12)+"…":card.name,0,0);
+      const label=String(card.name||"Carta");
+      ctx.fillStyle=card.color||"#758795";
+      ctx.fillRect(-cardWidth/2,-cardHeight/2,cardWidth,cardHeight);
+      ctx.strokeStyle="#e6edf1";
+      ctx.lineWidth=1;
+      ctx.strokeRect(-cardWidth/2,-cardHeight/2,cardWidth,cardHeight);
+      if(cardWidth>=34){
+        ctx.fillStyle="#fff";
+        ctx.font="bold "+Math.max(7,Math.min(11,cardWidth*.19))+"px Arial";
+        ctx.textAlign="center";
+        ctx.textBaseline="middle";
+        ctx.fillText(label.length>9?label.slice(0,8)+"…":label,0,0,cardWidth-4);
+      }
     }
     ctx.restore();
   });
-  ctx.beginPath();ctx.arc(center,center,42,0,TAU);ctx.fillStyle="#111820";ctx.fill();ctx.strokeStyle="#f3f5f6";ctx.lineWidth=5;ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(center,center,42,0,TAU);
+  ctx.fillStyle="#111820";
+  ctx.fill();
+  ctx.strokeStyle="#f3f5f6";
+  ctx.lineWidth=5;
+  ctx.stroke();
 }
 
 function createDeckItem(card,index,route=false,allowActions=false){
@@ -285,7 +342,7 @@ function renderDeck(){
   if(shuffleWheelButton)shuffleWheelButton.disabled=spinning||CARDS.length<2;
   spinButton.querySelector("span").textContent=
     !currentAuthUser?"INICIA SESIÓN":
-    spinning?"CONECTANDO...":
+    spinning?"GIRANDO...":
     normalCount>=normalCardLimit?"BARAJA COMPLETA":
     totalSpins<=0?"SIN GIROS DISPONIBLES":"GIRAR RULETA";
   setText("spinHint",!currentAuthUser
@@ -2957,10 +3014,13 @@ function setWheelCards(cards,poolSlug="normal",forceShuffle=false){
     });
   }
   CARDS.splice(0,CARDS.length,...nextCards);
+  const wheelTitle=poolSlug==="legendary"?"Ruleta Legendaria":poolSlug==="fiesta"?"Ruleta Fiesta":"Ruleta de cartas";
+  setText("wheelTitle",wheelTitle);
   nextCards.forEach(card=>{
     const image=new Image();
     image.src=card.image_path||("assets/"+card.slug+".svg");
     image.onload=()=>drawWheel();
+    image.onerror=()=>drawWheel();
     cardArtImages[card.id]=image;
     cardArtImages[card.slug]=image;
   });
@@ -3048,13 +3108,17 @@ function startWheelAnimation(card){
     const desiredNorm=((TAU-((prefixWeight+selectedWeight/2)/Math.max(1,totalWeight))*TAU)%TAU+TAU)%TAU;
     const currentNorm=((rotation%TAU)+TAU)%TAU;
     const delta=(desiredNorm-currentNorm+TAU)%TAU;
-    const start=rotation,target=start+TAU*5+delta;
-    const duration=4200,startTime=performance.now();
+    const start=rotation,target=start+TAU*7+delta;
+    const duration=7200,startTime=performance.now();
     function animate(now){
-      const progress=Math.min(1,(now-startTime)/duration),eased=1-Math.pow(1-progress,5);
-      rotation=start+(target-start)*eased;drawWheel();
+      const progress=Math.min(1,(now-startTime)/duration);
+      const eased=1-Math.pow(1-progress,5);
+      rotation=start+(target-start)*eased;
+      drawWheel();
       if(progress<1){requestAnimationFrame(animate);return;}
-      rotation=target%TAU;resolve();
+      rotation=target%TAU;
+      drawWheel();
+      resolve();
     }
     requestAnimationFrame(animate);
   });
@@ -3102,6 +3166,11 @@ async function spin(){
   }
 }
 
+function focusWheelForSpecialSpin(){
+  const panel=document.querySelector("#page-roulette .wheel-panel");
+  if(panel)panel.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
 async function spinSpecialRoulette(poolSlug){
   if(spinning)return;
   if(!currentAuthUser||!authClient){notify("Inicia sesión con Discord para usar las ruletas especiales.");return;}
@@ -3111,6 +3180,7 @@ async function spinSpecialRoulette(poolSlug){
     return;
   }
   const poolName=poolSlug==="legendary"?"Ruleta Legendaria":"Ruleta Fiesta";
+  focusWheelForSpecialSpin();
   spinning=true;renderDeck();
   try{
     const prizeCards=await getPublicRouletteCards(poolSlug);
