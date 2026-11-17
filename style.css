@@ -3146,3 +3146,23 @@ body{
     background-size:auto,auto,460px 443px;
   }
 }
+
+
+/* Supplied Pokémon TypeLink 2 logo in the sidebar */
+.brand{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 0 19px;
+  gap:0;
+}
+.brand-logo{
+  display:block;
+  width:100%;
+  height:96px;
+  object-fit:contain;
+  object-position:center;
+}
+@media(max-width:800px){
+  .brand-logo{height:96px}
+}
