@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="360" viewBox="0 0 360 360" fill="none">
+  <g stroke="#91A9B8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity=".19">
+    <!-- Poké Ball -->
+    <g transform="translate(78 78)">
+      <circle r="35"/>
+      <path d="M-34 0h68"/>
+      <circle r="10"/>
+      <path d="M-8 0a8 8 0 0 0 16 0"/>
+    </g>
+    <!-- Leaf / Planta -->
+    <g transform="translate(278 78)">
+      <path d="M-23 22C-25-2-7-26 24-28 25 2 8 26-23 22Z"/>
+      <path d="M-23 22 16-17"/>
+      <path d="m-7 6-2-17m15 4 14 1"/>
+    </g>
+    <!-- Lightning / Eléctrico -->
+    <g transform="translate(278 278)">
+      <path d="M7-31-18 5h19l-7 27 27-40H2l5-23Z"/>
+    </g>
+    <!-- Flame / Fuego -->
+    <g transform="translate(78 278)">
+      <path d="M2-34C8-13 31-7 25 15 21 33 5 39-9 32-28 23-31 1-16-14-15-3-8 0-5-3-13-20-5-28 2-34Z"/>
+      <path d="M2 3C13 14 7 28-3 29-14 25-12 13-5 7"/>
+    </g>
+    <!-- Small decorative diamonds -->
+    <path d="m178 24 5 7-5 7-5-7 5-7Z"/>
+    <path d="m178 324 5 7-5 7-5-7 5-7Z"/>
+    <path d="m24 178 5 7-5 7-5-7 5-7Z"/>
+    <path d="m324 178 5 7-5 7-5-7 5-7Z"/>
+  </g>
+  <g fill="#91A9B8" opacity=".12">
+    <circle cx="178" cy="78" r="2.5"/>
+    <circle cx="78" cy="178" r="2.5"/>
+    <circle cx="278" cy="178" r="2.5"/>
+    <circle cx="178" cy="278" r="2.5"/>
+  </g>
+</svg>
