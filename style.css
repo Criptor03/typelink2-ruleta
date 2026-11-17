@@ -3135,7 +3135,7 @@ body{
   background-image:
     radial-gradient(ellipse at 77% 3%,#25374730 0,transparent 35%),
     radial-gradient(ellipse at 3% 45%,#8e41400d 0,transparent 32%),
-    url("assets/typelink-pokemon-pattern.svg");
+    url("assets/typelink-pokemon-pattern.svg?v=20261117-normal-star");
   background-position:77% 3%,3% 45%,0 0;
   background-size:auto,auto,560px 540px;
   background-repeat:no-repeat,no-repeat,repeat;
