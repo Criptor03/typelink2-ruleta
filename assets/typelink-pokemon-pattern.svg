@@ -1,12 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="560" height="540" viewBox="0 0 560 540" fill="none">
   <title>Patrón Pokémon TypeLink 2 minimalista</title>
   <g stroke="#91A9B8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity=".19">
-    <!-- Poké Ball -->
-    <g transform="translate(92 112) scale(.82)">
-      <circle r="35"/>
-      <path d="M-34 0h68"/>
-      <circle r="10"/>
-      <path d="M-8 0a8 8 0 0 0 16 0"/>
+    <!-- NORMAL: estrella sencilla -->
+    <g transform="translate(92 112) scale(.88)">
+      <path d="M0-34 9-11 34-11 14 4 22 29 0 14-22 29-14 4-34-11-9-11 0-34Z"/>
     </g>
 
     <!-- Fuego -->
