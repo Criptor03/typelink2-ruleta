@@ -102,6 +102,11 @@ let adminSelectedRouletteSlug = null;
 let adminMechanicsItems = [];
 let adminSelectedMechanicsCardId = null;
 let spinRewardResolver = null;
+let typeLeagueVisible = false;
+let typeLeagueProfiles = [];
+let typeLeagueMatches = [];
+let typeLeagueChannel = null;
+
 
 shuffleRouletteItems(CARDS);
 
@@ -1697,6 +1702,7 @@ function setupRealtime(){
   if(profilesChannel)authClient.removeChannel(profilesChannel);
   if(activityChannel)authClient.removeChannel(activityChannel);
   if(notificationChannel)authClient.removeChannel(notificationChannel);
+  if(typeLeagueChannel)authClient.removeChannel(typeLeagueChannel);
   inventoryChannel=authClient.channel("typelink-player-cards-"+currentAuthUser.id)
     .on("postgres_changes",{event:"*",schema:"public",table:"player_cards",filter:"owner_id=eq."+currentAuthUser.id},()=>{if(!spinning)loadCloudInventory();})
     .subscribe();
@@ -1727,6 +1733,14 @@ function setupRealtime(){
   notificationChannel=authClient.channel("typelink-private-notifications-"+currentAuthUser.id)
     .on("postgres_changes",{event:"*",schema:"public",table:"notifications",filter:"recipient_id=eq."+currentAuthUser.id},()=>loadNotifications())
     .subscribe();
+  typeLeagueChannel=authClient.channel("typelink-typeleague-live")
+    .on("postgres_changes",{event:"*",schema:"public",table:"typeleague_matches"},()=>{
+      const publicPage=document.getElementById("page-typeleague");
+      const adminWorkspace=document.getElementById("adminTypeLeagueWorkspace");
+      if(publicPage&&!publicPage.hidden)void loadTypeLeagueData({quiet:true});
+      if(isAdmin&&adminWorkspace&&!adminWorkspace.hidden)void loadTypeLeagueData({quiet:true});
+    })
+    .subscribe();
 }
 
 function renderAdminAccess(){
@@ -1746,6 +1760,7 @@ function showAdminOverview(){
   const mechanicsWorkspace=document.getElementById("adminMechanicsWorkspace");
   const progressionWorkspace=document.getElementById("adminProgressionWorkspace");
   const platformWorkspace=document.getElementById("adminPlatformWorkspace");
+  const typeLeagueWorkspace=document.getElementById("adminTypeLeagueWorkspace");
   if(overview)overview.hidden=false;
   if(catalogWorkspace)catalogWorkspace.hidden=true;
   if(trainersWorkspace)trainersWorkspace.hidden=true;
@@ -1753,6 +1768,7 @@ function showAdminOverview(){
   if(mechanicsWorkspace)mechanicsWorkspace.hidden=true;
   if(progressionWorkspace)progressionWorkspace.hidden=true;
   if(platformWorkspace)platformWorkspace.hidden=true;
+  if(typeLeagueWorkspace)typeLeagueWorkspace.hidden=true;
   const list=document.getElementById("adminCatalogListView");
   const editor=document.getElementById("adminCardEditorView");
   const trainerList=document.getElementById("adminTrainersListView");
@@ -3077,6 +3093,12 @@ async function activateUserSession(user){
     if(activityChannel&&authClient)authClient.removeChannel(activityChannel);
     if(notificationChannel&&authClient)authClient.removeChannel(notificationChannel);
     inventoryChannel=null;profilesChannel=null;activityChannel=null;notificationChannel=null;
+    if(typeLeagueChannel&&authClient)authClient.removeChannel(typeLeagueChannel);
+    typeLeagueChannel=null;
+    typeLeagueVisible=false;typeLeagueProfiles=[];typeLeagueMatches=[];
+    const typeLeagueNav=document.getElementById("typeLeagueNavLink");
+    if(typeLeagueNav)typeLeagueNav.hidden=true;
+
     notificationCache=[];
     setNotificationBadge(0);
     activeSessionUserId=null;currentProfile=null;isAdmin=false;adminAccessChecked=false;cloudMode=false;cloudDeck=[];cloudRoute=[];cloudSpecial=[];cloudInventory=[];
@@ -3096,6 +3118,7 @@ async function activateUserSession(user){
   renderAuthState(user);renderDeck();
   await Promise.all([loadAdminAccess(),loadMyProfile(),loadCloudInventory(),loadPlayers(),loadActivityFeed(),loadNotifications(),loadPublicNormalCards(),loadRouletteAccess()]);
   renderAdminAccess();
+  await loadTypeLeagueVisibility();
   setupRealtime();
 }
 
@@ -3518,7 +3541,406 @@ async function loadAdminPlatformStatus(){
   }finally{if(button){button.disabled=false;button.textContent="↻ ACTUALIZAR";}}
 }
 
+
+function typeLeagueInitials(name){
+  return String(name||"TL").trim().split(/\\s+/).slice(0,2).map(part=>part[0]||"").join("").toUpperCase()||"TL";
+}
+function typeLeagueProfileMap(){
+  return new Map(typeLeagueProfiles.map(profile=>[profile.id,profile]));
+}
+function typeLeagueLocalDateTime(dateValue){
+  const date=dateValue?new Date(dateValue):new Date();
+  if(Number.isNaN(date.getTime()))return "";
+  const local=new Date(date.getTime()-date.getTimezoneOffset()*60000);
+  return local.toISOString().slice(0,16);
+}
+function typeLeagueFormatDate(dateValue,withTime=false){
+  if(!dateValue)return "—";
+  const date=new Date(dateValue);
+  if(Number.isNaN(date.getTime()))return "—";
+  return new Intl.DateTimeFormat("es-CO",withTime
+    ?{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}
+    :{day:"2-digit",month:"short",year:"numeric"}).format(date);
+}
+async function loadTypeLeagueVisibility(){
+  const nav=document.getElementById("typeLeagueNavLink");
+  if(!authClient||!currentAuthUser){
+    typeLeagueVisible=false;
+    if(nav)nav.hidden=true;
+    return false;
+  }
+  try{
+    const {data,error}=await authClient.from("event_settings")
+      .select("typeleague_visible").eq("singleton",true).single();
+    if(error)throw error;
+    typeLeagueVisible=Boolean(data?.typeleague_visible);
+    if(nav)nav.hidden=!(typeLeagueVisible||isAdmin);
+    return typeLeagueVisible;
+  }catch(error){
+    console.warn("No se pudo consultar la visibilidad de TypeLeague:",error.message);
+    if(!isAdmin){typeLeagueVisible=false;if(nav)nav.hidden=true;}
+    return typeLeagueVisible;
+  }
+}
+function buildTypeLeagueStandings(profiles,matches){
+  const stats=new Map();
+  profiles.forEach(profile=>stats.set(profile.id,{
+    id:profile.id,name:profile.display_name||"Entrenador",avatar_url:profile.avatar_url||null,
+    PJ:0,PG:0,PE:0,PP:0,PKD:0,PTS:0
+  }));
+  matches.forEach(match=>{
+    const a=stats.get(match.participant_a_id);
+    const b=stats.get(match.participant_b_id);
+    if(!a||!b)return;
+    const aDefeated=Math.max(0,Number(match.participant_a_pokemon_defeated)||0);
+    const bDefeated=Math.max(0,Number(match.participant_b_pokemon_defeated)||0);
+    a.PJ+=1;b.PJ+=1;
+    a.PKD+=aDefeated;b.PKD+=bDefeated;
+    if(match.winner_id===a.id){
+      a.PG+=1;
+      if(aDefeated>3)b.PE+=1;else b.PP+=1;
+    }else if(match.winner_id===b.id){
+      b.PG+=1;
+      if(bDefeated>3)a.PE+=1;else a.PP+=1;
+    }
+  });
+  const rows=[...stats.values()];
+  rows.forEach(row=>row.PTS=row.PG*3+row.PE);
+  rows.sort((a,b)=>b.PTS-a.PTS||b.PKD-a.PKD||b.PG-a.PG||a.PP-b.PP||a.name.localeCompare(b.name,"es"));
+  return rows;
+}
+function createTypeLeagueAvatar(profile){
+  const wrap=document.createElement("span");wrap.className="typeleague-avatar";
+  if(profile.avatar_url){
+    try{
+      const url=new URL(profile.avatar_url);
+      if(url.protocol==="https:"){
+        const image=document.createElement("img");
+        image.src=url.href;image.alt="";image.loading="lazy";
+        image.onerror=()=>{image.remove();wrap.textContent=typeLeagueInitials(profile.name||profile.display_name);};
+        wrap.append(image);return wrap;
+      }
+    }catch(error){}
+  }
+  wrap.textContent=typeLeagueInitials(profile.name||profile.display_name);
+  return wrap;
+}
+function renderTypeLeague(){
+  const body=document.getElementById("typeLeagueStandingsBody");
+  const history=document.getElementById("typeLeagueHistoryList");
+  if(!body||!history)return;
+  const profiles=typeLeagueProfiles;
+  const matches=typeLeagueMatches;
+  const rows=buildTypeLeagueStandings(profiles,matches);
+  body.replaceChildren();
+  if(!profiles.length){
+    const tr=document.createElement("tr"),td=document.createElement("td");
+    td.colSpan=8;td.className="typeleague-empty-cell";td.textContent="No hay participantes registrados.";
+    tr.append(td);body.append(tr);
+  }else{
+    rows.forEach((row,index)=>{
+      const tr=document.createElement("tr");
+      if(index===0&&row.PTS>0)tr.classList.add("is-leader");
+      const pos=document.createElement("td");pos.className="typeleague-position";pos.textContent=String(index+1).padStart(2,"0");
+      const trainer=document.createElement("td");trainer.className="typeleague-player-cell";
+      trainer.append(createTypeLeagueAvatar(row));
+      const name=document.createElement("strong");name.textContent=row.name;trainer.append(name);
+      tr.append(pos,trainer);
+      ["PJ","PG","PE","PP","PKD"].forEach(key=>{
+        const td=document.createElement("td");td.className="typeleague-number";td.textContent=String(row[key]);tr.append(td);
+      });
+      const points=document.createElement("td");points.className="typeleague-points";points.textContent=String(row.PTS);tr.append(points);
+      body.append(tr);
+    });
+  }
+  const totalKOs=rows.reduce((sum,row)=>sum+row.PKD,0);
+  setText("typeLeagueMatchCount",matches.length);
+  setText("typeLeagueParticipantCount",profiles.length);
+  setText("typeLeaguePokemonCount",totalKOs);
+  setText("typeLeagueUpdatedAt",matches.length
+    ?"ÚLTIMA PARTIDA · "+typeLeagueFormatDate(matches[0].played_at)
+    :"SIN REGISTROS");
+
+  history.replaceChildren();
+  if(!matches.length){
+    const empty=document.createElement("div");empty.className="typeleague-history-empty";
+    empty.textContent="Todavía no hay enfrentamientos registrados.";
+    history.append(empty);
+  }else{
+    const byId=typeLeagueProfileMap();
+    matches.slice(0,12).forEach(match=>{
+      const a=byId.get(match.participant_a_id),b=byId.get(match.participant_b_id),winner=byId.get(match.winner_id);
+      const item=document.createElement("article");item.className="typeleague-history-item";
+      const left=document.createElement("div");left.className="typeleague-history-match";
+      const matchup=document.createElement("strong");
+      matchup.textContent=(a?.display_name||"Entrenador")+ " vs. "+(b?.display_name||"Entrenador");
+      const result=document.createElement("small");
+      result.textContent="GANADOR · "+(winner?.display_name||"Participante");
+      left.append(matchup,result);
+      const meta=document.createElement("div");meta.className="typeleague-history-meta";
+      const knocked=document.createElement("span");
+      knocked.textContent="PKD "+Number(match.participant_a_pokemon_defeated||0)+" — "+Number(match.participant_b_pokemon_defeated||0);
+      const date=document.createElement("time");date.textContent=typeLeagueFormatDate(match.played_at,true);
+      meta.append(knocked,date);
+      item.append(left,meta);
+      if(match.notes){
+        const note=document.createElement("p");note.className="typeleague-history-note";note.textContent=match.notes;item.append(note);
+      }
+      history.append(item);
+    });
+  }
+}
+async function loadTypeLeagueData(options={}){
+  if(!authClient||!currentAuthUser)return;
+  const publicPage=document.getElementById("page-typeleague");
+  const body=document.getElementById("typeLeagueStandingsBody");
+  if(body&&publicPage&&!publicPage.hidden&&!options.quiet){
+    body.replaceChildren();
+    const tr=document.createElement("tr"),td=document.createElement("td");
+    td.colSpan=8;td.className="typeleague-empty-cell";td.textContent="Cargando clasificación...";
+    tr.append(td);body.append(tr);
+  }
+  try{
+    await loadTypeLeagueVisibility();
+    if(!typeLeagueVisible&&!isAdmin){
+      if(publicPage&&!publicPage.hidden)setPage("home");
+      return;
+    }
+    const [profilesResult,matchesResult]=await Promise.all([
+      authClient.from("profiles").select("id,display_name,avatar_url").order("display_name",{ascending:true}),
+      authClient.from("typeleague_matches")
+        .select("id,participant_a_id,participant_b_id,winner_id,participant_a_pokemon_defeated,participant_b_pokemon_defeated,played_at,notes,created_at")
+        .order("played_at",{ascending:false}).order("created_at",{ascending:false})
+    ]);
+    if(profilesResult.error)throw profilesResult.error;
+    if(matchesResult.error)throw matchesResult.error;
+    typeLeagueProfiles=Array.isArray(profilesResult.data)?profilesResult.data:[];
+    typeLeagueMatches=Array.isArray(matchesResult.data)?matchesResult.data:[];
+    renderTypeLeague();
+    if(isAdmin)renderAdminTypeLeagueMatches();
+    setText("adminTypeLeagueTotalMatches",typeLeagueMatches.length);
+    setText("adminTypeLeagueTotalPlayers",typeLeagueProfiles.length);
+    setText("adminTypeLeagueState",typeLeagueVisible?"PUBLICADA":"PREPARACIÓN");
+    setText("adminTypeLeagueVisibilityStatus",typeLeagueVisible?"VISIBLE PARA PARTICIPANTES":"OCULTA PARA PARTICIPANTES");
+  }catch(error){
+    console.error("No se pudo cargar TypeLeague:",error);
+    if(body){
+      body.replaceChildren();
+      const tr=document.createElement("tr"),td=document.createElement("td");
+      td.colSpan=8;td.className="typeleague-empty-cell is-error";
+      td.textContent="No se pudo cargar la clasificación: "+(error.message||"error desconocido");
+      tr.append(td);body.append(tr);
+    }
+    notify("No se pudo cargar TypeLeague: "+(error.message||"error desconocido"));
+  }
+}
+function fillAdminTypeLeagueParticipants(){
+  const a=document.getElementById("adminTypeLeagueParticipantA");
+  const b=document.getElementById("adminTypeLeagueParticipantB");
+  if(!a||!b)return;
+  [a,b].forEach(select=>{
+    const previous=select.value;
+    select.replaceChildren();
+    const placeholder=document.createElement("option");
+    placeholder.value="";placeholder.textContent="Selecciona entrenador...";
+    select.append(placeholder);
+    typeLeagueProfiles.forEach(profile=>{
+      const option=document.createElement("option");
+      option.value=profile.id;option.textContent=profile.display_name||"Entrenador";
+      select.append(option);
+    });
+    if(previous&&typeLeagueProfiles.some(profile=>profile.id===previous))select.value=previous;
+  });
+  if(!a.value&&typeLeagueProfiles[0])a.value=typeLeagueProfiles[0].id;
+  if(!b.value&&typeLeagueProfiles[1])b.value=typeLeagueProfiles[1].id;
+  if(a.value&&b.value===a.value){
+    const other=typeLeagueProfiles.find(profile=>profile.id!==a.value);
+    b.value=other?.id||"";
+  }
+  syncAdminTypeLeagueWinner();
+}
+function syncAdminTypeLeagueWinner(preferredValue){
+  const winner=document.getElementById("adminTypeLeagueWinner");
+  const a=document.getElementById("adminTypeLeagueParticipantA");
+  const b=document.getElementById("adminTypeLeagueParticipantB");
+  if(!winner||!a||!b)return;
+  const current=preferredValue||winner.value;
+  winner.replaceChildren();
+  [[a.value,a.selectedOptions[0]?.textContent],[b.value,b.selectedOptions[0]?.textContent]].forEach((entry,index)=>{
+    if(!entry[0])return;
+    const option=document.createElement("option");
+    option.value=entry[0];option.textContent="Ganador: "+(entry[1]||("Participante "+(index+1)));
+    winner.append(option);
+  });
+  if([...winner.options].some(option=>option.value===current))winner.value=current;
+  else if(winner.options.length)winner.selectedIndex=0;
+}
+function resetAdminTypeLeagueForm(){
+  const form=document.getElementById("adminTypeLeagueForm");
+  if(!form)return;
+  form.reset();
+  document.getElementById("adminTypeLeagueMatchId").value="";
+  document.getElementById("adminTypeLeaguePlayedAt").value=typeLeagueLocalDateTime();
+  document.getElementById("adminTypeLeaguePokemonA").value="0";
+  document.getElementById("adminTypeLeaguePokemonB").value="0";
+  setText("adminTypeLeagueFormTitle","Registrar enfrentamiento");
+  setText("adminTypeLeagueSave","REGISTRAR PARTIDA ↗");
+  setText("adminTypeLeagueFormStatus","Cada enfrentamiento cuenta como una partida jugada para ambos.");
+  fillAdminTypeLeagueParticipants();
+}
+function renderAdminTypeLeagueMatches(){
+  const list=document.getElementById("adminTypeLeagueMatchesList");
+  if(!list)return;
+  const map=typeLeagueProfileMap();
+  list.replaceChildren();
+  setText("adminTypeLeagueHistoryCount",typeLeagueMatches.length+" PARTIDAS");
+  if(!typeLeagueMatches.length){
+    const empty=document.createElement("div");empty.className="typeleague-history-empty";
+    empty.textContent="Todavía no hay resultados registrados.";
+    list.append(empty);return;
+  }
+  typeLeagueMatches.forEach(match=>{
+    const a=map.get(match.participant_a_id),b=map.get(match.participant_b_id),winner=map.get(match.winner_id);
+    const card=document.createElement("article");card.className="admin-typeleague-match";
+    const copy=document.createElement("div");copy.className="admin-typeleague-match-copy";
+    const title=document.createElement("strong");
+    title.textContent=(a?.display_name||"Entrenador")+" vs. "+(b?.display_name||"Entrenador");
+    const result=document.createElement("small");
+    result.textContent="GANADOR · "+(winner?.display_name||"—")+" · PKD "+Number(match.participant_a_pokemon_defeated||0)+"–"+Number(match.participant_b_pokemon_defeated||0);
+    const date=document.createElement("span");date.textContent=typeLeagueFormatDate(match.played_at,true);
+    copy.append(title,result,date);
+    const actions=document.createElement("div");actions.className="admin-typeleague-match-actions";
+    const edit=document.createElement("button");edit.type="button";edit.className="admin-typeleague-edit";edit.textContent="EDITAR";
+    edit.addEventListener("click",()=>editAdminTypeLeagueMatch(match));
+    const remove=document.createElement("button");remove.type="button";remove.className="admin-typeleague-delete";remove.textContent="BORRAR";
+    remove.addEventListener("click",()=>deleteAdminTypeLeagueMatch(match));
+    actions.append(edit,remove);
+    card.append(copy,actions);list.append(card);
+  });
+}
+function editAdminTypeLeagueMatch(match){
+  const form=document.getElementById("adminTypeLeagueForm");
+  document.getElementById("adminTypeLeagueMatchId").value=match.id;
+  document.getElementById("adminTypeLeagueParticipantA").value=match.participant_a_id;
+  document.getElementById("adminTypeLeagueParticipantB").value=match.participant_b_id;
+  document.getElementById("adminTypeLeaguePokemonA").value=String(match.participant_a_pokemon_defeated||0);
+  document.getElementById("adminTypeLeaguePokemonB").value=String(match.participant_b_pokemon_defeated||0);
+  syncAdminTypeLeagueWinner(match.winner_id);
+  document.getElementById("adminTypeLeaguePlayedAt").value=typeLeagueLocalDateTime(match.played_at);
+  document.getElementById("adminTypeLeagueNotes").value=match.notes||"";
+  setText("adminTypeLeagueFormTitle","Editar enfrentamiento");
+  setText("adminTypeLeagueSave","GUARDAR CAMBIOS ↗");
+  setText("adminTypeLeagueFormStatus","Estás editando una partida existente. Las estadísticas se recalcularán.");
+  form.scrollIntoView({behavior:"smooth",block:"start"});
+}
+async function deleteAdminTypeLeagueMatch(match){
+  if(!isAdmin||!authClient)return;
+  const map=typeLeagueProfileMap();
+  const a=map.get(match.participant_a_id),b=map.get(match.participant_b_id);
+  if(!window.confirm("¿Eliminar la partida "+(a?.display_name||"Participante")+" vs. "+(b?.display_name||"Participante")+"? La clasificación se recalculará sin este resultado."))return;
+  try{
+    const {data,error}=await authClient.rpc("admin_delete_typeleague_match",{p_match_id:match.id});
+    if(error)throw error;
+    if(!data?.success)throw new Error("El servidor no confirmó la eliminación.");
+    await loadTypeLeagueData({quiet:true});
+    notify("Partida eliminada. Clasificación actualizada.");
+  }catch(error){
+    console.error("No se pudo eliminar la partida de TypeLeague:",error);
+    notify("No se pudo eliminar la partida: "+(error.message||"error desconocido"));
+  }
+}
+async function saveAdminTypeLeagueMatch(event){
+  event.preventDefault();
+  if(!isAdmin||!authClient){notify("Acceso reservado al administrador.");return;}
+  const id=document.getElementById("adminTypeLeagueMatchId").value||null;
+  const participantA=document.getElementById("adminTypeLeagueParticipantA").value;
+  const participantB=document.getElementById("adminTypeLeagueParticipantB").value;
+  const winner=document.getElementById("adminTypeLeagueWinner").value;
+  const defeatedA=Number(document.getElementById("adminTypeLeaguePokemonA").value);
+  const defeatedB=Number(document.getElementById("adminTypeLeaguePokemonB").value);
+  const playedAt=document.getElementById("adminTypeLeaguePlayedAt").value;
+  const notes=(document.getElementById("adminTypeLeagueNotes").value||"").trim();
+  const status=document.getElementById("adminTypeLeagueFormStatus");
+  const button=document.getElementById("adminTypeLeagueSave");
+  if(!participantA||!participantB||participantA===participantB){status.textContent="Selecciona dos participantes diferentes.";return;}
+  if(!winner||![participantA,participantB].includes(winner)){status.textContent="Selecciona como ganador a uno de los participantes.";return;}
+  if(!Number.isInteger(defeatedA)||defeatedA<0||defeatedA>6||!Number.isInteger(defeatedB)||defeatedB<0||defeatedB>6){
+    status.textContent="Los Pokémon derrotados deben estar entre 0 y 6.";return;
+  }
+  if(!playedAt||Number.isNaN(new Date(playedAt).getTime())){status.textContent="Indica una fecha y hora válidas.";return;}
+  button.disabled=true;button.textContent="GUARDANDO...";
+  status.textContent="Guardando resultado y recalculando la clasificación...";
+  try{
+    const {data,error}=await authClient.rpc("admin_save_typeleague_match",{
+      p_match_id:id,
+      p_participant_a_id:participantA,
+      p_participant_b_id:participantB,
+      p_winner_id:winner,
+      p_participant_a_pokemon_defeated:defeatedA,
+      p_participant_b_pokemon_defeated:defeatedB,
+      p_played_at:new Date(playedAt).toISOString(),
+      p_notes:notes
+    });
+    if(error)throw error;
+    if(!data?.success)throw new Error("El servidor no confirmó el registro.");
+    resetAdminTypeLeagueForm();
+    await loadTypeLeagueData({quiet:true});
+    notify(id?"Partida actualizada correctamente.":"Partida registrada correctamente.");
+  }catch(error){
+    console.error("No se pudo guardar la partida de TypeLeague:",error);
+    status.textContent=error.message||"No se pudo guardar el resultado.";
+    notify("No se pudo guardar el resultado: "+(error.message||"error desconocido"));
+  }finally{
+    button.disabled=false;
+    if(document.getElementById("adminTypeLeagueMatchId").value){
+      button.textContent="GUARDAR CAMBIOS ↗";
+    }else{
+      button.textContent="REGISTRAR PARTIDA ↗";
+    }
+  }
+}
+async function setAdminTypeLeagueVisibility(visible){
+  if(!isAdmin||!authClient)return;
+  const input=document.getElementById("adminTypeLeagueVisible");
+  const status=document.getElementById("adminTypeLeagueVisibilityStatus");
+  input.disabled=true;
+  status.textContent="ACTUALIZANDO...";
+  try{
+    const {data,error}=await authClient.rpc("admin_set_typeleague_visibility",{p_visible:Boolean(visible)});
+    if(error)throw error;
+    if(!data?.success)throw new Error("El servidor no confirmó el cambio de visibilidad.");
+    typeLeagueVisible=Boolean(data.visible);
+    if(document.getElementById("typeLeagueNavLink"))document.getElementById("typeLeagueNavLink").hidden=!(typeLeagueVisible||isAdmin);
+    status.textContent=typeLeagueVisible?"VISIBLE PARA PARTICIPANTES":"OCULTA PARA PARTICIPANTES";
+    setText("adminTypeLeagueState",typeLeagueVisible?"PUBLICADA":"PREPARACIÓN");
+    if(typeLeagueVisible)notify("TypeLeague ya está visible para los participantes.");
+    else notify("TypeLeague se ha ocultado para los participantes. Los resultados se conservan.");
+  }catch(error){
+    input.checked=typeLeagueVisible;
+    status.textContent=typeLeagueVisible?"VISIBLE PARA PARTICIPANTES":"OCULTA PARA PARTICIPANTES";
+    console.error("No se pudo cambiar la visibilidad de TypeLeague:",error);
+    notify("No se pudo cambiar la visibilidad: "+(error.message||"error desconocido"));
+  }finally{
+    input.disabled=false;
+  }
+}
+async function openAdminTypeLeague(){
+  if(!isAdmin){notify("Acceso reservado al administrador.");return;}
+  showAdminOverview();
+  document.getElementById("adminOverview").hidden=true;
+  document.getElementById("adminTypeLeagueWorkspace").hidden=false;
+  await loadTypeLeagueData({quiet:true});
+  document.getElementById("adminTypeLeagueVisible").checked=typeLeagueVisible;
+  fillAdminTypeLeagueParticipants();
+  resetAdminTypeLeagueForm();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
 function setPage(page){
+  if(page==="typeleague"&&(!currentAuthUser||(!typeLeagueVisible&&!isAdmin))){
+    notify("TypeLeague todavía no está disponible para los participantes.");
+    page="home";
+  }
   if(page==="admin"&&(!currentAuthUser||!isAdmin)){
     notify("Solo disponible para administradores autorizados.");
     page="home";
@@ -3527,7 +3949,7 @@ function setPage(page){
   document.querySelectorAll("[data-page]").forEach(button=>{
     if(button.classList.contains("nav-link"))button.classList.toggle("active",button.dataset.page===page);
   });
-  const labels={home:"INICIO",roulette:"RULETA",players:"JUGADORES",activity:"MURO DE CARTAS",profile:"MI PERFIL",deck:"MI BARAJA",pokemon:"MI EQUIPO POKÉMON",notifications:"NOTIFICACIONES",admin:"ADMINISTRACIÓN"};
+  const labels={home:"INICIO",roulette:"RULETA",typeleague:"TYPELEAGUE",players:"JUGADORES",activity:"MURO DE CARTAS",profile:"MI PERFIL",deck:"MI BARAJA",pokemon:"MI EQUIPO POKÉMON",notifications:"NOTIFICACIONES",admin:"ADMINISTRACIÓN"};
   setText("currentSection",labels[page]||"INICIO");
   document.getElementById("sidebar").classList.remove("open");
   document.getElementById("mobileScrim").classList.remove("show");
@@ -3537,6 +3959,7 @@ function setPage(page){
   if(page==="notifications")loadNotifications();
   if(page==="deck"&&cloudMode)loadCloudInventory();
   if(page==="profile"&&currentAuthUser)loadMyProfile();
+  if(page==="typeleague"&&currentAuthUser)void loadTypeLeagueData();
   if(page==="admin"&&isAdmin){renderAdminAccess();showAdminOverview();}
   window.scrollTo({top:0,behavior:"smooth"});
 }
@@ -3592,6 +4015,16 @@ function initSupabaseAuth(){
     });
   }
 }
+
+
+document.getElementById("openAdminTypeLeague").addEventListener("click",openAdminTypeLeague);
+document.getElementById("adminTypeLeagueBack").addEventListener("click",showAdminOverview);
+document.getElementById("adminTypeLeagueRefresh").addEventListener("click",()=>loadTypeLeagueData());
+document.getElementById("adminTypeLeagueVisible").addEventListener("change",event=>setAdminTypeLeagueVisibility(event.target.checked));
+document.getElementById("adminTypeLeagueForm").addEventListener("submit",saveAdminTypeLeagueMatch);
+document.getElementById("adminTypeLeagueReset").addEventListener("click",resetAdminTypeLeagueForm);
+document.getElementById("adminTypeLeagueParticipantA").addEventListener("change",()=>syncAdminTypeLeagueWinner());
+document.getElementById("adminTypeLeagueParticipantB").addEventListener("change",()=>syncAdminTypeLeagueWinner());
 
 document.querySelectorAll("[data-page]").forEach(button=>button.addEventListener("click",()=>setPage(button.dataset.page)));
 document.getElementById("markAllNotificationsRead").addEventListener("click",markAllNotificationsRead);
