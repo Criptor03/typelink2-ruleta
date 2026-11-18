@@ -3641,7 +3641,7 @@ function renderTypeLeague(){
     rows.forEach((row,index)=>{
       const tr=document.createElement("tr");
       if(index===0&&row.PTS>0)tr.classList.add("is-leader");
-      const pos=document.createElement("td");pos.className="typeleague-position";pos.textContent=String(index+1).padStart(2,"0");
+      const pos=document.createElement("td");pos.className="typeleague-position";pos.textContent=String(index+1)+"º";
       const trainer=document.createElement("td");trainer.className="typeleague-player-cell";
       trainer.append(createTypeLeagueAvatar(row));
       const name=document.createElement("strong");name.textContent=row.name;trainer.append(name);
