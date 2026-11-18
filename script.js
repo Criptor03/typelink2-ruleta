@@ -2675,9 +2675,9 @@ async function saveAdminMechanics(){
     openAdminMechanicsEditor(cardId);
     await loadAdminCatalog();
     await loadAdminRoulettePools();
-    status.textContent="Guardado: "+result.effects_saved+" efecto(s) · "+(result.evolution_enabled?"evolución configurada · excluida de ruletas":"sin evolución nueva");
+    status.textContent="Guardado: "+result.effects_saved+" efecto(s) · "+(result.evolution_enabled?"evolución configurada · puede seguir en ruletas":"sin evolución nueva");
     notify(result.evolution_enabled
-      ?"Evolución guardada. La carta ha sido excluida de todas las ruletas."
+      ?"Evolución guardada. La carta conserva su configuración de ruleta."
       :"Mecánicas de «"+result.card_name+"» guardadas correctamente.");
     if(currentAuthUser){
       await loadCloudInventory();
@@ -2740,10 +2740,7 @@ function renderAdminCatalog(){
     status.textContent=card.is_active?"ACTIVA":"DESACTIVADA";
     const rouletteStatus=document.createElement("span");rouletteStatus.className="admin-card-roulette-status";
     const assignedPools=Array.isArray(card.roulette_pools)?card.roulette_pools:[];
-    if(card.has_active_evolution){
-      rouletteStatus.classList.add("is-excluded");
-      rouletteStatus.textContent="EXCLUIDA · TIENE EVOLUCIÓN";
-    }else if(card.roulette_eligible===false){
+    if(card.roulette_eligible===false){
       rouletteStatus.classList.add("is-excluded");
       rouletteStatus.textContent="NO APARECE EN RULETAS";
     }else if(assignedPools.length){
@@ -2825,12 +2822,9 @@ function openAdminCardEditor(card){
   document.getElementById("adminCardActive").checked=card?Boolean(card.is_active):true;
   const rouletteEligibleInput=document.getElementById("adminCardRouletteEligible");
   const rouletteHelp=document.getElementById("adminCardRouletteHelp");
-  const hasActiveEvolution=Boolean(card?.has_active_evolution);
-  rouletteEligibleInput.checked=card?card.roulette_eligible!==false&&!hasActiveEvolution:true;
-  rouletteEligibleInput.disabled=hasActiveEvolution;
-  rouletteHelp.textContent=hasActiveEvolution
-    ?"Excluida: tiene una evolución activa."
-    :"Activa esta opción para incluirla en una ruleta.";
+  rouletteEligibleInput.checked=card?card.roulette_eligible!==false:true;
+  rouletteEligibleInput.disabled=false;
+  rouletteHelp.textContent="Las cartas con evolución también pueden aparecer en una ruleta. Activa esta opción para permitirlo.";
   document.getElementById("adminCardImageFile").value="";
   document.getElementById("adminCardImageHelp").textContent=adminEditingImagePath?"PNG actual. Puedes reemplazarlo.":"PNG · máximo 5 MB.";
   document.getElementById("adminCardFormStatus").textContent="Revisa los datos.";
