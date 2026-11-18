@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b1016">
   <meta name="description" content="Pokémon TypeLink 2 — Plataforma del evento en Teselia">
   <title>Pokémon TypeLink 2 — Plataforma</title>
-  <link rel="stylesheet" href="style.css?v=20261117-typeleague-v2">
+  <link rel="stylesheet" href="style.css?v=20261118-typeleague-board">
 </head>
 <body>
   <div class="page-shell">
@@ -177,38 +177,41 @@
           <div class="demo-note"><strong>Cuenta conectada:</strong> inicia sesión para girar y guardar cartas.</div>
         </section>
 
-        <section class="page-view" id="page-typeleague" hidden>
-          <div class="page-heading typeleague-page-heading">
-            <div>
-              <div class="eyebrow">06 / COMPETICIÓN</div>
-              <h1>TYPE<em>LEAGUE</em></h1>
-              <p>La clasificación oficial del torneo Pokémon TypeLink 2.</p>
+        <section class="page-view typeleague-page" id="page-typeleague" hidden>
+          <header class="typeleague-masthead">
+            <div class="typeleague-masthead-copy">
+              <span class="typeleague-masthead-kicker">POKÉMON TYPELINK 2 <i></i> COMPETICIÓN OFICIAL</span>
+              <h1>TABLA DE <em>POSICIONES</em></h1>
+              <p>La clasificación oficial de entrenadores de TypeLeague.</p>
             </div>
-            <span class="typeleague-live-tag"><i></i> LIGA TYPELINK 2</span>
-          </div>
+            <div class="typeleague-masthead-brand">
+              <img src="https://d2ol7oe51mr4n9.cloudfront.net/user_3M1AOCGHYrXVuXMWgDhR1lrk7px/8684321e-c902-4ff7-8a2d-b36c703124a8.png?v=20261117" alt="Pokémon TypeLink 2">
+              <span class="typeleague-live-tag"><i></i> LIGA TYPELINK 2</span>
+            </div>
+            <span class="typeleague-masthead-number" aria-hidden="true">TL / 02</span>
+          </header>
 
-          <section class="typeleague-hero panel">
-            <div class="typeleague-hero-copy">
-              <span class="eyebrow">CLASIFICACIÓN GENERAL</span>
-              <h2>La batalla por el primer puesto.</h2>
-              <p>Cada enfrentamiento cuenta como una partida. Las victorias y las derrotas con más de tres Pokémon debilitados suman puntos.</p>
+          <div class="typeleague-overview-line">
+            <div class="typeleague-overview-caption">
+              <span class="eyebrow">RANKING DE ENTRENADORES</span>
+              <strong>CLASIFICACIÓN GENERAL</strong>
             </div>
-            <div class="typeleague-summary-grid">
-              <article><strong id="typeLeagueMatchCount">0</strong><span>PARTIDAS JUGADAS</span></article>
-              <article><strong id="typeLeagueParticipantCount">0</strong><span>PARTICIPANTES</span></article>
-              <article><strong id="typeLeaguePokemonCount">0</strong><span>POKÉMON DERROTADOS</span></article>
+            <div class="typeleague-summary-inline">
+              <div><strong id="typeLeagueMatchCount">0</strong><span>PARTIDAS</span></div>
+              <div><strong id="typeLeagueParticipantCount">0</strong><span>PARTICIPANTES</span></div>
+              <div><strong id="typeLeaguePokemonCount">0</strong><span>PKD TOTALES</span></div>
             </div>
-          </section>
+          </div>
 
           <section class="typeleague-standings panel">
             <div class="typeleague-section-heading">
-              <div><span class="eyebrow">RANKING OFICIAL</span><h2>Tabla de posiciones</h2></div>
+              <div><span class="eyebrow">TYPELEAGUE / TEMPORADA ACTUAL</span><h2>Tabla de posiciones</h2></div>
               <span class="typeleague-update-label" id="typeLeagueUpdatedAt">SIN REGISTROS</span>
             </div>
             <div class="typeleague-table-scroll">
               <table class="typeleague-table">
                 <thead><tr>
-                  <th scope="col">#</th>
+                  <th scope="col" class="typeleague-rank-heading">#</th>
                   <th scope="col" class="typeleague-player-heading">ENTRENADOR</th>
                   <th scope="col">PJ</th>
                   <th scope="col">PG</th>
@@ -231,8 +234,8 @@
 
           <section class="typeleague-history panel">
             <div class="typeleague-section-heading">
-              <div><span class="eyebrow">RESULTADOS REGISTRADOS</span><h2>Últimos enfrentamientos</h2></div>
-              <span class="typeleague-update-label">HISTORIAL</span>
+              <div><span class="eyebrow">ACTAS OFICIALES</span><h2>Últimos enfrentamientos</h2></div>
+              <span class="typeleague-update-label">HISTORIAL DE PARTIDAS</span>
             </div>
             <div class="typeleague-history-list" id="typeLeagueHistoryList">
               <div class="typeleague-history-empty">Todavía no hay enfrentamientos registrados.</div>
