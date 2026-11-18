@@ -3288,109 +3288,129 @@ body{
 }
 
 
-/* TypeLeague — standings board inspired by the supplied league reference.
-   Keep the TypeLink palette: Unova navy, steel blue, cold silver and gold. */
+/* TypeLeague — league board visual.
+   Inspired by the supplied standings reference, adapted to the TypeLink 2 palette. */
 .typeleague-page{max-width:1320px;margin-inline:auto}
 .typeleague-masthead{
   position:relative;isolation:isolate;display:flex;align-items:center;justify-content:space-between;
-  min-height:150px;gap:24px;overflow:hidden;padding:22px 28px;margin:0;
+  min-height:162px;gap:28px;overflow:hidden;padding:25px 30px 22px;margin:0;
   background:
-    linear-gradient(100deg,#101923f5 0%,#172837e8 52%,#0d1721f2 100%),
-    url("assets/typelink-pokemon-pattern.svg?v=20261118-league-board") center/430px auto repeat;
-  border:1px solid #344b59;border-bottom:0;
+    linear-gradient(105deg,#0b141d 0%,#142532 48%,#0b151e 100%),
+    url("assets/typelink-pokemon-pattern.svg?v=20261118-league-board") center/460px auto repeat;
+  border:1px solid #354d5c;border-bottom:0;
 }
 .typeleague-masthead:before{
-  content:"";position:absolute;z-index:-1;inset:0;
-  background:radial-gradient(ellipse at 78% 0%,#7896a42a,transparent 44%),
-             linear-gradient(115deg,transparent 0 64%,#d0b16d0b 64% 65%,transparent 65%);
+  content:"";position:absolute;inset:0;z-index:-1;
+  background:
+    radial-gradient(ellipse at 72% 0%,#7d9eae22,transparent 42%),
+    linear-gradient(112deg,transparent 0 66%,#d8b76d0d 66% 67%,transparent 67%);
   pointer-events:none;
 }
+.typeleague-masthead:after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:5px;
+  background:linear-gradient(90deg,#6f94a5 0%,#83aebe 58%,#d0b16d 100%);
+  opacity:.9;
+}
 .typeleague-masthead-copy{position:relative;z-index:1;min-width:0}
-.typeleague-masthead-kicker{display:flex;align-items:center;gap:9px;color:#9fb4c1;font-size:8px;font-weight:900;letter-spacing:1.7px}
-.typeleague-masthead-kicker i{width:4px;height:4px;border-radius:50%;background:#d0b16d;box-shadow:0 0 0 3px #d0b16d20}
-.typeleague-masthead h1{margin:11px 0 5px;color:#f1f5f7;font:900 clamp(38px,5vw,58px)/.9 'Barlow Condensed';letter-spacing:1.1px;text-transform:uppercase}
-.typeleague-masthead h1 em{font-style:normal;color:#a9c0ce}
-.typeleague-masthead-copy>p{margin:9px 0 0;color:#9cabb5;font-size:9px;letter-spacing:.2px}
+.typeleague-masthead-kicker{display:flex;align-items:center;gap:9px;color:#a9bcc7;font-size:8px;font-weight:900;letter-spacing:1.7px}
+.typeleague-masthead-kicker i{width:5px;height:5px;border-radius:50%;background:#d0b16d;box-shadow:0 0 0 3px #d0b16d1c}
+.typeleague-masthead h1{
+  margin:10px 0 0;color:#f3f6f8;font:900 clamp(42px,5.4vw,66px)/.86 'Barlow Condensed';
+  letter-spacing:1px;text-transform:uppercase;text-shadow:0 4px 18px #0008
+}
+.typeleague-masthead h1 em{font-style:normal;color:#b5c8d2}
+.typeleague-masthead-copy>p{margin:10px 0 0;color:#9baeb9;font-size:9px;letter-spacing:.2px}
 .typeleague-masthead-brand{display:flex;align-items:flex-end;flex-direction:column;gap:8px;flex:none;position:relative;z-index:1}
-.typeleague-masthead-brand img{display:block;width:min(205px,21vw);height:83px;object-fit:contain;filter:drop-shadow(0 5px 9px #0008)}
-.typeleague-masthead .typeleague-live-tag{padding:6px 9px;background:#14251f;border-color:#456b58;color:#acd5b8;font-size:7px}
+.typeleague-masthead-brand img{display:block;width:min(215px,22vw);height:88px;object-fit:contain;filter:drop-shadow(0 6px 10px #0009)}
+.typeleague-masthead .typeleague-live-tag{
+  padding:6px 10px;background:#14251f;border-color:#456b58;color:#acd5b8;font-size:7px
+}
 .typeleague-masthead .typeleague-live-tag i{width:6px;height:6px}
-.typeleague-masthead-number{position:absolute;right:29%;bottom:9px;color:#a4bac61c;font:900 52px/.8 'Barlow Condensed';letter-spacing:3px;pointer-events:none}
+.typeleague-masthead-number{position:absolute;right:29%;bottom:13px;color:#a4bac612;font:900 56px/.8 'Barlow Condensed';letter-spacing:3px;pointer-events:none}
+
 .typeleague-overview-line{
-  display:flex;align-items:center;justify-content:space-between;gap:20px;
-  min-height:52px;padding:7px 20px;margin:0 0 13px;
-  background:linear-gradient(100deg,#526d7e,#3d5667 78%,#293d4b);
-  border:1px solid #698394;border-top:1px solid #8da3b1;border-bottom:3px solid #172633;
-  box-shadow:0 4px 0 #0a1118;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:54px;padding:7px 20px;margin:0 0 14px;
+  background:linear-gradient(100deg,#263c4b 0%,#3c5c6e 62%,#263f4e 100%);
+  border:1px solid #587384;border-top:0;border-bottom:4px solid #0b141d;
+  box-shadow:0 5px 0 #070d12;
 }
 .typeleague-overview-caption{display:flex;align-items:flex-start;flex-direction:column;gap:3px}
-.typeleague-overview-caption .eyebrow{color:#d0dce3;font-size:7px}
-.typeleague-overview-caption strong{color:#f5f7f8;font:900 15px 'Barlow Condensed';letter-spacing:1px}
+.typeleague-overview-caption .eyebrow{color:#c7d4db;font-size:7px}
+.typeleague-overview-caption strong{color:#f5f7f8;font:900 16px 'Barlow Condensed';letter-spacing:1px}
 .typeleague-summary-inline{display:flex;align-items:center;gap:0}
 .typeleague-summary-inline>div{display:flex;align-items:center;gap:7px;padding:0 16px;border-left:1px solid #d8e3e944}
-.typeleague-summary-inline strong{color:#fff;font:900 19px 'Barlow Condensed';font-variant-numeric:tabular-nums}
+.typeleague-summary-inline strong{color:#fff;font:900 20px 'Barlow Condensed';font-variant-numeric:tabular-nums}
 .typeleague-summary-inline span{color:#d0dce3;font-size:6px;font-weight:900;letter-spacing:.8px}
+
 .typeleague-standings,.typeleague-history{
-  padding:0;margin:0 0 14px;background:linear-gradient(155deg,#17283a 0%,#122235 58%,#172a43 100%);
-  border:1px solid #3d586b;box-shadow:0 9px 26px #0003;overflow:hidden;
+  padding:0;margin:0 0 15px;background:linear-gradient(145deg,#0f1d2a 0%,#132b40 58%,#102237 100%);
+  border:1px solid #3e6072;box-shadow:0 10px 28px #0004;overflow:hidden;
 }
 .typeleague-standings .typeleague-section-heading,.typeleague-history .typeleague-section-heading{
-  display:flex;align-items:flex-end;justify-content:space-between;gap:15px;
-  padding:15px 20px 12px;margin:0;border-bottom:1px solid #3b5669;
-  background:linear-gradient(90deg,#1c3041,#182a39 65%,#142331);
+  display:flex;align-items:flex-end;justify-content:space-between;gap:15px;padding:13px 20px 11px;margin:0;
+  border-bottom:1px solid #416174;background:linear-gradient(90deg,#152b3b,#173044 70%,#142533)
 }
-.typeleague-section-heading .eyebrow{color:#9db3c1;font-size:7px}
+.typeleague-section-heading .eyebrow{color:#a7bcc8;font-size:7px}
 .typeleague-section-heading h2{margin:4px 0 0;color:#f1f5f7;font:800 25px 'Barlow Condensed';letter-spacing:.2px}
-.typeleague-update-label{color:#b5c6d0;font-size:7px;font-weight:900;letter-spacing:1px}
-.typeleague-table-scroll{width:100%;overflow-x:auto;border:0;background:linear-gradient(145deg,#15273b,#1b3150 58%,#1c3455)}
-.typeleague-table{width:100%;min-width:690px;border-collapse:collapse;table-layout:fixed;background:transparent}
-.typeleague-table thead{background:linear-gradient(100deg,#607d90 0%,#4e6c80 62%,#344e60 100%)}
-.typeleague-table th{
-  height:42px;padding:10px 12px;background:transparent;border:0;
-  color:#f2f6f8;font-size:10px;font-weight:900;letter-spacing:1.05px;
-  text-align:center;white-space:nowrap;
+.typeleague-update-label{color:#b8c8d0;font-size:7px;font-weight:900;letter-spacing:1px}
+
+.typeleague-table-scroll{width:100%;overflow-x:auto;border:0;background:linear-gradient(145deg,#102236,#15304a 58%,#122b43)}
+.typeleague-table{width:100%;min-width:700px;border-collapse:collapse;table-layout:fixed;background:transparent}
+.typeleague-table thead{
+  background:linear-gradient(100deg,#547487 0%,#66889a 48%,#3c5d6e 100%);
+  box-shadow:inset 0 -3px 0 #7da4b5;
 }
-.typeleague-table th.typeleague-rank-heading{width:62px}
-.typeleague-table th.typeleague-player-heading{text-align:left;width:auto;min-width:210px}
+.typeleague-table th{
+  height:46px;padding:10px 12px;background:transparent;border:0;color:#f3f7f9;
+  font-size:11px;font-weight:900;letter-spacing:1.1px;text-align:center;white-space:nowrap;text-shadow:0 1px 4px #0006
+}
+.typeleague-table th.typeleague-rank-heading{width:68px}
+.typeleague-table th.typeleague-player-heading{text-align:left;width:auto;min-width:230px}
 .typeleague-table th:nth-child(3),.typeleague-table th:nth-child(4),
 .typeleague-table th:nth-child(5),.typeleague-table th:nth-child(6){width:7.5%}
 .typeleague-table th:nth-child(7){width:10%}
 .typeleague-table th.typeleague-points-heading{width:10%;color:#f7dfaa}
 .typeleague-table td{
-  height:57px;padding:8px 12px;border:0;border-bottom:2px solid #6e8ba0;
-  background:transparent;color:#e8eef2;font-size:16px;text-align:center;
-  font-variant-numeric:tabular-nums;
+  height:62px;padding:8px 12px;border:0;border-bottom:2px solid #5f8a9e;background:transparent;
+  color:#e9f0f4;font-size:18px;text-align:center;font-variant-numeric:tabular-nums
 }
 .typeleague-table tbody tr:last-child td{border-bottom:0}
-.typeleague-table tbody tr:hover td{background:#b4c8d00d}
-.typeleague-table tbody tr.is-leader td{background:linear-gradient(90deg,#c3a76a12,#9bb5c70a 68%,transparent)}
-.typeleague-table td.typeleague-position{color:#c1cdd4;font:900 15px 'Barlow Condensed';text-align:center}
-.typeleague-table tbody tr:nth-child(1) .typeleague-position{color:#f0d18a;text-shadow:0 0 12px #d4ae5b33}
-.typeleague-table tbody tr:nth-child(2) .typeleague-position{color:#c9d5dc}
-.typeleague-table tbody tr:nth-child(3) .typeleague-position{color:#c99b78}
-.typeleague-player-cell{display:flex;align-items:center;gap:13px;text-align:left!important;white-space:nowrap}
-.typeleague-player-cell strong{max-width:100%;overflow:hidden;text-overflow:ellipsis;color:#f3f6f8;font:800 19px 'Barlow Condensed';letter-spacing:.4px}
+.typeleague-table tbody tr:hover td{background:#b7d0dc0d}
+.typeleague-table tbody tr.is-leader td{background:linear-gradient(90deg,#d2b36c12,#a9c3d00a 68%,transparent)}
+.typeleague-table td.typeleague-position{
+  color:#d0dce2;font:900 17px 'Barlow Condensed';text-align:center
+}
+.typeleague-table tbody tr:nth-child(1) .typeleague-position{color:#f0d18a;text-shadow:0 0 12px #d4ae5b44}
+.typeleague-table tbody tr:nth-child(2) .typeleague-position{color:#d6e0e5}
+.typeleague-table tbody tr:nth-child(3) .typeleague-position{color:#caa98c}
+.typeleague-player-cell{display:flex;align-items:center;gap:14px;text-align:left!important;white-space:nowrap}
+.typeleague-player-cell strong{
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;color:#f4f7f8;font:800 21px 'Barlow Condensed';letter-spacing:.5px
+}
 .typeleague-avatar{
-  display:grid;place-items:center;width:43px;height:43px;flex:none;overflow:hidden;
-  border:1px solid #829aaa;background:linear-gradient(145deg,#41596b,#1d3040);
-  color:#f1f5f7;font:900 13px 'Barlow Condensed';box-shadow:0 3px 8px #0005;
+  display:grid;place-items:center;width:47px;height:47px;flex:none;overflow:hidden;
+  border:2px solid #7f9aa8;background:linear-gradient(145deg,#405a6a,#172c3c);
+  color:#f1f5f7;font:900 14px 'Barlow Condensed';box-shadow:0 3px 9px #0006
 }
 .typeleague-avatar img{width:100%;height:100%;object-fit:cover}
-.typeleague-table .typeleague-number{color:#e3eaf0;font:600 17px 'Barlow Condensed'}
-.typeleague-table .typeleague-points-heading,.typeleague-table .typeleague-points{color:#f0d18a;font:900 19px 'Barlow Condensed';text-shadow:0 0 12px #c6a35b1a}
-.typeleague-empty-cell{height:100px!important;padding:24px!important;text-align:center!important;color:#a9bac5!important;font-size:10px!important;line-height:1.7}
+.typeleague-table .typeleague-number{color:#e4edf2;font:600 19px 'Barlow Condensed'}
+.typeleague-table .typeleague-points-heading,.typeleague-table .typeleague-points{
+  color:#f0d18a;font:900 21px 'Barlow Condensed';text-shadow:0 0 12px #c6a35b25
+}
+.typeleague-empty-cell{height:110px!important;padding:24px!important;text-align:center!important;color:#a9bac5!important;font-size:10px!important;line-height:1.7}
 .typeleague-empty-cell.is-error{color:#efaaaa!important}
 .typeleague-rules-line{
-  display:flex;flex-wrap:wrap;gap:7px 20px;padding:11px 17px;
-  border-top:1px solid #405d70;background:#142638;color:#adbdc7;font-size:8px;line-height:1.5;
+  display:flex;flex-wrap:wrap;gap:7px 20px;padding:11px 17px;border-top:1px solid #416276;
+  background:#102335;color:#adbdc7;font-size:8px;line-height:1.5
 }
 .typeleague-rules-line b{color:#ead29e}
+
 .typeleague-history{padding-bottom:10px}
 .typeleague-history .typeleague-section-heading{margin-bottom:0}
 .typeleague-history-list{display:flex;flex-direction:column;gap:0;padding:0 17px}
 .typeleague-history-item{
   display:flex;align-items:center;justify-content:space-between;gap:13px;flex-wrap:wrap;
-  padding:13px 3px;border:0;border-bottom:1px solid #496477;background:transparent;
+  padding:13px 3px;border:0;border-bottom:1px solid #496477;background:transparent
 }
 .typeleague-history-item:last-child{border-bottom:0}
 .typeleague-history-match{display:flex;flex-direction:column;gap:4px;min-width:0}
@@ -3399,6 +3419,7 @@ body{
 .typeleague-history-meta{display:flex;align-items:flex-end;flex-direction:column;gap:4px;color:#a9bbc6;font-size:8px;text-align:right}
 .typeleague-history-note{flex-basis:100%;margin:3px 0 0;padding:7px 9px;border-left:2px solid #8ea5b4;background:#1c3040;color:#c6d3db;font-size:8px;line-height:1.5}
 .typeleague-history-empty{padding:28px 14px;color:#9eb1bf;text-align:center;font-size:9px;line-height:1.7}
+
 @media(max-width:760px){
   .typeleague-masthead{min-height:130px;padding:18px}
   .typeleague-masthead-brand img{width:150px;height:65px}
