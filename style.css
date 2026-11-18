@@ -3170,3 +3170,119 @@ body{
 
 /* Wheel clarity: keep the roulette panel visible when special spins are redeemed. */
 #page-roulette .wheel-panel{scroll-margin-top:82px}
+
+
+/* TypeLeague — public tournament standings */
+.typeleague-page-heading{align-items:flex-end}
+.typeleague-live-tag{display:inline-flex;align-items:center;gap:8px;padding:9px 11px;border:1px solid #3b6654;background:#13271f;color:#9dd1ae;font-size:8px;font-weight:900;letter-spacing:1px;white-space:nowrap}
+.typeleague-live-tag i{width:7px;height:7px;border-radius:50%;background:#82c99a;box-shadow:0 0 0 4px #82c99a1c}
+.typeleague-hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(330px,.8fr);gap:22px;align-items:center;padding:23px 25px;margin-bottom:14px;background:linear-gradient(130deg,#172633,#101923);border-color:#344856}
+.typeleague-hero-copy h2{font:900 31px 'Barlow Condensed';color:#f0f5f8;margin:7px 0 5px}
+.typeleague-hero-copy p{max-width:600px;font-size:10px;line-height:1.7;color:#a3b3bd;margin:0}
+.typeleague-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.typeleague-summary-grid article{display:flex;flex-direction:column;gap:5px;padding:13px 11px;background:#1b2a35;border:1px solid #40525e}
+.typeleague-summary-grid strong{font:900 29px 'Barlow Condensed';color:#eef3f6;font-variant-numeric:tabular-nums}
+.typeleague-summary-grid span{font-size:6px;font-weight:900;letter-spacing:.85px;color:#9aadb9;line-height:1.4}
+.typeleague-standings,.typeleague-history{padding:20px 21px;margin-bottom:14px;background:linear-gradient(145deg,#141f29,#101820);border-color:#344550}
+.typeleague-section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}
+.typeleague-section-heading h2{font:800 25px 'Barlow Condensed';color:#f1f5f7;margin:4px 0 0}
+.typeleague-update-label{color:#91a8b7;font-size:7px;font-weight:900;letter-spacing:.9px;text-align:right}
+.typeleague-table-scroll{width:100%;overflow-x:auto;border:1px solid #324550}
+.typeleague-table{width:100%;min-width:650px;border-collapse:collapse;background:#111b24}
+.typeleague-table th{padding:12px 11px;background:#1a2a36;border-bottom:1px solid #526a79;color:#9fb2bf;font-size:7px;letter-spacing:.85px;text-align:right;white-space:nowrap}
+.typeleague-table th:first-child,.typeleague-table td:first-child{text-align:center;width:44px}
+.typeleague-table th.typeleague-player-heading{text-align:left;min-width:190px}
+.typeleague-table td{padding:10px 11px;border-bottom:1px solid #334854;color:#e7edf1;font-size:11px;text-align:right;font-variant-numeric:tabular-nums}
+.typeleague-table tbody tr:last-child td{border-bottom:0}
+.typeleague-table tbody tr:hover{background:#1a2a35}
+.typeleague-table tbody tr.is-leader{background:linear-gradient(90deg,#3c3525,#172631 58%)}
+.typeleague-table .typeleague-position{color:#94aab7;font:800 13px 'Barlow Condensed'}
+.typeleague-player-cell{display:flex;align-items:center;gap:10px;text-align:left!important;white-space:nowrap}
+.typeleague-player-cell strong{max-width:220px;overflow:hidden;text-overflow:ellipsis;font:800 15px 'Barlow Condensed';color:#eef3f6}
+.typeleague-avatar{display:grid;place-items:center;width:33px;height:33px;flex:none;overflow:hidden;border:1px solid #58717f;background:#1e303c;color:#e8eff3;font:900 11px 'Barlow Condensed'}
+.typeleague-avatar img{width:100%;height:100%;object-fit:cover}
+.typeleague-table .typeleague-number{color:#d8e1e7}
+.typeleague-table .typeleague-points-heading,.typeleague-table .typeleague-points{color:#efd28b;font-weight:900}
+.typeleague-empty-cell{padding:27px!important;text-align:center!important;color:#9cafba!important;font-size:10px!important;line-height:1.6}
+.typeleague-empty-cell.is-error{color:#e8a1a1!important}
+.typeleague-rules-line{display:flex;flex-wrap:wrap;gap:8px 17px;margin-top:12px;color:#91a3af;font-size:8px;line-height:1.5}
+.typeleague-rules-line b{color:#d9e4eb}
+.typeleague-history-list{display:flex;flex-direction:column;gap:8px}
+.typeleague-history-item{display:flex;align-items:center;justify-content:space-between;gap:13px;flex-wrap:wrap;padding:11px 12px;border:1px solid #334854;background:#17242e}
+.typeleague-history-match{display:flex;flex-direction:column;gap:4px;min-width:0}
+.typeleague-history-match strong{font:800 16px 'Barlow Condensed';color:#eef3f6;overflow-wrap:anywhere}
+.typeleague-history-match small{color:#a8c3b1;font-size:7px;font-weight:900;letter-spacing:.75px}
+.typeleague-history-meta{display:flex;align-items:flex-end;flex-direction:column;gap:4px;color:#a5b5bf;font-size:8px;text-align:right}
+.typeleague-history-note{flex-basis:100%;margin:0;padding:7px 9px;border-left:2px solid #8198a6;background:#1b2b36;color:#b7c7d0;font-size:8px;line-height:1.5}
+.typeleague-history-empty{padding:22px 15px;border:1px dashed #455c6a;color:#9babb6;text-align:center;font-size:9px;line-height:1.6}
+
+/* TypeLeague — administrative match entry and publication controls */
+.admin-typeleague-heading{align-items:flex-end}
+.admin-typeleague-visibility{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 20px;margin:12px 0;background:linear-gradient(130deg,#172633,#111b24);border-color:#3a4d59}
+.admin-typeleague-visibility h3{font:800 21px 'Barlow Condensed';color:#f0f5f7;margin:5px 0}
+.admin-typeleague-visibility p{max-width:690px;color:#a1b1bc;font-size:9px;line-height:1.6;margin:0 0 8px}
+.admin-typeleague-visibility-status{color:#d8b97b;font-size:7px;font-weight:900;letter-spacing:1px}
+.typeleague-switch{display:grid;grid-template-columns:42px auto;align-items:center;gap:8px;flex:none;cursor:pointer;color:#c6d5dd;font-size:7px;font-weight:900;letter-spacing:.8px}
+.typeleague-switch input{position:absolute;opacity:0;width:1px;height:1px}
+.typeleague-switch>span{position:relative;width:42px;height:23px;border:1px solid #556875;background:#25333e;border-radius:20px;transition:.18s}
+.typeleague-switch>span:after{content:"";position:absolute;left:3px;top:3px;width:15px;height:15px;border-radius:50%;background:#9aabb6;transition:.18s}
+.typeleague-switch input:checked+span{background:#255238;border-color:#6ba880}
+.typeleague-switch input:checked+span:after{left:22px;background:#a7dfb7}
+.typeleague-switch input:focus-visible+span{outline:2px solid #e5bd69;outline-offset:3px}
+.admin-typeleague-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:0 0 12px}
+.admin-typeleague-stats .panel{display:flex;flex-direction:column;gap:5px;padding:13px 15px;background:#141f29;border-color:#344550}
+.admin-typeleague-stats strong{font:900 24px 'Barlow Condensed';color:#e9f0f4}
+.admin-typeleague-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);align-items:start;gap:12px}
+.admin-typeleague-form-panel,.admin-typeleague-results-panel{padding:17px;background:#141f29;border-color:#344550}
+.admin-typeleague-form{display:flex;flex-direction:column;gap:12px}
+.admin-typeleague-form-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.admin-typeleague-field{display:flex;flex-direction:column;gap:6px;color:#aebfc9;font-size:7px;font-weight:900;letter-spacing:.7px}
+.admin-typeleague-field input,.admin-typeleague-field select,.admin-typeleague-field textarea{width:100%;min-width:0;padding:10px 11px;border:1px solid #435865;border-radius:3px;background:#0d1720;color:#edf3f6;font:500 10px Inter;outline:none}
+.admin-typeleague-field input:focus,.admin-typeleague-field select:focus,.admin-typeleague-field textarea:focus{border-color:#91b0c1;box-shadow:0 0 0 2px #91b0c11c}
+.admin-typeleague-field input[type=number]{font-variant-numeric:tabular-nums}
+.admin-typeleague-field small{font-size:7px;line-height:1.5;color:#8195a2;letter-spacing:0;font-weight:500}
+.admin-typeleague-field textarea{resize:vertical;line-height:1.6}
+.admin-typeleague-form-actions{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding-top:13px;border-top:1px solid #344550}
+.admin-typeleague-form-actions>span{max-width:48%;color:#9babb6;font-size:8px;line-height:1.5}
+.admin-typeleague-form-actions>div{display:flex;gap:7px;align-items:center}
+.admin-typeleague-form-actions .secondary-button{min-width:86px;padding:11px 10px;background:#182631;border-color:#506572;color:#d7e1e7}
+.admin-typeleague-form-actions .primary-button{min-width:135px;padding:12px 11px;font-size:8px}
+.admin-typeleague-form-actions button:disabled{opacity:.5;cursor:wait}
+.admin-typeleague-match-list{display:flex;flex-direction:column;gap:8px;max-height:720px;overflow:auto}
+.admin-typeleague-match{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px;border:1px solid #354956;background:#17242e}
+.admin-typeleague-match-copy{display:flex;flex-direction:column;gap:4px;min-width:0}
+.admin-typeleague-match-copy strong{font:800 15px 'Barlow Condensed';color:#eef3f6;overflow-wrap:anywhere}
+.admin-typeleague-match-copy small{font-size:7px;font-weight:900;letter-spacing:.5px;color:#b7d1c0;line-height:1.5}
+.admin-typeleague-match-copy span{font-size:7px;color:#879ca9}
+.admin-typeleague-match-actions{display:flex;gap:5px}
+.admin-typeleague-edit,.admin-typeleague-delete{border:1px solid #506572;background:#1d2d38;color:#d9e5eb;padding:7px 8px;font-size:7px;font-weight:900;letter-spacing:.5px;cursor:pointer}
+.admin-typeleague-delete{border-color:#79565a;color:#e4b5b6}
+.admin-typeleague-edit:hover{background:#2a4352}
+.admin-typeleague-delete:hover{background:#4a2a30}
+.admin-typeleague-note{display:flex;gap:12px;padding:11px 13px;margin-top:12px;border-left:3px solid #c0a36a;background:#182630;color:#aab9c2;font-size:8px;line-height:1.6}
+.admin-typeleague-note b{flex:none;color:#e4ca95;font-size:7px;letter-spacing:.8px}
+@media(max-width:1000px){
+  .typeleague-hero{grid-template-columns:1fr}
+  .admin-typeleague-grid{grid-template-columns:1fr}
+}
+@media(max-width:700px){
+  .typeleague-page-heading{align-items:flex-start;flex-direction:column;gap:9px}
+  .typeleague-standings,.typeleague-history{padding:14px 12px}
+  .typeleague-section-heading{align-items:flex-start;flex-direction:column}
+  .typeleague-update-label{text-align:left}
+  .admin-typeleague-visibility{align-items:flex-start;flex-direction:column}
+  .admin-typeleague-form-row,.admin-typeleague-stats{grid-template-columns:1fr 1fr}
+  .admin-typeleague-form-actions{align-items:stretch;flex-direction:column}
+  .admin-typeleague-form-actions>span{max-width:none}
+  .admin-typeleague-form-actions>div{width:100%}
+  .admin-typeleague-form-actions>div button{flex:1}
+}
+@media(max-width:520px){
+  .typeleague-summary-grid{grid-template-columns:1fr}
+  .typeleague-summary-grid article{flex-direction:row;align-items:center;justify-content:space-between}
+  .typeleague-summary-grid strong{font-size:25px}
+  .admin-typeleague-form-row,.admin-typeleague-stats{grid-template-columns:1fr}
+  .admin-typeleague-match{grid-template-columns:1fr}
+  .admin-typeleague-match-actions button{flex:1}
+  .admin-typeleague-note{align-items:flex-start;flex-direction:column;gap:5px}
+}
