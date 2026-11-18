@@ -21,6 +21,7 @@
         <button class="nav-link" data-page="roulette"><span class="nav-icon">◉</span><span>Ruleta</span><span class="nav-count" id="navDeckCount">0/5</span></button>
         <button class="nav-link" data-page="players"><span class="nav-icon">♙</span><span>Jugadores</span></button>
         <button class="nav-link" data-page="activity"><span class="nav-icon">▣</span><span>Muro de cartas</span></button>
+        <button class="nav-link" id="typeLeagueNavLink" data-page="typeleague" hidden><span class="nav-icon">♛</span><span>TypeLeague</span></button>
         <button class="nav-link" data-page="profile"><span class="nav-icon">◎</span><span>Mi perfil</span></button>
         <button class="nav-link" data-page="deck"><span class="nav-icon">▤</span><span>Mi baraja</span></button>
         <button class="nav-link" data-page="pokemon"><span class="nav-icon">✦</span><span>Mi equipo Pokémon</span></button>
@@ -176,6 +177,69 @@
           <div class="demo-note"><strong>Cuenta conectada:</strong> inicia sesión para girar y guardar cartas.</div>
         </section>
 
+        <section class="page-view" id="page-typeleague" hidden>
+          <div class="page-heading typeleague-page-heading">
+            <div>
+              <div class="eyebrow">06 / COMPETICIÓN</div>
+              <h1>TYPE<em>LEAGUE</em></h1>
+              <p>La clasificación oficial del torneo Pokémon TypeLink 2.</p>
+            </div>
+            <span class="typeleague-live-tag"><i></i> LIGA TYPELINK 2</span>
+          </div>
+
+          <section class="typeleague-hero panel">
+            <div class="typeleague-hero-copy">
+              <span class="eyebrow">CLASIFICACIÓN GENERAL</span>
+              <h2>La batalla por el primer puesto.</h2>
+              <p>Cada enfrentamiento cuenta como una partida. Las victorias y las derrotas con más de tres Pokémon debilitados suman puntos.</p>
+            </div>
+            <div class="typeleague-summary-grid">
+              <article><strong id="typeLeagueMatchCount">0</strong><span>PARTIDAS JUGADAS</span></article>
+              <article><strong id="typeLeagueParticipantCount">0</strong><span>PARTICIPANTES</span></article>
+              <article><strong id="typeLeaguePokemonCount">0</strong><span>POKÉMON DERROTADOS</span></article>
+            </div>
+          </section>
+
+          <section class="typeleague-standings panel">
+            <div class="typeleague-section-heading">
+              <div><span class="eyebrow">RANKING OFICIAL</span><h2>Tabla de posiciones</h2></div>
+              <span class="typeleague-update-label" id="typeLeagueUpdatedAt">SIN REGISTROS</span>
+            </div>
+            <div class="typeleague-table-scroll">
+              <table class="typeleague-table">
+                <thead><tr>
+                  <th scope="col">#</th>
+                  <th scope="col" class="typeleague-player-heading">ENTRENADOR</th>
+                  <th scope="col">PJ</th>
+                  <th scope="col">PG</th>
+                  <th scope="col">PE</th>
+                  <th scope="col">PP</th>
+                  <th scope="col">PKD</th>
+                  <th scope="col" class="typeleague-points-heading">PTS</th>
+                </tr></thead>
+                <tbody id="typeLeagueStandingsBody">
+                  <tr><td colspan="8" class="typeleague-empty-cell">La clasificación aparecerá cuando se registren las primeras partidas.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="typeleague-rules-line">
+              <span><b>PG</b> Victoria · 3 puntos</span>
+              <span><b>PE</b> Derrota debilitando más de 3 Pokémon · 1 punto</span>
+              <span><b>PP</b> Derrota · 0 puntos</span>
+            </div>
+          </section>
+
+          <section class="typeleague-history panel">
+            <div class="typeleague-section-heading">
+              <div><span class="eyebrow">RESULTADOS REGISTRADOS</span><h2>Últimos enfrentamientos</h2></div>
+              <span class="typeleague-update-label">HISTORIAL</span>
+            </div>
+            <div class="typeleague-history-list" id="typeLeagueHistoryList">
+              <div class="typeleague-history-empty">Todavía no hay enfrentamientos registrados.</div>
+            </div>
+          </section>
+        </section>
+
         <section class="page-view" id="page-players" hidden>
           <div class="page-heading"><div><div class="eyebrow">02 / COMUNIDAD</div><h1><em>JUGADORES</em></h1><p>Perfiles y barajas de la comunidad.</p></div></div>
           <div class="directory-toolbar panel">
@@ -288,6 +352,9 @@
               </button>
               <button class="admin-module admin-module-button panel" type="button" id="openAdminProgression">
                 <span class="admin-module-icon">Ⅱ</span><span class="admin-module-copy"><strong>Progresión del evento</strong><small>Límites y recompensas por tramo.</small></span><span class="admin-module-state">ABRIR CONFIGURACIÓN ↗</span>
+              </button>
+              <button class="admin-module admin-module-button panel" type="button" id="openAdminTypeLeague">
+                <span class="admin-module-icon">♛</span><span class="admin-module-copy"><strong>TypeLeague</strong><small>Clasificación, enfrentamientos y visibilidad del torneo.</small></span><span class="admin-module-state">GESTIONAR LIGA ↗</span>
               </button>
               <button class="admin-module admin-module-button panel" type="button" id="openAdminPlatformStatus">
                 <span class="admin-module-icon">◎</span><span class="admin-module-copy"><strong>Estado de la plataforma</strong><small>Conexión, base de datos y almacenamiento.</small></span><span class="admin-module-state">ABRIR MONITOR ↗</span>
@@ -771,6 +838,95 @@
               </div>
             </section>
           </section>
+          <section class="admin-typeleague-workspace" id="adminTypeLeagueWorkspace" hidden>
+            <div class="admin-catalog-heading admin-typeleague-heading">
+              <div>
+                <button class="inline-link" type="button" id="adminTypeLeagueBack">← TODAS LAS HERRAMIENTAS</button>
+                <div class="eyebrow">ADMINISTRACIÓN / COMPETICIÓN</div>
+                <h2>GESTIÓN DE <em>TYPELEAGUE</em></h2>
+                <p>Registra una partida por enfrentamiento, revisa resultados y controla cuándo la liga es visible.</p>
+              </div>
+              <button class="secondary-button" type="button" id="adminTypeLeagueRefresh">↻ ACTUALIZAR</button>
+            </div>
+
+            <section class="admin-typeleague-visibility panel">
+              <div>
+                <span class="eyebrow">PUBLICACIÓN DEL TORNEO</span>
+                <h3>Visibilidad para participantes</h3>
+                <p>Mientras esté desactivada, TypeLeague solo será visible para administradores. Los resultados se conservan aunque ocultes la sección.</p>
+                <strong id="adminTypeLeagueVisibilityStatus" class="admin-typeleague-visibility-status">OCULTA PARA PARTICIPANTES</strong>
+              </div>
+              <label class="typeleague-switch" for="adminTypeLeagueVisible">
+                <input id="adminTypeLeagueVisible" type="checkbox">
+                <span aria-hidden="true"></span>
+                <b>MOSTRAR LIGA</b>
+              </label>
+            </section>
+
+            <div class="admin-typeleague-stats">
+              <article class="panel"><span class="eyebrow">PARTIDAS REGISTRADAS</span><strong id="adminTypeLeagueTotalMatches">0</strong></article>
+              <article class="panel"><span class="eyebrow">PARTICIPANTES</span><strong id="adminTypeLeagueTotalPlayers">0</strong></article>
+              <article class="panel"><span class="eyebrow">ESTADO</span><strong id="adminTypeLeagueState">PREPARACIÓN</strong></article>
+            </div>
+
+            <div class="admin-typeleague-grid">
+              <section class="admin-typeleague-form-panel panel">
+                <div class="admin-platform-panel-heading">
+                  <div><span class="eyebrow">ACTA DE PARTIDA</span><h3 id="adminTypeLeagueFormTitle">Registrar enfrentamiento</h3></div>
+                  <span class="admin-module-count">1 PARTIDA</span>
+                </div>
+                <form id="adminTypeLeagueForm" class="admin-typeleague-form">
+                  <input id="adminTypeLeagueMatchId" type="hidden">
+                  <div class="admin-typeleague-form-row">
+                    <label class="admin-typeleague-field">PARTICIPANTE A
+                      <select id="adminTypeLeagueParticipantA" required><option value="">Selecciona entrenador...</option></select>
+                    </label>
+                    <label class="admin-typeleague-field">PARTICIPANTE B
+                      <select id="adminTypeLeagueParticipantB" required><option value="">Selecciona entrenador...</option></select>
+                    </label>
+                  </div>
+                  <label class="admin-typeleague-field">GANADOR DE LA PARTIDA
+                    <select id="adminTypeLeagueWinner" required><option value="">Selecciona primero los participantes...</option></select>
+                  </label>
+                  <div class="admin-typeleague-form-row">
+                    <label class="admin-typeleague-field">POKÉMON DERROTADOS POR A
+                      <input id="adminTypeLeaguePokemonA" type="number" min="0" max="6" step="1" value="0" required>
+                      <small>Pokémon del rival que derrotó A.</small>
+                    </label>
+                    <label class="admin-typeleague-field">POKÉMON DERROTADOS POR B
+                      <input id="adminTypeLeaguePokemonB" type="number" min="0" max="6" step="1" value="0" required>
+                      <small>Pokémon del rival que derrotó B.</small>
+                    </label>
+                  </div>
+                  <label class="admin-typeleague-field">FECHA Y HORA DE LA PARTIDA
+                    <input id="adminTypeLeaguePlayedAt" type="datetime-local" required>
+                  </label>
+                  <label class="admin-typeleague-field">NOTAS DEL ENFRENTAMIENTO <small>OPCIONAL · MÁX. 500 CARACTERES</small>
+                    <textarea id="adminTypeLeagueNotes" rows="3" maxlength="500" placeholder="Detalles del resultado o anotaciones de moderación..."></textarea>
+                  </label>
+                  <div class="admin-typeleague-form-actions">
+                    <span id="adminTypeLeagueFormStatus" role="status">Cada enfrentamiento cuenta como una partida jugada para ambos.</span>
+                    <div>
+                      <button class="secondary-button" type="button" id="adminTypeLeagueReset">LIMPIAR</button>
+                      <button class="primary-button" type="submit" id="adminTypeLeagueSave">REGISTRAR PARTIDA ↗</button>
+                    </div>
+                  </div>
+                </form>
+              </section>
+
+              <section class="admin-typeleague-results-panel panel">
+                <div class="admin-platform-panel-heading">
+                  <div><span class="eyebrow">BASE DE RESULTADOS</span><h3>Enfrentamientos registrados</h3></div>
+                  <span class="admin-module-count" id="adminTypeLeagueHistoryCount">0 PARTIDAS</span>
+                </div>
+                <div class="admin-typeleague-match-list" id="adminTypeLeagueMatchesList">
+                  <div class="typeleague-history-empty">Todavía no hay resultados registrados.</div>
+                </div>
+              </section>
+            </div>
+            <div class="admin-typeleague-note"><b>REGLAS AUTOMÁTICAS</b><span>Victoria: 3 puntos. Derrota debilitando más de 3 Pokémon rivales: 1 punto (PE). Resto de derrotas: 0 puntos (PP). PJ suma una partida a cada participante.</span></div>
+          </section>
+
           <section class="admin-platform-workspace" id="adminPlatformWorkspace" hidden>
             <div class="admin-catalog-heading admin-platform-heading">
               <div>
