@@ -3598,10 +3598,10 @@ function buildTypeLeagueStandings(profiles,matches){
     a.PKD+=aDefeated;b.PKD+=bDefeated;
     if(match.winner_id===a.id){
       a.PG+=1;
-      if(aDefeated>3)b.PE+=1;else b.PP+=1;
+      if(bDefeated>3)b.PE+=1;else b.PP+=1;
     }else if(match.winner_id===b.id){
       b.PG+=1;
-      if(bDefeated>3)a.PE+=1;else a.PP+=1;
+      if(aDefeated>3)a.PE+=1;else a.PP+=1;
     }
   });
   const rows=[...stats.values()];
