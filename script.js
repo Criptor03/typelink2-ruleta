@@ -1210,15 +1210,18 @@ async function loadPlayers(){
     container.replaceChildren();const message=document.createElement("div");message.className="empty-feature panel";message.textContent="No se pudo cargar la lista.";container.append(message);return;
   }
   const [cardsResult,progressResult]=await Promise.all([
-    authClient.from("player_cards").select("owner_id,card_catalog(category)"),
+    authClient.from("player_cards")
+      .select("owner_id,status,remaining_uses")
+      .eq("status","available")
+      .gt("remaining_uses",0),
     authClient.rpc("get_public_trainer_progress")
   ]);
-  const counts={normal:{},tramo:{}};
+  // Count every usable card copy together: normal, tramo and fiesta.
+  // Spent copies remain in the database/history but never inflate the public count.
+  const cardCounts=Object.create(null);
   (cardsResult.data||[]).forEach(row=>{
-    const joined=Array.isArray(row.card_catalog)?row.card_catalog[0]:row.card_catalog;
-    if(!joined)return;
-    const type=joined.category==="tramo"?"tramo":"normal";
-    counts[type][row.owner_id]=(counts[type][row.owner_id]||0)+1;
+    if(row.status!=="available"||Number(row.remaining_uses)<=0)return;
+    cardCounts[row.owner_id]=(cardCounts[row.owner_id]||0)+1;
   });
   if(cardsResult.error)console.warn("No se pudieron cargar los contadores de cartas:",cardsResult.error.message);
   if(progressResult.error)console.warn("No se pudo consultar el tramo de los participantes:",progressResult.error.message);
@@ -1252,9 +1255,10 @@ async function loadPlayers(){
       :"TRAMO ACTUAL · "+trainerTramo+" / 12"+(trainerTramo===0?" · SIN INICIAR":"");
     info.append(name,since,tramoBadge);
     const stats=document.createElement("div");stats.className="player-directory-stats";
-    const normal=document.createElement("span");normal.textContent=(counts.normal[profile.id]||0)+" normales";
-    const tramo=document.createElement("span");tramo.textContent=(counts.tramo[profile.id]||0)+" tramo";
-    stats.append(normal,tramo);
+    const totalCards=document.createElement("span");totalCards.className="player-directory-card-total";
+    const availableCount=Number(cardCounts[profile.id]||0);
+    totalCards.textContent=availableCount+" "+(availableCount===1?"CARTA":"CARTAS");
+    stats.append(totalCards);
     const action=document.createElement("span");action.className="player-view-button";action.textContent="VER PERFIL ↗";
     card.append(avatar,info,stats,action);
     card.addEventListener("click",()=>showPublicPlayer(profile.id,trainerTramo));
@@ -1726,6 +1730,7 @@ function setupRealtime(){
   activityChannel=authClient.channel("typelink-community-activity")
     .on("postgres_changes",{event:"INSERT",schema:"public",table:"card_activity"},payload=>{
       loadActivityFeed();
+      loadPlayers();
       const entry=payload.new||{};
       const profileModal=document.getElementById("publicProfileModal");
       const openPlayerId=profileModal?.dataset.playerId;
@@ -1820,8 +1825,8 @@ function renderAdminTrainers(){
     !search||String(trainer.display_name||"").toLowerCase().includes(search)
   );
   setText("adminTrainersTotal",adminTrainerItems.length);
-  setText("adminTrainersCardsTotal",adminTrainerItems.reduce((sum,trainer)=>sum+Number(trainer.cards_total||0),0));
-  setText("adminTrainersNormalTotal",adminTrainerItems.reduce((sum,trainer)=>sum+Number(trainer.normal_available||0),0));
+  setText("adminTrainersCardsTotal",adminTrainerItems.reduce((sum,trainer)=>sum+Number(trainer.cards_available||0),0));
+  
   grid.replaceChildren();
   if(!filtered.length){
     const empty=document.createElement("div");empty.className="admin-catalog-loading";
@@ -1838,7 +1843,7 @@ function renderAdminTrainers(){
     identity.append(name,since);
     const meta=document.createElement("div");meta.className="admin-trainer-row-stats";
     const tramo=document.createElement("span");tramo.textContent="TRAMO "+Number(trainer.current_tramo||0);
-    const cards=document.createElement("span");cards.textContent=Number(trainer.cards_available||0)+" DISPONIBLES / "+Number(trainer.cards_total||0)+" TOTAL";
+    const cards=document.createElement("span");cards.textContent=Number(trainer.cards_available||0)+" "+(Number(trainer.cards_available||0)===1?"CARTA":"CARTAS");
     const spins=document.createElement("span");spins.textContent=Number(trainer.spins_remaining||0)+" GIROS · "+Number(trainer.bonus_spins_remaining||0)+" EXTRA";
     meta.append(tramo,cards,spins);
     const button=document.createElement("button");button.type="button";button.className="player-view-button admin-trainer-open";button.textContent="VER ENTRENADOR ↗";
