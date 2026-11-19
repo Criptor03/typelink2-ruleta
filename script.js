@@ -67,6 +67,7 @@ let currentTramo = 0;
 let tramoSpinsRemaining = 0;
 let bonusTramoSpinsRemaining = 0;
 let rouletteAccessByPool = {legendary:0,fiesta:0};
+let selectedSpecialPool = null;
 let cloudMode = false;
 let cloudDeck = [];
 let cloudRoute = [];
@@ -342,23 +343,34 @@ function renderDeck(){
   const totalSpins=Math.max(0,tramoSpinsRemaining)+Math.max(0,bonusTramoSpinsRemaining);
   const freeSlots=Math.max(0,normalCardLimit-normalCount);
   const pendingSpins=totalSpins>0;
-  spinButton.disabled=spinning||!currentAuthUser||pendingSpins===false||normalCount>=normalCardLimit;
+  const specialSelected=selectedSpecialPool==="legendary"||selectedSpecialPool==="fiesta";
+  const selectedSpecialCredits=specialSelected?Math.max(0,Number(rouletteAccessByPool[selectedSpecialPool]||0)):0;
+  const canSpinSpecial=specialSelected&&selectedSpecialCredits>0;
+  const canSpinNormal=pendingSpins&&normalCount<normalCardLimit;
+  spinButton.disabled=spinning||!currentAuthUser||(specialSelected?!canSpinSpecial:!canSpinNormal);
   const shuffleWheelButton=document.getElementById("shuffleWheelButton");
   if(shuffleWheelButton)shuffleWheelButton.disabled=spinning||CARDS.length<2;
   spinButton.querySelector("span").textContent=
     !currentAuthUser?"INICIA SESIÓN":
     spinning?"GIRANDO...":
-    normalCount>=normalCardLimit?"BARAJA COMPLETA":
-    totalSpins<=0?"SIN GIROS DISPONIBLES":"GIRAR RULETA";
+    specialSelected&&!canSpinSpecial?"ACCESO AGOTADO":
+    !specialSelected&&normalCount>=normalCardLimit?"BARAJA COMPLETA":
+    !specialSelected&&totalSpins<=0?"SIN GIROS DISPONIBLES":"GIRAR RULETA";
   setText("spinHint",!currentAuthUser
     ?"Inicia sesión para girar."
-    :normalCount>=normalCardLimit
-      ?"Baraja completa. Libera un espacio para continuar."
-      :totalSpins<=0
-        ?"Sin giros. Avanza de tramo para recibir "+normalSpinsPerTramo+" giros."
-        :"Cada giro entrega 1 carta.");
+    :spinning
+      ?"La ruleta está girando..."
+      :specialSelected
+        ?(selectedSpecialPool==="legendary"?"Ruleta Legendaria seleccionada.":"Ruleta Fiesta seleccionada.")+" Pulsa GIRAR RULETA cuando quieras utilizar tu acceso."
+        :normalCount>=normalCardLimit
+          ?"Baraja completa. Libera un espacio para continuar."
+          :totalSpins<=0
+            ?"Sin giros. Avanza de tramo para recibir "+normalSpinsPerTramo+" giros."
+            :"Cada giro entrega 1 carta.");
   setText("spinBudget",currentAuthUser
-    ?("GIROS DEL TRAMO: "+tramoSpinsRemaining+" · EXTRA: "+bonusTramoSpinsRemaining)
+    ?(specialSelected
+      ?("GIROS "+(selectedSpecialPool==="legendary"?"LEGENDARIOS":"FIESTA")+": "+selectedSpecialCredits)
+      :("GIROS DEL TRAMO: "+tramoSpinsRemaining+" · EXTRA: "+bonusTramoSpinsRemaining))
     :"INICIA SESIÓN PARA VER TUS GIROS");
 
   const tramoActual = Math.min(TRAMO_MILESTONES.length,Math.max(0,Number(currentTramo)||0));
@@ -2952,6 +2964,7 @@ async function deleteAdminCard(card){
 async function loadRouletteAccess(){
   if(!authClient||!currentAuthUser){
     rouletteAccessByPool={legendary:0,fiesta:0};
+    selectedSpecialPool=null;
     updateSpecialRouletteAccessUI();
     return;
   }
@@ -2972,40 +2985,29 @@ async function loadRouletteAccess(){
 }
 function updateSpecialRouletteAccessUI(){
   const definitions=[
-    {slug:"legendary",countId:"legendaryAccessCount",buttonId:"legendarySpinButton",wheelButtonId:"legendaryWheelSpinButton",hintId:"legendaryAccessHint",ticket:"Legenleta",label:"la Ruleta Legendaria"},
-    {slug:"fiesta",countId:"fiestaAccessCount",buttonId:"fiestaSpinButton",wheelButtonId:"fiestaWheelSpinButton",hintId:"fiestaAccessHint",ticket:"Rumba",label:"la Ruleta Fiesta"}
+    {slug:"legendary",countId:"legendaryAccessCount",buttonId:"legendarySpinButton",hintId:"legendaryAccessHint",ticket:"Legenleta"},
+    {slug:"fiesta",countId:"fiestaAccessCount",buttonId:"fiestaSpinButton",hintId:"fiestaAccessHint",ticket:"Rumba"}
   ];
-  let hasAvailableSpecialSpin=false;
   definitions.forEach(item=>{
     const count=Math.max(0,Number(rouletteAccessByPool[item.slug]||0));
     const available=Boolean(currentAuthUser)&&count>0;
-    if(available)hasAvailableSpecialSpin=true;
+    const selected=selectedSpecialPool===item.slug;
     setText(item.countId,count);
-
-    // The access card below the wheel only takes the player back to the wheel.
     const accessButton=document.getElementById(item.buttonId);
     if(accessButton){
-      accessButton.disabled=spinning||!available;
-      accessButton.textContent=available?"IR A LA RULETA ↑":"CANJEA "+item.ticket.toUpperCase();
-    }
-
-    // The actual draw is an explicit button directly beneath the wheel.
-    const wheelButton=document.getElementById(item.wheelButtonId);
-    if(wheelButton){
-      wheelButton.hidden=!available;
-      wheelButton.disabled=spinning||!available;
-      const label=item.slug==="legendary"?"GIRAR RULETA LEGENDARIA":"GIRAR RULETA FIESTA";
-      const span=wheelButton.querySelector("span");
-      if(span)span.textContent=label+" · "+count;
+      accessButton.disabled=spinning||!available||selected;
+      accessButton.classList.toggle("is-selected",selected);
+      accessButton.textContent=selected?"SELECCIONADA ✓":available?"CANJEAR":"CANJEA "+item.ticket.toUpperCase();
+      accessButton.setAttribute("aria-pressed",selected?"true":"false");
     }
     setText(item.hintId,!currentAuthUser
       ?"Inicia sesión para ver tus accesos."
-      :available
-        ?count+" "+(count===1?"giro disponible.":"giros disponibles.")+" Pulsa el botón bajo la ruleta para elegir cuándo girar."
-        :"Canjea "+item.ticket+" para obtener 1 giro.");
+      :selected
+        ?"Esta ruleta ya está cargada arriba. Pulsa GIRAR RULETA cuando quieras."
+        :available
+          ?count+" "+(count===1?"giro disponible.":"giros disponibles.")+" Pulsa CANJEAR para cargarla sin girar."
+          :"Canjea "+item.ticket+" para obtener 1 giro.");
   });
-  const actionGroup=document.getElementById("specialWheelSpinActions");
-  if(actionGroup)actionGroup.hidden=!hasAvailableSpecialSpin;
 }
 function mapRouletteCardRecord(card){
   const rarityLabels={common:"Común",rare:"Rara",epic:"Épica",legendary:"Legendaria",tramo:"Tramo",fiesta:"Fiesta"};
@@ -3070,11 +3072,14 @@ async function getPublicRouletteCards(poolSlug){
   return (Array.isArray(data)?data:[]).map(mapRouletteCardRecord);
 }
 
-async function loadPublicNormalCards(){
+async function loadPublicNormalCards(forceNormal=false){
   if(!authClient||!currentAuthUser)return;
+  if(selectedSpecialPool&&!forceNormal)return;
   try{
     const cards=await getPublicRouletteCards("normal");
+    if(forceNormal)selectedSpecialPool=null;
     setWheelCards(cards,"normal");
+    renderDeck();
   }catch(error){
     console.warn("No se pudo cargar la ruleta normal configurada:",error.message);
   }
@@ -3162,6 +3167,10 @@ function startWheelAnimation(card){
 async function spin(){
   if(spinning)return;
   if(!currentAuthUser||!authClient){notify("Inicia sesión para girar.");return;}
+  if(selectedSpecialPool){
+    await spinSpecialRoulette(selectedSpecialPool);
+    return;
+  }
   if(activeNormalCards().length>=normalCardLimit){notify("Tu baraja ya tiene el límite de "+normalCardLimit+" cartas normales.");return;}
   if(tramoSpinsRemaining+bonusTramoSpinsRemaining<=0){notify("Sin giros. Avanza de tramo para recibir "+normalSpinsPerTramo+" giros.");return;}
   spinning=true;renderDeck();
@@ -3207,7 +3216,7 @@ function focusWheelForSpecialSpin(){
   if(panel)panel.scrollIntoView({behavior:"smooth",block:"start"});
 }
 
-async function spinSpecialRoulette(poolSlug){
+async function selectSpecialRoulette(poolSlug){
   if(spinning)return;
   if(!currentAuthUser||!authClient){notify("Inicia sesión con Discord para usar las ruletas especiales.");return;}
   if(!["legendary","fiesta"].includes(poolSlug)){notify("La ruleta especial seleccionada no es válida.");return;}
@@ -3215,17 +3224,47 @@ async function spinSpecialRoulette(poolSlug){
     notify(poolSlug==="legendary"?"Canjea Legenleta para conseguir un giro Legendario.":"Canjea Rumba para conseguir un giro Fiesta.");
     return;
   }
+  if(selectedSpecialPool===poolSlug){focusWheelForSpecialSpin();return;}
   const poolName=poolSlug==="legendary"?"Ruleta Legendaria":"Ruleta Fiesta";
-  focusWheelForSpecialSpin();
+  const button=document.getElementById(poolSlug==="legendary"?"legendarySpinButton":"fiestaSpinButton");
+  if(button){button.disabled=true;button.textContent="CARGANDO...";}
+  try{
+    const prizeCards=await getPublicRouletteCards(poolSlug);
+    if(!prizeCards.length)throw new Error(poolName+" cerrada o sin premios. Tu acceso se conserva.");
+    selectedSpecialPool=poolSlug;
+    setWheelCards(prizeCards,poolSlug,true);
+    clearResult();
+    updateSpecialRouletteAccessUI();
+    renderDeck();
+    focusWheelForSpecialSpin();
+    notify(poolName+" cargada. Pulsa GIRAR RULETA cuando quieras.");
+  }catch(error){
+    console.error("No se pudo cargar la ruleta especial:",error);
+    notify("No pudimos cargar "+poolName+": "+(error.message||"error desconocido"));
+    updateSpecialRouletteAccessUI();
+  }
+}
+
+async function spinSpecialRoulette(poolSlug){
+  if(spinning)return;
+  if(!currentAuthUser||!authClient){notify("Inicia sesión con Discord para usar las ruletas especiales.");return;}
+  if(!["legendary","fiesta"].includes(poolSlug)||selectedSpecialPool!==poolSlug){
+    notify("Primero canjea el acceso para cargar la ruleta especial.");
+    return;
+  }
+  if(Number(rouletteAccessByPool[poolSlug]||0)<=0){
+    notify("No tienes giros disponibles para esta ruleta.");
+    selectedSpecialPool=null;
+    await loadPublicNormalCards(true);
+    renderDeck();
+    return;
+  }
+  const poolName=poolSlug==="legendary"?"Ruleta Legendaria":"Ruleta Fiesta";
   spinning=true;
   updateSpecialRouletteAccessUI();
   renderDeck();
   try{
-    const prizeCards=await getPublicRouletteCards(poolSlug);
-    if(!prizeCards.length){
-      throw new Error(poolName+" cerrada o sin premios. Tu acceso se conserva.");
-    }
-    setWheelCards(prizeCards,poolSlug);
+    // The server consumes one unlock and selects the prize in the same protected transaction.
     const {data,error}=await authClient.rpc("draw_special_roulette_card",{p_pool_slug:poolSlug});
     if(error)throw error;
     const result=Array.isArray(data)?data[0]:data;
@@ -3237,19 +3276,24 @@ async function spinSpecialRoulette(poolSlug){
     }
     card.image_path=result.image_path||card.image_path;
     card.art=card.image_path||card.art;
-    notify("¡Acceso validado! La "+poolName+" está girando...");
+    notify("¡"+poolName+" en marcha!");
     await startWheelAnimation(card);
     await loadCloudInventory();
     await loadRouletteAccess();
     showResult(card);
     await showSpinReward(card);
     notify("¡Has obtenido "+card.name+" en la "+poolName+"!");
+    selectedSpecialPool=null;
+    await loadPublicNormalCards(true);
   }catch(error){
     console.error("No se pudo completar el giro especial:",error);
     notify("No pudimos girar "+poolName+": "+(error.message||"error desconocido"));
     await loadRouletteAccess();
+    if(Number(rouletteAccessByPool[poolSlug]||0)<=0){
+      selectedSpecialPool=null;
+      await loadPublicNormalCards(true);
+    }
   }finally{
-    await loadPublicNormalCards();
     spinning=false;
     updateSpecialRouletteAccessUI();
     renderDeck();
@@ -4217,10 +4261,8 @@ document.getElementById("adminCardRemoveImage").addEventListener("click",()=>{
 });
 spinButton.addEventListener("click",spin);
 document.getElementById("shuffleWheelButton").addEventListener("click",shuffleWheelCards);
-document.getElementById("legendarySpinButton").addEventListener("click",()=>focusWheelForSpecialSpin());
-document.getElementById("fiestaSpinButton").addEventListener("click",()=>focusWheelForSpecialSpin());
-document.getElementById("legendaryWheelSpinButton").addEventListener("click",()=>spinSpecialRoulette("legendary"));
-document.getElementById("fiestaWheelSpinButton").addEventListener("click",()=>spinSpecialRoulette("fiesta"));
+document.getElementById("legendarySpinButton").addEventListener("click",()=>selectSpecialRoulette("legendary"));
+document.getElementById("fiestaSpinButton").addEventListener("click",()=>selectSpecialRoulette("fiesta"));
 document.getElementById("tramoButton").addEventListener("click",openTramoConfirmation);
 document.getElementById("tramoButtonFull").addEventListener("click",openTramoConfirmation);
 document.getElementById("closeTramoConfirm").addEventListener("click",closeTramoConfirmation);
