@@ -3451,3 +3451,31 @@ body{
   .typeleague-rules-line{padding:10px 12px;gap:6px 12px}
   .typeleague-history-list{padding:0 12px}
 }
+
+/* Special roulette spins: explicit, wheel-side controls matching the normal spin button. */
+.special-wheel-spin-actions{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:9px;
+  margin:9px auto 2px;
+}
+.special-wheel-spin-actions[hidden],
+.special-wheel-spin-button[hidden]{display:none!important}
+.special-wheel-spin-button{
+  min-width:220px;
+  background:#263644;
+  border:1px solid #687e8d;
+}
+.special-wheel-spin-button.legendary{
+  background:linear-gradient(135deg,#302c37,#443a29);
+  border:1px solid #a98b52;
+}
+.special-wheel-spin-button.legendary b{color:#e6c477}
+.special-wheel-spin-button.fiesta{
+  background:linear-gradient(135deg,#352a37,#4a303d);
+  border:1px solid #95677d;
+}
+.special-wheel-spin-button.fiesta b{color:#efb0ca}
+.special-wheel-spin-button:hover:not(:disabled){filter:brightness(1.15)}
