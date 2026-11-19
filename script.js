@@ -1263,14 +1263,15 @@ async function showPublicPlayer(playerId,currentTramo=0){
   const [cardsResult,typesResult,incomingResult]=await Promise.all([
     authClient.from("player_cards")
       .select("id,card_id,source,tramo_number,status,remaining_uses,obtained_at,card_catalog(id,name,category,rarity,image_path,uses_per_card,target_scope,disposition,counts_toward_normal_limit)")
-      .eq("owner_id",playerId).order("obtained_at",{ascending:true}),
+      .eq("owner_id",playerId).eq("status","available").gt("remaining_uses",0).order("obtained_at",{ascending:true}),
     authClient.from("player_type_status").select("type_slug,is_enabled").eq("owner_id",playerId),
     authClient.rpc("get_trainer_incoming_cards",{p_trainer_id:playerId})
   ]);
   if(cardsResult.error){notify("No pudimos cargar la baraja pública.");return;}
 
   const container=document.getElementById("publicPlayerCards");container.replaceChildren();
-  const items=(cardsResult.data||[]).map(mapInventoryRow).filter(Boolean);
+  const items=(cardsResult.data||[]).map(mapInventoryRow)
+    .filter(item=>item&&item.status==="available"&&Number(item.remaining_uses)>0);
   setText("publicPlayerCardCount",items.length+" CARTAS");
   if(!items.length){
     const empty=document.createElement("div");empty.className="deck-empty";empty.textContent="Sin cartas todavía.";container.append(empty);
@@ -1653,7 +1654,8 @@ async function confirmCardAction(){
       if(unlock){
         const poolName=unlock.pool_slug==="legendary"?"Ruleta Legendaria":"Ruleta Fiesta";
         const granted=Number(unlock.spins_granted||1);
-        notify("¡"+card.name+" canjeada! Has desbloqueado "+granted+" "+(granted===1?"giro":"giros")+" en "+poolName+".");
+        notify("¡"+card.name+" canjeada! Has desbloqueado "+granted+" "+(granted===1?"giro":"giros")+" en "+poolName+". Pulsa el botón de giro cuando quieras utilizarlo.");
+        if(!document.getElementById("page-roulette")?.hidden)focusWheelForSpecialSpin();
       }else{
         const remaining=Number(data.remaining_uses??0);
         notify(remaining>0
@@ -1870,20 +1872,22 @@ function renderAdminTrainerDetail(data){
   if(tramoInput)tramoInput.value=Number(progress.current_tramo||0);
   setText("adminTrainerSpins",Number(progress.spins_remaining||0));
   setText("adminTrainerBonusSpins",Number(progress.bonus_spins_remaining||0));
-  setText("adminTrainerCardCount",Number(stats.cards_total||0));
-  setText("adminTrainerInventoryCount",Number(stats.cards_total||0)+" CARTAS");
+  const usableCardCount=Number(stats.cards_available??stats.cards_total??0);
+  setText("adminTrainerCardCount",usableCardCount);
+  setText("adminTrainerInventoryCount",usableCardCount+" DISPONIBLES");
   const note="Límite de baraja normal: "+Number(stats.normal_available||0)+" / "+Number(data.normal_card_limit||5)+
     " · Cartas de tramo: "+Number(stats.tramo_available||0)+
     " · Fiesta: "+Number(stats.fiesta_available||0)+
-    "";
+    " · Gastadas: "+Number(stats.cards_used||0)+" (ocultas de la baraja)";
   setText("adminTrainerProgressNote",note);
 
   const inventory=document.getElementById("adminTrainerInventory");
   inventory.replaceChildren();
-  const cards=Array.isArray(data.inventory)?data.inventory:[];
+  const cards=(Array.isArray(data.inventory)?data.inventory:[])
+    .filter(item=>item&&item.status==="available"&&Number(item.remaining_uses)>0);
   if(!cards.length){
     const empty=document.createElement("div");empty.className="admin-catalog-loading";
-    empty.textContent="Sin cartas en el inventario.";
+    empty.textContent="Sin cartas disponibles en este inventario.";
     inventory.append(empty);
   }else{
     cards.forEach(item=>{
@@ -2968,25 +2972,40 @@ async function loadRouletteAccess(){
 }
 function updateSpecialRouletteAccessUI(){
   const definitions=[
-    {slug:"legendary",countId:"legendaryAccessCount",buttonId:"legendarySpinButton",hintId:"legendaryAccessHint",ticket:"Legenleta",label:"la Ruleta Legendaria"},
-    {slug:"fiesta",countId:"fiestaAccessCount",buttonId:"fiestaSpinButton",hintId:"fiestaAccessHint",ticket:"Rumba",label:"la Ruleta Fiesta"}
+    {slug:"legendary",countId:"legendaryAccessCount",buttonId:"legendarySpinButton",wheelButtonId:"legendaryWheelSpinButton",hintId:"legendaryAccessHint",ticket:"Legenleta",label:"la Ruleta Legendaria"},
+    {slug:"fiesta",countId:"fiestaAccessCount",buttonId:"fiestaSpinButton",wheelButtonId:"fiestaWheelSpinButton",hintId:"fiestaAccessHint",ticket:"Rumba",label:"la Ruleta Fiesta"}
   ];
+  let hasAvailableSpecialSpin=false;
   definitions.forEach(item=>{
     const count=Math.max(0,Number(rouletteAccessByPool[item.slug]||0));
+    const available=Boolean(currentAuthUser)&&count>0;
+    if(available)hasAvailableSpecialSpin=true;
     setText(item.countId,count);
-    const button=document.getElementById(item.buttonId);
-    if(button){
-      button.disabled=spinning||!currentAuthUser||count<=0;
-      button.textContent=count>0
-        ?(item.slug==="legendary"?"GIRAR RULETA LEGENDARIA":"GIRAR RULETA FIESTA")+" · "+count
-        :("CANJEA "+item.ticket.toUpperCase());
+
+    // The access card below the wheel only takes the player back to the wheel.
+    const accessButton=document.getElementById(item.buttonId);
+    if(accessButton){
+      accessButton.disabled=spinning||!available;
+      accessButton.textContent=available?"IR A LA RULETA ↑":"CANJEA "+item.ticket.toUpperCase();
+    }
+
+    // The actual draw is an explicit button directly beneath the wheel.
+    const wheelButton=document.getElementById(item.wheelButtonId);
+    if(wheelButton){
+      wheelButton.hidden=!available;
+      wheelButton.disabled=spinning||!available;
+      const label=item.slug==="legendary"?"GIRAR RULETA LEGENDARIA":"GIRAR RULETA FIESTA";
+      const span=wheelButton.querySelector("span");
+      if(span)span.textContent=label+" · "+count;
     }
     setText(item.hintId,!currentAuthUser
       ?"Inicia sesión para ver tus accesos."
-      :count>0
-        ?count+" "+(count===1?"giro disponible.":"giros disponibles.")
+      :available
+        ?count+" "+(count===1?"giro disponible.":"giros disponibles.")+" Pulsa el botón bajo la ruleta para elegir cuándo girar."
         :"Canjea "+item.ticket+" para obtener 1 giro.");
   });
+  const actionGroup=document.getElementById("specialWheelSpinActions");
+  if(actionGroup)actionGroup.hidden=!hasAvailableSpecialSpin;
 }
 function mapRouletteCardRecord(card){
   const rarityLabels={common:"Común",rare:"Rara",epic:"Épica",legendary:"Legendaria",tramo:"Tramo",fiesta:"Fiesta"};
@@ -3198,7 +3217,9 @@ async function spinSpecialRoulette(poolSlug){
   }
   const poolName=poolSlug==="legendary"?"Ruleta Legendaria":"Ruleta Fiesta";
   focusWheelForSpecialSpin();
-  spinning=true;renderDeck();
+  spinning=true;
+  updateSpecialRouletteAccessUI();
+  renderDeck();
   try{
     const prizeCards=await getPublicRouletteCards(poolSlug);
     if(!prizeCards.length){
@@ -3230,6 +3251,7 @@ async function spinSpecialRoulette(poolSlug){
   }finally{
     await loadPublicNormalCards();
     spinning=false;
+    updateSpecialRouletteAccessUI();
     renderDeck();
   }
 }
@@ -4195,8 +4217,10 @@ document.getElementById("adminCardRemoveImage").addEventListener("click",()=>{
 });
 spinButton.addEventListener("click",spin);
 document.getElementById("shuffleWheelButton").addEventListener("click",shuffleWheelCards);
-document.getElementById("legendarySpinButton").addEventListener("click",()=>spinSpecialRoulette("legendary"));
-document.getElementById("fiestaSpinButton").addEventListener("click",()=>spinSpecialRoulette("fiesta"));
+document.getElementById("legendarySpinButton").addEventListener("click",()=>focusWheelForSpecialSpin());
+document.getElementById("fiestaSpinButton").addEventListener("click",()=>focusWheelForSpecialSpin());
+document.getElementById("legendaryWheelSpinButton").addEventListener("click",()=>spinSpecialRoulette("legendary"));
+document.getElementById("fiestaWheelSpinButton").addEventListener("click",()=>spinSpecialRoulette("fiesta"));
 document.getElementById("tramoButton").addEventListener("click",openTramoConfirmation);
 document.getElementById("tramoButtonFull").addEventListener("click",openTramoConfirmation);
 document.getElementById("closeTramoConfirm").addEventListener("click",closeTramoConfirmation);
