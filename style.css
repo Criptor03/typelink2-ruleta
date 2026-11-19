@@ -3492,3 +3492,16 @@ body{
 .special-roulette-button:disabled:not(.is-selected){
   opacity:.42;
 }
+
+
+/* Participant directory: one unified badge for usable cards of every category. */
+.player-directory-stats{display:flex;align-items:flex-end;justify-content:center;min-width:82px;text-align:center}
+.player-directory-stats .player-directory-card-total{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:27px;padding:6px 9px;border:1px solid #526b7b;
+  background:linear-gradient(145deg,#1c2d39,#14222d);
+  color:#d9e6ec;font-size:8px;font-weight:900;letter-spacing:.8px;
+}
+.admin-trainer-row-stats span:nth-child(2){
+  color:#d7e4eb;font-weight:900;letter-spacing:.7px
+}
