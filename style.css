@@ -3505,3 +3505,85 @@ body{
 .admin-trainer-row-stats span:nth-child(2){
   color:#d7e4eb;font-weight:900;letter-spacing:.7px
 }
+
+
+/* Participants directory — larger, content-led trainer cards. */
+.players-grid{
+  grid-template-columns:repeat(auto-fill,minmax(225px,250px));
+  justify-content:start;
+  align-items:stretch;
+  gap:16px;
+}
+.players-grid .player-directory-card{
+  width:100%;
+  min-height:252px;
+  height:auto;
+  aspect-ratio:auto;
+  padding:18px 16px;
+  gap:11px;
+  justify-content:flex-start;
+  overflow:visible;
+}
+.players-grid .player-directory-avatar{
+  width:70px;
+  height:70px;
+}
+.players-grid .player-directory-info{
+  gap:5px;
+}
+.players-grid .player-directory-info strong{
+  font-size:18px;
+  line-height:1.15;
+}
+.players-grid .player-directory-info small{
+  max-width:100%;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  text-align:center;
+  line-height:1.4;
+}
+.players-grid .player-directory-info .player-current-tramo{
+  max-width:100%;
+  font-size:8px!important;
+  line-height:1.45;
+  white-space:normal;
+}
+.players-grid .player-directory-stats{
+  margin-top:1px;
+  min-height:30px;
+}
+.players-grid .player-directory-stats .player-directory-card-total{
+  min-height:30px;
+  padding:7px 13px;
+  font-size:9px;
+}
+.players-grid .player-view-button{
+  min-height:30px;
+  margin-top:2px;
+  padding:7px 12px;
+  font-size:8px;
+}
+@media(max-width:800px){
+  .players-grid{
+    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    gap:13px;
+  }
+}
+@media(max-width:560px){
+  .players-grid{
+    grid-template-columns:minmax(0,1fr);
+    gap:12px;
+  }
+  .players-grid .player-directory-card{
+    width:100%;
+    max-width:340px;
+    min-height:0;
+    justify-self:start;
+    padding:17px 15px;
+    gap:10px;
+  }
+  .players-grid .player-directory-avatar{
+    width:64px;
+    height:64px;
+  }
+}
