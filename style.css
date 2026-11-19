@@ -3479,3 +3479,16 @@ body{
 }
 .special-wheel-spin-button.fiesta b{color:#efb0ca}
 .special-wheel-spin-button:hover:not(:disabled){filter:brightness(1.15)}
+
+
+/* A special roulette is selected from the lower access cards and displayed in the single wheel above. */
+.special-roulette-button.is-selected{
+  background:#213c31;
+  border-color:#80b99a;
+  color:#c8f0d8;
+  cursor:default;
+  box-shadow:inset 0 0 0 1px #80b99a22;
+}
+.special-roulette-button:disabled:not(.is-selected){
+  opacity:.42;
+}
