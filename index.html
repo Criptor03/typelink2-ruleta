@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b1016">
   <meta name="description" content="Pokémon TypeLink 2 — Plataforma del evento en Teselia">
   <title>Pokémon TypeLink 2 — Plataforma</title>
-  <link rel="stylesheet" href="style.css?v=20261118-evolution-roulette">
+  <link rel="stylesheet" href="style.css?v=20261119-inventory-special-spin">
 </head>
 <body>
   <div class="page-shell">
@@ -141,7 +141,15 @@
             <div class="wheel-panel panel">
               <div class="panel-heading"><div><span class="section-kicker">SORTEO DE CARTAS</span><h2 id="wheelTitle">Ruleta de cartas</h2></div><div class="roulette-heading-actions"><button class="roulette-shuffle-button" id="shuffleWheelButton" type="button" title="Mezcla las posiciones de las cartas sin cambiar sus probabilidades"><span>⤨</span> MEZCLAR RULETA</button><span class="live-pill"><i></i> LISTA</span></div></div>
               <div class="wheel-wrap"><div class="pointer"></div><canvas id="wheel" width="700" height="700" aria-label="Ruleta con cartas disponibles"></canvas><div class="wheel-center"><span>TYPE</span><strong>LINK</strong><small>2</small></div></div>
-              <div class="wheel-actions"><button id="spinButton" class="spin-button"><span>GIRAR RULETA</span><b>✦</b></button><p id="spinHint" class="hint">Primero inicia un tramo para recibir tus giros.</p><div class="spin-budget" id="spinBudget">SIN GIROS DISPONIBLES</div></div>
+              <div class="wheel-actions">
+                  <button id="spinButton" class="spin-button"><span>GIRAR RULETA</span><b>✦</b></button>
+                  <div class="special-wheel-spin-actions" id="specialWheelSpinActions" hidden>
+                    <button id="legendaryWheelSpinButton" class="spin-button special-wheel-spin-button legendary" type="button" hidden><span>GIRAR RULETA LEGENDARIA</span><b>✦</b></button>
+                    <button id="fiestaWheelSpinButton" class="spin-button special-wheel-spin-button fiesta" type="button" hidden><span>GIRAR RULETA FIESTA</span><b>♫</b></button>
+                  </div>
+                  <p id="spinHint" class="hint">Primero inicia un tramo para recibir tus giros.</p>
+                  <div class="spin-budget" id="spinBudget">SIN GIROS DISPONIBLES</div>
+                </div>
             </div>
             <aside class="side-column">
               <div class="result-panel panel"><div class="panel-heading compact"><div><span class="section-kicker">RESULTADO</span><h2>Tu recompensa</h2></div></div><div id="resultCard" class="result-card empty"><div class="card-placeholder"><span>✦</span><strong>¿QUÉ TE<br>TOCARÁ?</strong><small>GIRA LA RULETA</small></div></div><p id="resultMessage" class="result-message">Esperando giro.</p></div>
@@ -1103,6 +1111,6 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0"></script>
   <script src="supabase-config.js"></script>
-  <script src="script.js?v=20261118-evolution-roulette"></script>
+  <script src="script.js?v=20261119-inventory-special-spin"></script>
 </body>
 </html>
