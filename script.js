@@ -1722,7 +1722,9 @@ function setupRealtime(){
   if(notificationChannel)authClient.removeChannel(notificationChannel);
   if(typeLeagueChannel)authClient.removeChannel(typeLeagueChannel);
   inventoryChannel=authClient.channel("typelink-player-cards-"+currentAuthUser.id)
-    .on("postgres_changes",{event:"*",schema:"public",table:"player_cards",filter:"owner_id=eq."+currentAuthUser.id},()=>{if(!spinning)loadCloudInventory();})
+    .on("postgres_changes",{event:"*",schema:"public",table:"player_cards",filter:"owner_id=eq."+currentAuthUser.id},()=>{
+      if(!spinning){loadCloudInventory();loadPlayers();}
+    })
     .subscribe();
   profilesChannel=authClient.channel("typelink-public-profiles")
     .on("postgres_changes",{event:"*",schema:"public",table:"profiles"},()=>loadPlayers())
@@ -1735,7 +1737,6 @@ function setupRealtime(){
       const profileModal=document.getElementById("publicProfileModal");
       const openPlayerId=profileModal?.dataset.playerId;
       if(entry.activity_type==="tramo_award"||entry.activity_type==="tramo_adjustment"){
-        loadPlayers();
         if(openPlayerId&&(entry.actor_id===openPlayerId||entry.target_id===openPlayerId)){
           void refreshPublicIncomingCards(openPlayerId);
         }
