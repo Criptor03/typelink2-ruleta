@@ -1556,14 +1556,14 @@ async function openCardAction(instanceId,mode){
     if(manipulationSelect)manipulationSelect.replaceChildren();
     const key=manipulationEffect.effect_key;
 
-    if(key==="steal_opponent_card"){
+    if(key==="steal_opponent_card"||key==="copy_opponent_card"){
       // Robar carta: primero elegimos al rival y después cargamos SOLO sus cartas
       // compatibles. Legendarias y Fiesta nunca aparecen.
       if(targetWrap)targetWrap.hidden=false;
       const targetLabel=targetWrap?.querySelector("label");
       const targetHint=document.getElementById("cardActionTargetHint");
-      if(targetLabel)targetLabel.textContent="RIVAL OBJETIVO";
-      if(targetHint)targetHint.textContent="Elige primero al entrenador cuya carta quieres robar.";
+      if(targetLabel)targetLabel.textContent=key==="steal_opponent_card"?"RIVAL OBJETIVO":"RIVAL DEL QUE COPIAR";
+      if(targetHint)targetHint.textContent=key==="steal_opponent_card"?"Elige primero al entrenador cuya carta quieres robar.":"Elige primero al entrenador del que quieres copiar una carta.";
       targetSelect.replaceChildren();
       const rivalPlaceholder=document.createElement("option");
       rivalPlaceholder.value="";
@@ -1607,8 +1607,8 @@ async function openCardAction(instanceId,mode){
           });
           confirmButton.disabled=!cards.length;
           feedback.textContent=cards.length
-            ?"Ahora selecciona la carta que quieres robar."
-            :"Este rival no tiene cartas disponibles para robar (Legendarias y Fiesta están excluidas).";
+            ?(key==="steal_opponent_card"?"Ahora selecciona la carta que quieres robar.":"Ahora selecciona la carta que quieres copiar.")
+            :"Este rival no tiene cartas disponibles compatibles (Legendarias y Fiesta están excluidas).";
         }catch(error){
           console.error("No se pudieron cargar las cartas del rival:",error);
           manipulationSelect.replaceChildren();
@@ -1619,7 +1619,7 @@ async function openCardAction(instanceId,mode){
           errorOption.selected=true;
           manipulationSelect.append(errorOption);
           confirmButton.disabled=true;
-          feedback.textContent="No pudimos cargar las cartas de ese rival.";
+          feedback.textContent=key==="steal_opponent_card"?"No pudimos cargar las cartas de ese rival.":"No pudimos cargar las cartas de ese rival.";
         }
       };
 
@@ -1662,7 +1662,7 @@ async function openCardAction(instanceId,mode){
         };
         if(targetSelect.options.length===1){
           confirmButton.disabled=true;
-          feedback.textContent="No hay rivales disponibles para robar cartas.";
+          feedback.textContent=key==="steal_opponent_card"?"No hay rivales disponibles para robar cartas.":"No hay rivales disponibles para copiar cartas.";
         }else{
           confirmButton.disabled=true;
           feedback.textContent="Selecciona primero un rival.";
