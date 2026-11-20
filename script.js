@@ -2832,6 +2832,7 @@ async function saveAdminMechanics(){
     description:document.getElementById("adminEvolutionDescription").value
   }:{enabled:false};
   const targetScope=document.getElementById("adminMechanicsTargetScope").value;
+  const disposition=document.getElementById("adminMechanicsDisposition").value;
   if(effects.some(effect=>effect.effect_key==="unlock_roulette")&&targetScope!=="self"){
     notify("El desbloqueo debe afectar a quien utiliza la carta.");
     return;
