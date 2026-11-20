@@ -2637,7 +2637,7 @@ async function saveAdminMechanics(){
   if(rows.length>10){notify("Puedes configurar hasta 10 efectos por carta.");return;}
   const invalidSpinRow=rows.find(row=>{
     if(row.querySelector('[data-role="effect-key"]')?.value!=="tramo_spin_credit")return false;
-    const input=row.querySelector('[data-role="effect-value"]');
+    const input=row.querySelector('[data-role="spin-fields"] [data-role="effect-value"]');
     const amount=input?.valueAsNumber;
     return !Number.isInteger(amount)||amount<1||amount>100;
   });
@@ -2662,14 +2662,14 @@ async function saveAdminMechanics(){
     if(key==="tramo_spin_credit"){
       return {
         effect_key:key,
-        effect_value:Number(row.querySelector('[data-role="effect-value"]').value),
+        effect_value:Number(row.querySelector('[data-role="spin-fields"] [data-role="effect-value"]').value),
         is_active:row.querySelector('[data-role="is-active"]').checked
       };
     }
     const duration=row.querySelector('[data-role="duration-type"]').value;
     return {
       effect_key:key,
-      effect_value:Number(row.querySelector('[data-role="effect-value"]').value),
+      effect_value:Number(row.querySelector('[data-role="limit-fields"] [data-role="effect-value"]').value),
       duration_type:duration,
       duration_value:duration==="timed"?Number(row.querySelector('[data-role="duration-value"]').value):null,
       duration_unit:duration==="timed"?row.querySelector('[data-role="duration-unit"]').value:"hours",
