@@ -1776,7 +1776,7 @@ async function openCardAction(instanceId,mode){
       ?"CONFIRMAR TRANSFERENCIA"
       :noAutomaticEffect?"LANZAR CARTA":"USAR CARTA";
 
-    if(card.target_scope==="opponent"||card.target_scope==="either"){
+    if(!manipulationEffect && (card.target_scope==="opponent"||card.target_scope==="either")){
       targetWrap.hidden=false;
       const prompt=document.createElement("option");
       prompt.value="";
