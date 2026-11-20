@@ -556,6 +556,7 @@ function effectLabel(effect){
   if(effect.effect_key==="tramo_spin_credit")return "+"+(Number(value)||0)+" giros extra";
   if(effect.effect_key==="protection_normal")return "Protección normal";
   if(effect.effect_key==="protection_ultimate")return "Protección definitiva";
+  if(effect.effect_key==="destroy_normal_deck")return "Romper baraja";
   const name=String(effect.effect_key||"efecto").replace(/_/g," ");
   return value==null?name:(name+" · "+value);
 }
@@ -2483,6 +2484,7 @@ function adminMechanicsEffectLabel(effect){
   if(effect.effect_key==="tramo_spin_credit")return "+"+Number(effect.effect_value||0)+" giros extra";
   if(effect.effect_key==="protection_normal")return "Protección normal";
   if(effect.effect_key==="protection_ultimate")return "Protección definitiva";
+  if(effect.effect_key==="destroy_normal_deck")return "Romper baraja";
   if(effect.effect_key==="unlock_roulette"){
     const pool=effect.parameters?.pool_slug==="fiesta"?"Fiesta":"Legendaria";
     return "Desbloquea ruleta "+pool;
@@ -2559,8 +2561,8 @@ function createAdminEffectRow(effect={}){
   const typeLabel=document.createElement("label");typeLabel.className="admin-field";
   typeLabel.textContent="TIPO DE EFECTO";
   const type=document.createElement("select");type.dataset.role="effect-key";
-  type.innerHTML='<option value="normal_card_limit">Modificar límite de baraja</option><option value="tramo_spin_credit">Conceder giros extra</option><option value="protection_normal">Protección normal</option><option value="protection_ultimate">Protección definitiva</option><option value="unlock_roulette">Desbloquear ruleta</option>';
-  type.value=["normal_card_limit","tramo_spin_credit","protection_normal","protection_ultimate","unlock_roulette"].includes(effect.effect_key)?effect.effect_key:"normal_card_limit";
+  type.innerHTML='<option value="normal_card_limit">Modificar límite de baraja</option><option value="tramo_spin_credit">Conceder giros extra</option><option value="protection_normal">Protección normal</option><option value="protection_ultimate">Protección definitiva</option><option value="destroy_normal_deck">Romper baraja</option><option value="unlock_roulette">Desbloquear ruleta</option>';
+  type.value=["normal_card_limit","tramo_spin_credit","protection_normal","protection_ultimate","destroy_normal_deck","unlock_roulette"].includes(effect.effect_key)?effect.effect_key:"normal_card_limit";
   typeLabel.append(type);
   const activeLabel=document.createElement("label");activeLabel.className="admin-mechanics-check-row";
   const active=document.createElement("input");active.type="checkbox";active.dataset.role="is-active";active.checked=effect.is_active!==false;
@@ -2611,15 +2613,16 @@ function createAdminEffectRow(effect={}){
     const unlock=key==="unlock_roulette";
     const spin=key==="tramo_spin_credit";
     const protection=key==="protection_normal"||key==="protection_ultimate";
-    limitFields.hidden=unlock||spin||protection;
+    const destroyDeck=key==="destroy_normal_deck";
+    limitFields.hidden=unlock||spin||protection||destroyDeck;
     spinFields.hidden=!spin;
     protectionFields.hidden=!protection;
     unlockFields.hidden=!unlock;
-    timedWrap.hidden=unlock||spin||protection||duration.value!=="timed";
+    timedWrap.hidden=unlock||spin||protection||destroyDeck||duration.value!=="timed";
     if(type.dataset.changed==="true"){
       const target=document.getElementById("adminMechanicsTargetScope");
       const disposition=document.getElementById("adminMechanicsDisposition");
-      target.value=unlock?"none":"self";disposition.value="consume";
+      target.value=unlock?"none":(destroyDeck?"opponent":"self");disposition.value="consume";
     }
   }
   type.addEventListener("change",()=>{type.dataset.changed="true";if(type.value==="tramo_spin_credit")spinValue.value="3";sync();});
@@ -2718,7 +2721,7 @@ async function saveAdminMechanics(){
         is_active:row.querySelector('[data-role="is-active"]').checked
       };
     }
-    if(key==="protection_normal"||key==="protection_ultimate"){
+    if(key==="protection_normal"||key==="protection_ultimate"||key==="destroy_normal_deck"){
       return {effect_key:key,is_active:row.querySelector('[data-role="is-active"]').checked};
     }
     const duration=row.querySelector('[data-role="duration-type"]').value;
@@ -2743,6 +2746,10 @@ async function saveAdminMechanics(){
   const targetScope=document.getElementById("adminMechanicsTargetScope").value;
   if(effects.some(effect=>effect.effect_key==="unlock_roulette")&&targetScope!=="self"){
     notify("El desbloqueo debe afectar a quien utiliza la carta.");
+    return;
+  }
+  if(effects.some(effect=>effect.effect_key==="destroy_normal_deck")&&targetScope!=="opponent"){
+    notify("Romper baraja debe tener como objetivo a otro entrenador.");
     return;
   }
   const button=document.getElementById("adminSaveMechanics");
