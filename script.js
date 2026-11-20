@@ -2918,8 +2918,11 @@ function openAdminMechanicsEditor(cardId){
   const art=document.getElementById("adminMechanicsCardArt");art.replaceChildren();
   if(card.image_path){const image=document.createElement("img");image.src=card.image_path;image.alt=card.name||"Carta";image.onerror=()=>image.remove();art.append(image);}
   else{const empty=document.createElement("span");empty.textContent="▧";art.append(empty);}
-  document.getElementById("adminMechanicsTargetScope").value=card.target_scope||"self";
-  document.getElementById("adminMechanicsDisposition").value=card.disposition||"consume";
+  const hasStealWholeDeckEffect=(item.effects||[]).some(effect=>effect.effect_key==="steal_opponent_deck"&&effect.is_active!==false);
+  const initialTargetScope=hasStealWholeDeckEffect?"opponent":(card.target_scope||"self");
+  const initialDisposition=hasStealWholeDeckEffect?"consume":(card.disposition||"consume");
+  document.getElementById("adminMechanicsTargetScope").value=initialTargetScope;
+  document.getElementById("adminMechanicsDisposition").value=initialDisposition;
 
   const effectsList=document.getElementById("adminMechanicsEffectsList");effectsList.replaceChildren();
   (item.effects||[]).forEach(effect=>effectsList.append(createAdminEffectRow(effect)));
@@ -3007,8 +3010,14 @@ async function saveAdminMechanics(){
     name:document.getElementById("adminEvolutionName").value,
     description:document.getElementById("adminEvolutionDescription").value
   }:{enabled:false};
-  const targetScope=document.getElementById("adminMechanicsTargetScope").value;
-  const disposition=document.getElementById("adminMechanicsDisposition").value;
+  let targetScope=document.getElementById("adminMechanicsTargetScope").value;
+  let disposition=document.getElementById("adminMechanicsDisposition").value;
+  if(effects.some(effect=>effect.effect_key==="steal_opponent_deck")){
+    targetScope="opponent";
+    disposition="consume";
+    document.getElementById("adminMechanicsTargetScope").value="opponent";
+    document.getElementById("adminMechanicsDisposition").value="consume";
+  }
   if(effects.some(effect=>effect.effect_key==="unlock_roulette")&&targetScope!=="self"){
     notify("El desbloqueo debe afectar a quien utiliza la carta.");
     return;
@@ -3043,7 +3052,7 @@ async function saveAdminMechanics(){
     const {data,error}=await authClient.rpc("admin_save_card_mechanics",{
       p_card_id:adminSelectedMechanicsCardId,
       p_target_scope:targetScope,
-      p_disposition:document.getElementById("adminMechanicsDisposition").value,
+      p_disposition:disposition,
       p_effects:effects,
       p_evolution:evolution
     });
