@@ -1475,6 +1475,8 @@ async function openCardAction(instanceId,mode){
   const targetWrap=document.getElementById("cardActionTargetWrap");
   const resultPreview=document.getElementById("cardActionResultPreview");
   const targetSelect=document.getElementById("cardActionTarget");
+  const protectionWrap=document.getElementById("cardActionProtectionWrap");
+  const protectionSelect=document.getElementById("cardActionProtectionSelect");
   const messageWrap=document.getElementById("cardActionMessageWrap");
   const messageInput=document.getElementById("cardActionMessage");
   const messageCount=document.getElementById("cardActionMessageCount");
@@ -1488,6 +1490,8 @@ async function openCardAction(instanceId,mode){
   setText("cardActionName",card.name);
   setText("cardActionUses",card.remaining_uses+"/"+card.uses_per_card+" USOS RESTANTES");
   targetWrap.hidden=true;
+  if(protectionWrap)protectionWrap.hidden=true;
+  if(protectionSelect)protectionSelect.replaceChildren();
   resultPreview.hidden=true;
   setCardActionTargetProfile(null);
   cardActionTargetProfiles=Object.create(null);
@@ -1500,6 +1504,37 @@ async function openCardAction(instanceId,mode){
   if(messageWrap)messageWrap.hidden=mode!=="use";
   if(messageInput){
     messageInput.oninput=()=>{if(messageCount)messageCount.textContent=String(messageInput.value.length);};
+  }
+
+  const protectionEffect=(cardEffectsById[card.card_id]||[]).find(effect=>effect.effect_key==="protection_normal"||effect.effect_key==="protection_ultimate");
+  if(protectionEffect&&mode==="use"){
+    if(protectionWrap)protectionWrap.hidden=false;
+    const protectionLevel=protectionEffect.effect_key==="protection_ultimate"?"ultimate":"normal";
+    try{
+      const {data,error}=await authClient.rpc("get_trainer_incoming_cards",{p_trainer_id:currentAuthUser.id});
+      if(error)throw error;
+      const incoming=Array.isArray(data)?data:[];
+      const eligible=incoming.filter(item=>protectionLevel==="ultimate"||(item.rarity!=="legendary"&&item.rarity!=="fiesta"));
+      if(protectionSelect){
+        const placeholder=document.createElement("option");
+        placeholder.value="";placeholder.textContent=eligible.length?"Selecciona la carta que quieres bloquear":"No hay cartas compatibles que te hayan lanzado";placeholder.disabled=true;placeholder.selected=true;
+        protectionSelect.append(placeholder);
+        eligible.forEach(item=>{
+          const option=document.createElement("option");
+          option.value=item.activity_id;
+          option.textContent=(item.card_name||"Carta TypeLink")+" · "+(item.rarity||"CARTA")+" · de "+(item.sender_name||"otro entrenador");
+          protectionSelect.append(option);
+        });
+      }
+      if(!eligible.length){
+        confirmButton.disabled=true;
+        feedback.textContent=protectionLevel==="normal"?"No tienes una carta compatible que te hayan lanzado. La Protección normal no bloquea Legendarias ni Fiesta.":"No tienes cartas lanzadas que puedas bloquear.";
+      }
+    }catch(error){
+      console.error("No se pudieron cargar las cartas recibidas para proteger:",error);
+      confirmButton.disabled=true;
+      feedback.textContent="No pudimos cargar las cartas que te han lanzado.";
+    }
   }
 
   if(mode==="evolve"){
@@ -1626,8 +1661,13 @@ async function confirmCardAction(){
   const feedback=document.getElementById("cardActionFeedback");
   const messageInput=document.getElementById("cardActionMessage");
   let targetId=null;
+  const protectionEffect=(cardEffectsById[card.card_id]||[]).find(effect=>effect.effect_key==="protection_normal"||effect.effect_key==="protection_ultimate");
+  if(mode==="use"&&protectionEffect){
+    targetId=document.getElementById("cardActionProtectionSelect")?.value||null;
+    if(!targetId){feedback.textContent="Selecciona una carta que te hayan lanzado antes de continuar.";return;}
+  }
 
-  if(mode!=="evolve"&&(card.target_scope==="opponent"||card.target_scope==="either")){
+  if(mode!=="evolve"&&!protectionEffect&&(card.target_scope==="opponent"||card.target_scope==="either")){
     targetId=targetSelect.value||null;
     if(card.target_scope==="opponent"&&!targetId){
       feedback.textContent="Selecciona un entrenador antes de continuar.";
@@ -1669,7 +1709,9 @@ async function confirmCardAction(){
       notify("¡"+card.name+" se transfirió correctamente!");
     }else{
       const unlock=Array.isArray(data.roulette_unlocks)?data.roulette_unlocks[0]:null;
-      if(unlock){
+      if(data.protection){
+        notify("¡"+card.name+" utilizada! Te has protegido de "+(data.protected_card_name||"la carta seleccionada")+".");
+      }else if(unlock){
         const poolName=unlock.pool_slug==="legendary"?"Ruleta Legendaria":"Ruleta Fiesta";
         const granted=Number(unlock.spins_granted||1);
         notify("¡"+card.name+" canjeada! Has desbloqueado "+granted+" "+(granted===1?"giro":"giros")+" en "+poolName+". Pulsa el botón de giro cuando quieras utilizarlo.");
@@ -2513,8 +2555,8 @@ function createAdminEffectRow(effect={}){
   const typeLabel=document.createElement("label");typeLabel.className="admin-field";
   typeLabel.textContent="TIPO DE EFECTO";
   const type=document.createElement("select");type.dataset.role="effect-key";
-  type.innerHTML='<option value="normal_card_limit">Modificar límite de baraja</option><option value="tramo_spin_credit">Conceder giros extra</option><option value="unlock_roulette">Desbloquear ruleta</option>';
-  type.value=["normal_card_limit","tramo_spin_credit","unlock_roulette"].includes(effect.effect_key)?effect.effect_key:"normal_card_limit";
+  type.innerHTML='<option value="normal_card_limit">Modificar límite de baraja</option><option value="tramo_spin_credit">Conceder giros extra</option><option value="protection_normal">Protección normal</option><option value="protection_ultimate">Protección definitiva</option><option value="unlock_roulette">Desbloquear ruleta</option>';
+  type.value=["normal_card_limit","tramo_spin_credit","protection_normal","protection_ultimate","unlock_roulette"].includes(effect.effect_key)?effect.effect_key:"normal_card_limit";
   typeLabel.append(type);
   const activeLabel=document.createElement("label");activeLabel.className="admin-mechanics-check-row";
   const active=document.createElement("input");active.type="checkbox";active.dataset.role="is-active";active.checked=effect.is_active!==false;
@@ -2546,6 +2588,10 @@ function createAdminEffectRow(effect={}){
   const spinNote=document.createElement("p");spinNote.className="admin-mechanics-inline-note";spinNote.textContent="Se acreditan al instante y no caducan.";
   spinFields.append(spinValueLabel,spinNote);
 
+  const protectionFields=document.createElement("div");protectionFields.className="admin-mechanics-effect-fields";protectionFields.dataset.role="protection-fields";
+  const protectionNote=document.createElement("p");protectionNote.className="admin-mechanics-inline-note";protectionNote.textContent="Al usarla, el entrenador elegirá una carta que le hayan lanzado. La protección se aplica en ese momento.";
+  protectionFields.append(protectionNote);
+
   const unlockFields=document.createElement("div");unlockFields.className="admin-mechanics-effect-fields";unlockFields.dataset.role="unlock-fields";
   const poolLabel=document.createElement("label");poolLabel.className="admin-field";poolLabel.textContent="RULETA A DESBLOQUEAR";
   const pool=document.createElement("select");pool.dataset.role="pool-slug";
@@ -2560,10 +2606,12 @@ function createAdminEffectRow(effect={}){
     const key=type.value;
     const unlock=key==="unlock_roulette";
     const spin=key==="tramo_spin_credit";
-    limitFields.hidden=unlock||spin;
+    const protection=key==="protection_normal"||key==="protection_ultimate";
+    limitFields.hidden=unlock||spin||protection;
     spinFields.hidden=!spin;
+    protectionFields.hidden=!protection;
     unlockFields.hidden=!unlock;
-    timedWrap.hidden=unlock||spin||duration.value!=="timed";
+    timedWrap.hidden=unlock||spin||protection||duration.value!=="timed";
     if(type.dataset.changed==="true"){
       const target=document.getElementById("adminMechanicsTargetScope");
       const disposition=document.getElementById("adminMechanicsDisposition");
@@ -2572,7 +2620,7 @@ function createAdminEffectRow(effect={}){
   }
   type.addEventListener("change",()=>{type.dataset.changed="true";if(type.value==="tramo_spin_credit")spinValue.value="3";sync();});
   duration.addEventListener("change",sync);
-  row.append(top,limitFields,spinFields,unlockFields);
+  row.append(top,limitFields,spinFields,protectionFields,unlockFields);
   row._sync=sync;
   sync();
   return row;
@@ -2665,6 +2713,9 @@ async function saveAdminMechanics(){
         effect_value:Number(row.querySelector('[data-role="spin-fields"] [data-role="effect-value"]').value),
         is_active:row.querySelector('[data-role="is-active"]').checked
       };
+    }
+    if(key==="protection_normal"||key==="protection_ultimate"){
+      return {effect_key:key,is_active:row.querySelector('[data-role="is-active"]').checked};
     }
     const duration=row.querySelector('[data-role="duration-type"]').value;
     return {
