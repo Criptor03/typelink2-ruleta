@@ -1849,6 +1849,7 @@ async function confirmCardAction(){
   const feedback=document.getElementById("cardActionFeedback");
   const messageInput=document.getElementById("cardActionMessage");
   let targetId=null;
+  let manipulationCardId=null;
   const protectionEffect=(cardEffectsById[card.card_id]||[]).find(effect=>effect.effect_key==="protection_normal"||effect.effect_key==="protection_ultimate");
   const manipulationEffect=(cardEffectsById[card.card_id]||[]).find(effect=>[
     "copy_opponent_card","copy_incoming_card","steal_opponent_card","transform_card"
@@ -1871,10 +1872,24 @@ async function confirmCardAction(){
   }
 
   if(mode==="use"&&manipulationEffect){
-    targetId=document.getElementById("cardActionManipulationSelect")?.value||null;
-    if(!targetId){
-      feedback.textContent="Selecciona una carta antes de continuar.";
-      return;
+    const selectedCardId=document.getElementById("cardActionManipulationSelect")?.value||null;
+    if(manipulationEffect.effect_key==="steal_opponent_card"){
+      targetId=targetSelect?.value||null;
+      manipulationCardId=selectedCardId;
+      if(!targetId){
+        feedback.textContent="Selecciona un rival antes de continuar.";
+        return;
+      }
+      if(!manipulationCardId){
+        feedback.textContent="Selecciona una carta para robar antes de continuar.";
+        return;
+      }
+    }else{
+      targetId=selectedCardId;
+      if(!targetId){
+        feedback.textContent="Selecciona una carta antes de continuar.";
+        return;
+      }
     }
   }
 
@@ -1887,7 +1902,9 @@ async function confirmCardAction(){
     const args=mode==="evolve"
       ?{p_card_instance_id:instanceId}
       :mode==="use"
-        ?{p_card_instance_id:instanceId,p_target_id:targetId,p_custom_message:customMessage||null}
+        ?(manipulationEffect?.effect_key==="steal_opponent_card"
+          ?{p_card_instance_id:instanceId,p_target_id:targetId,p_manipulation_card_id:manipulationCardId,p_custom_message:customMessage||null}
+          :{p_card_instance_id:instanceId,p_target_id:targetId,p_custom_message:customMessage||null})
         :{p_card_instance_id:instanceId,p_target_id:targetId};
     const {data,error}=await authClient.rpc(rpcName,args);
     if(error)throw error;
