@@ -2856,7 +2856,7 @@ function createAdminEffectRow(effect={}){
     const spin=key==="tramo_spin_credit";
     const protection=key==="protection_normal"||key==="protection_ultimate";
     const destroyDeck=key==="destroy_normal_deck";
-    const cardManipulation=["copy_opponent_card","copy_incoming_card","steal_opponent_card","transform_card"].includes(key);
+    const cardManipulation=["copy_opponent_card","copy_incoming_card","steal_opponent_card","steal_opponent_deck","transform_card"].includes(key);
     limitFields.hidden=unlock||spin||protection||destroyDeck||cardManipulation;
     spinFields.hidden=!spin;
     protectionFields.hidden=!protection;
