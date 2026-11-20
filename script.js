@@ -554,6 +554,8 @@ function effectLabel(effect){
     return "Límite de baraja "+(amount>=0?"+":"")+amount;
   }
   if(effect.effect_key==="tramo_spin_credit")return "+"+(Number(value)||0)+" giros extra";
+  if(effect.effect_key==="protection_normal")return "Protección normal";
+  if(effect.effect_key==="protection_ultimate")return "Protección definitiva";
   const name=String(effect.effect_key||"efecto").replace(/_/g," ");
   return value==null?name:(name+" · "+value);
 }
@@ -2479,6 +2481,8 @@ function adminMechanicsEffectLabel(effect){
     return (value>0?"+":"")+value+" espacios de baraja";
   }
   if(effect.effect_key==="tramo_spin_credit")return "+"+Number(effect.effect_value||0)+" giros extra";
+  if(effect.effect_key==="protection_normal")return "Protección normal";
+  if(effect.effect_key==="protection_ultimate")return "Protección definitiva";
   if(effect.effect_key==="unlock_roulette"){
     const pool=effect.parameters?.pool_slug==="fiesta"?"Fiesta":"Legendaria";
     return "Desbloquea ruleta "+pool;
