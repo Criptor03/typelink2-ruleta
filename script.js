@@ -561,6 +561,7 @@ function effectLabel(effect){
   if(effect.effect_key==="copy_incoming_card")return "Copiar carta recibida";
   if(effect.effect_key==="steal_opponent_card")return "Robar carta de un rival";
   if(effect.effect_key==="steal_full_deck")return "Robar baraja completa";
+  if(effect.effect_key==="swap_full_deck")return "Intercambiar barajas completas";
   if(effect.effect_key==="transform_card")return "Transformar carta";
   const name=String(effect.effect_key||"efecto").replace(/_/g," ");
   return value==null?name:(name+" · "+value);
