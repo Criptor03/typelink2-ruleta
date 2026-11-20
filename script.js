@@ -1930,7 +1930,8 @@ async function confirmCardAction(){
     }
   }catch(error){
     console.error("No se pudo completar la acción de carta:",error);
-    feedback.textContent=error.message||"No se pudo completar la acción.";
+    const detail=[error?.message,error?.details,error?.hint,error?.code].filter(Boolean).join(" · ");
+    feedback.textContent=detail||"No se pudo completar la acción.";
     button.disabled=false;
     button.textContent=mode==="evolve"?"CONFIRMAR EVOLUCIÓN":mode==="transfer"?"CONFIRMAR TRANSFERENCIA":"USAR CARTA";
   }
