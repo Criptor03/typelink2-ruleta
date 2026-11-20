@@ -346,7 +346,7 @@ function renderDeck(){
   const specialSelected=selectedSpecialPool==="legendary"||selectedSpecialPool==="fiesta";
   const selectedSpecialCredits=specialSelected?Math.max(0,Number(rouletteAccessByPool[selectedSpecialPool]||0)):0;
   const canSpinSpecial=specialSelected&&selectedSpecialCredits>0;
-  const canSpinNormal=pendingSpins&&normalCount<normalCardLimit;
+  const canSpinNormal=pendingSpins&&(normalCount<normalCardLimit||bonusTramoSpinsRemaining>0);
   spinButton.disabled=spinning||!currentAuthUser||(specialSelected?!canSpinSpecial:!canSpinNormal);
   const shuffleWheelButton=document.getElementById("shuffleWheelButton");
   if(shuffleWheelButton)shuffleWheelButton.disabled=spinning||CARDS.length<2;
@@ -354,7 +354,7 @@ function renderDeck(){
     !currentAuthUser?"INICIA SESIÓN":
     spinning?"GIRANDO...":
     specialSelected&&!canSpinSpecial?"ACCESO AGOTADO":
-    !specialSelected&&normalCount>=normalCardLimit?"BARAJA COMPLETA":
+    !specialSelected&&normalCount>=normalCardLimit&&bonusTramoSpinsRemaining<=0?"BARAJA COMPLETA":
     !specialSelected&&totalSpins<=0?"SIN GIROS DISPONIBLES":"GIRAR RULETA";
   setText("spinHint",!currentAuthUser
     ?"Inicia sesión para girar."
@@ -362,9 +362,11 @@ function renderDeck(){
       ?"La ruleta está girando..."
       :specialSelected
         ?(selectedSpecialPool==="legendary"?"Ruleta Legendaria seleccionada.":"Ruleta Fiesta seleccionada.")+" Pulsa GIRAR RULETA cuando quieras utilizar tu acceso."
-        :normalCount>=normalCardLimit
+        :normalCount>=normalCardLimit&&bonusTramoSpinsRemaining<=0
           ?"Baraja completa. Libera un espacio para continuar."
-          :totalSpins<=0
+          :normalCount>=normalCardLimit&&bonusTramoSpinsRemaining>0
+            ?"Tienes giros extra: puedes obtener cartas aunque hayas superado el límite de baraja."
+            :totalSpins<=0
             ?"Sin giros. Avanza de tramo para recibir "+normalSpinsPerTramo+" giros."
             :"Cada giro entrega 1 carta.");
   setText("spinBudget",currentAuthUser
@@ -2540,7 +2542,7 @@ function createAdminEffectRow(effect={}){
 
   const spinFields=document.createElement("div");spinFields.className="admin-mechanics-effect-fields";spinFields.dataset.role="spin-fields";
   const spinValueLabel=document.createElement("label");spinValueLabel.className="admin-field";spinValueLabel.textContent="GIROS EXTRA QUE CONCEDE";
-  const spinValue=document.createElement("input");spinValue.type="number";spinValue.min="1";spinValue.max="100";spinValue.step="1";spinValue.value=String(effect.effect_key==="tramo_spin_credit"?effect.effect_value??1:1);spinValue.dataset.role="effect-value";spinValueLabel.append(spinValue);
+  const spinValue=document.createElement("input");spinValue.type="number";spinValue.min="1";spinValue.max="100";spinValue.step="1";spinValue.inputMode="numeric";spinValue.value=String(effect.effect_key==="tramo_spin_credit"&&effect.effect_value!=null?effect.effect_value:3);spinValue.dataset.role="effect-value";spinValue.setAttribute("aria-label","Cantidad de giros extra, de 1 a 100");spinValueLabel.append(spinValue);
   const spinNote=document.createElement("p");spinNote.className="admin-mechanics-inline-note";spinNote.textContent="Se acreditan al instante y no caducan.";
   spinFields.append(spinValueLabel,spinNote);
 
@@ -2568,7 +2570,7 @@ function createAdminEffectRow(effect={}){
       target.value=unlock?"none":"self";disposition.value="consume";
     }
   }
-  type.addEventListener("change",()=>{type.dataset.changed="true";sync();});
+  type.addEventListener("change",()=>{type.dataset.changed="true";if(type.value==="tramo_spin_credit")spinValue.value="3";sync();});
   duration.addEventListener("change",sync);
   row.append(top,limitFields,spinFields,unlockFields);
   row._sync=sync;
@@ -2633,6 +2635,18 @@ async function saveAdminMechanics(){
   if(!isAdmin||!authClient||!adminSelectedMechanicsCardId){notify("No hay una carta seleccionada.");return;}
   const rows=[...document.querySelectorAll("#adminMechanicsEffectsList .admin-mechanics-effect-row")];
   if(rows.length>10){notify("Puedes configurar hasta 10 efectos por carta.");return;}
+  const invalidSpinRow=rows.find(row=>{
+    if(row.querySelector('[data-role="effect-key"]')?.value!=="tramo_spin_credit")return false;
+    const input=row.querySelector('[data-role="effect-value"]');
+    const amount=input?.valueAsNumber;
+    return !Number.isInteger(amount)||amount<1||amount>100;
+  });
+  if(invalidSpinRow){
+    const input=invalidSpinRow.querySelector('[data-role="effect-value"]');
+    input?.focus();
+    notify("Los giros extra deben ser un número entero entre 1 y 100.");
+    return;
+  }
   const effects=rows.map(row=>{
     const key=row.querySelector('[data-role="effect-key"]').value;
     if(key==="unlock_roulette"){
@@ -3177,7 +3191,7 @@ async function spin(){
     await spinSpecialRoulette(selectedSpecialPool);
     return;
   }
-  if(activeNormalCards().length>=normalCardLimit){notify("Tu baraja ya tiene el límite de "+normalCardLimit+" cartas normales.");return;}
+  if(activeNormalCards().length>=normalCardLimit&&bonusTramoSpinsRemaining<=0){notify("Tu baraja ya alcanzó el límite. Necesitas giros extra para superarlo.");return;}
   if(tramoSpinsRemaining+bonusTramoSpinsRemaining<=0){notify("Sin giros. Avanza de tramo para recibir "+normalSpinsPerTramo+" giros.");return;}
   spinning=true;renderDeck();
   try{
