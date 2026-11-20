@@ -2803,7 +2803,7 @@ function createAdminEffectRow(effect={}){
   const typeLabel=document.createElement("label");typeLabel.className="admin-field";
   typeLabel.textContent="TIPO DE EFECTO";
   const type=document.createElement("select");type.dataset.role="effect-key";
-  type.innerHTML='<option value="normal_card_limit">Modificar límite de baraja</option><option value="tramo_spin_credit">Conceder giros extra</option><option value="protection_normal">Protección normal</option><option value="protection_ultimate">Protección definitiva</option><option value="destroy_normal_deck">Romper baraja</option><option value="copy_opponent_card">Copiar carta de un rival</option><option value="copy_incoming_card">Copiar carta recibida</option><option value="steal_opponent_card">Robar carta de un rival</option><option value="steal_full_deck">Robar baraja completa</option><option value="transform_card">Transformar carta</option><option value="unlock_roulette">Desbloquear ruleta</option>';
+  type.innerHTML='<option value="normal_card_limit">Modificar límite de baraja</option><option value="tramo_spin_credit">Conceder giros extra</option><option value="protection_normal">Protección normal</option><option value="protection_ultimate">Protección definitiva</option><option value="destroy_normal_deck">Romper baraja</option><option value="copy_opponent_card">Copiar carta de un rival</option><option value="copy_incoming_card">Copiar carta recibida</option><option value="steal_opponent_card">Robar carta de un rival</option><option value="steal_full_deck">Robar baraja completa</option><option value="swap_full_deck">Intercambiar barajas completas</option><option value="transform_card">Transformar carta</option><option value="unlock_roulette">Desbloquear ruleta</option>';
   type.value=["normal_card_limit","tramo_spin_credit","protection_normal","protection_ultimate","destroy_normal_deck","copy_opponent_card","copy_incoming_card","steal_opponent_card","steal_full_deck","transform_card","unlock_roulette"].includes(effect.effect_key)?effect.effect_key:"normal_card_limit";
   typeLabel.append(type);
   const activeLabel=document.createElement("label");activeLabel.className="admin-mechanics-check-row";
@@ -2856,7 +2856,7 @@ function createAdminEffectRow(effect={}){
     const spin=key==="tramo_spin_credit";
     const protection=key==="protection_normal"||key==="protection_ultimate";
     const destroyDeck=key==="destroy_normal_deck";
-    const cardManipulation=["copy_opponent_card","copy_incoming_card","steal_opponent_card","steal_full_deck","transform_card"].includes(key);
+    const cardManipulation=["copy_opponent_card","copy_incoming_card","steal_opponent_card","steal_full_deck","swap_full_deck","transform_card"].includes(key);
     const hideLimitFields=unlock||spin||protection||destroyDeck||cardManipulation;
     limitFields.hidden=hideLimitFields;
     limitFields.style.setProperty("display",hideLimitFields?"none":"", "important");
@@ -2871,7 +2871,7 @@ function createAdminEffectRow(effect={}){
     if(type.dataset.changed==="true"){
       const target=document.getElementById("adminMechanicsTargetScope");
       const disposition=document.getElementById("adminMechanicsDisposition");
-      if(key==="destroy_normal_deck"||key==="steal_full_deck"){
+      if(key==="destroy_normal_deck"||key==="steal_full_deck"||key==="swap_full_deck"){
         target.value="opponent";
       }else{
         target.value="self";
@@ -2885,7 +2885,7 @@ function createAdminEffectRow(effect={}){
     const target=document.getElementById("adminMechanicsTargetScope");
     const disposition=document.getElementById("adminMechanicsDisposition");
     if(target&&disposition){
-      target.value=(type.value==="destroy_normal_deck"||type.value==="steal_full_deck")?"opponent":"self";
+      target.value=(type.value==="destroy_normal_deck"||type.value==="steal_full_deck"||type.value==="swap_full_deck")?"opponent":"self";
       disposition.value="consume";
     }
     sync();
@@ -2918,9 +2918,9 @@ function openAdminMechanicsEditor(cardId){
   const art=document.getElementById("adminMechanicsCardArt");art.replaceChildren();
   if(card.image_path){const image=document.createElement("img");image.src=card.image_path;image.alt=card.name||"Carta";image.onerror=()=>image.remove();art.append(image);}
   else{const empty=document.createElement("span");empty.textContent="▧";art.append(empty);}
-  const hasStealWholeDeckEffect=(item.effects||[]).some(effect=>effect.effect_key==="steal_full_deck"&&effect.is_active!==false);
-  const initialTargetScope=hasStealWholeDeckEffect?"opponent":(card.target_scope||"self");
-  const initialDisposition=hasStealWholeDeckEffect?"consume":(card.disposition||"consume");
+  const hasWholeDeckTargetEffect=(item.effects||[]).some(effect=>(effect.effect_key==="steal_full_deck"||effect.effect_key==="swap_full_deck")&&effect.is_active!==false);
+  const initialTargetScope=hasWholeDeckTargetEffect?"opponent":(card.target_scope||"self");
+  const initialDisposition=hasWholeDeckTargetEffect?"consume":(card.disposition||"consume");
   document.getElementById("adminMechanicsTargetScope").value=initialTargetScope;
   document.getElementById("adminMechanicsDisposition").value=initialDisposition;
 
@@ -2988,7 +2988,7 @@ async function saveAdminMechanics(){
         is_active:row.querySelector('[data-role="is-active"]').checked
       };
     }
-    if(key==="protection_normal"||key==="protection_ultimate"||key==="destroy_normal_deck"||key==="copy_opponent_card"||key==="copy_incoming_card"||key==="steal_opponent_card"||key==="steal_full_deck"||key==="transform_card"){
+    if(key==="protection_normal"||key==="protection_ultimate"||key==="destroy_normal_deck"||key==="copy_opponent_card"||key==="copy_incoming_card"||key==="steal_opponent_card"||key==="steal_full_deck"||key==="swap_full_deck"||key==="transform_card"){
       return {effect_key:key,is_active:row.querySelector('[data-role="is-active"]').checked};
     }
     const duration=row.querySelector('[data-role="duration-type"]').value;
@@ -3012,7 +3012,7 @@ async function saveAdminMechanics(){
   }:{enabled:false};
   let targetScope=document.getElementById("adminMechanicsTargetScope").value;
   let disposition=document.getElementById("adminMechanicsDisposition").value;
-  if(effects.some(effect=>effect.effect_key==="steal_full_deck")){
+  if(effects.some(effect=>effect.effect_key==="steal_full_deck"||effect.effect_key==="swap_full_deck")){
     targetScope="opponent";
     disposition="consume";
     document.getElementById("adminMechanicsTargetScope").value="opponent";
@@ -3031,8 +3031,8 @@ async function saveAdminMechanics(){
     notify("Estos efectos se aplican sobre quien utiliza la carta.");
     return;
   }
-  if(effects.some(effect=>effect.effect_key==="steal_full_deck")&&targetScope!=="opponent"){
-    notify("Robar toda la baraja requiere elegir a un rival.");
+  if(effects.some(effect=>effect.effect_key==="steal_full_deck"||effect.effect_key==="swap_full_deck")&&targetScope!=="opponent"){
+    notify("Robar o intercambiar toda la baraja requiere elegir a un rival.");
     return;
   }
     if(effects.some(effect=>effect.effect_key==="transform_card")&&disposition!=="consume"){
