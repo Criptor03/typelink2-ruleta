@@ -3051,7 +3051,7 @@ async function saveAdminMechanics(){
         is_active:row.querySelector('[data-role="is-active"]').checked
       };
     }
-    if(key==="protection_normal"||key==="protection_ultimate"||key==="destroy_normal_deck"||key==="copy_opponent_card"||key==="copy_incoming_card"||key==="steal_opponent_card"||key==="steal_full_deck"||key==="transform_card"){
+    if(key==="protection_normal"||key==="protection_ultimate"||key==="destroy_normal_deck"||key==="copy_opponent_card"||key==="copy_incoming_card"||key==="steal_opponent_card"||key==="steal_full_deck"||key==="swap_full_deck"||key==="transform_card"){
       return {effect_key:key,is_active:row.querySelector('[data-role="is-active"]').checked};
     }
     const duration=row.querySelector('[data-role="duration-type"]').value;
