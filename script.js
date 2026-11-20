@@ -557,6 +557,10 @@ function effectLabel(effect){
   if(effect.effect_key==="protection_normal")return "Protección normal";
   if(effect.effect_key==="protection_ultimate")return "Protección definitiva";
   if(effect.effect_key==="destroy_normal_deck")return "Romper baraja";
+  if(effect.effect_key==="copy_opponent_card")return "Copiar carta de un rival";
+  if(effect.effect_key==="copy_incoming_card")return "Copiar carta recibida";
+  if(effect.effect_key==="steal_opponent_card")return "Robar carta de un rival";
+  if(effect.effect_key==="transform_card")return "Transformar carta";
   const name=String(effect.effect_key||"efecto").replace(/_/g," ");
   return value==null?name:(name+" · "+value);
 }
@@ -2485,6 +2489,10 @@ function adminMechanicsEffectLabel(effect){
   if(effect.effect_key==="protection_normal")return "Protección normal";
   if(effect.effect_key==="protection_ultimate")return "Protección definitiva";
   if(effect.effect_key==="destroy_normal_deck")return "Romper baraja";
+  if(effect.effect_key==="copy_opponent_card")return "Copiar carta de un rival";
+  if(effect.effect_key==="copy_incoming_card")return "Copiar carta recibida";
+  if(effect.effect_key==="steal_opponent_card")return "Robar carta de un rival";
+  if(effect.effect_key==="transform_card")return "Transformar carta";
   if(effect.effect_key==="unlock_roulette"){
     const pool=effect.parameters?.pool_slug==="fiesta"?"Fiesta":"Legendaria";
     return "Desbloquea ruleta "+pool;
@@ -2561,8 +2569,8 @@ function createAdminEffectRow(effect={}){
   const typeLabel=document.createElement("label");typeLabel.className="admin-field";
   typeLabel.textContent="TIPO DE EFECTO";
   const type=document.createElement("select");type.dataset.role="effect-key";
-  type.innerHTML='<option value="normal_card_limit">Modificar límite de baraja</option><option value="tramo_spin_credit">Conceder giros extra</option><option value="protection_normal">Protección normal</option><option value="protection_ultimate">Protección definitiva</option><option value="destroy_normal_deck">Romper baraja</option><option value="unlock_roulette">Desbloquear ruleta</option>';
-  type.value=["normal_card_limit","tramo_spin_credit","protection_normal","protection_ultimate","destroy_normal_deck","unlock_roulette"].includes(effect.effect_key)?effect.effect_key:"normal_card_limit";
+  type.innerHTML='<option value="normal_card_limit">Modificar límite de baraja</option><option value="tramo_spin_credit">Conceder giros extra</option><option value="protection_normal">Protección normal</option><option value="protection_ultimate">Protección definitiva</option><option value="destroy_normal_deck">Romper baraja</option><option value="copy_opponent_card">Copiar carta de un rival</option><option value="copy_incoming_card">Copiar carta recibida</option><option value="steal_opponent_card">Robar carta de un rival</option><option value="transform_card">Transformar carta</option><option value="unlock_roulette">Desbloquear ruleta</option>';
+  type.value=["normal_card_limit","tramo_spin_credit","protection_normal","protection_ultimate","destroy_normal_deck","copy_opponent_card","copy_incoming_card","steal_opponent_card","transform_card","unlock_roulette"].includes(effect.effect_key)?effect.effect_key:"normal_card_limit";
   typeLabel.append(type);
   const activeLabel=document.createElement("label");activeLabel.className="admin-mechanics-check-row";
   const active=document.createElement("input");active.type="checkbox";active.dataset.role="is-active";active.checked=effect.is_active!==false;
@@ -2614,15 +2622,16 @@ function createAdminEffectRow(effect={}){
     const spin=key==="tramo_spin_credit";
     const protection=key==="protection_normal"||key==="protection_ultimate";
     const destroyDeck=key==="destroy_normal_deck";
-    limitFields.hidden=unlock||spin||protection||destroyDeck;
+    const cardManipulation=["copy_opponent_card","copy_incoming_card","steal_opponent_card","transform_card"].includes(key);
+    limitFields.hidden=unlock||spin||protection||destroyDeck||cardManipulation;
     spinFields.hidden=!spin;
     protectionFields.hidden=!protection;
     unlockFields.hidden=!unlock;
-    timedWrap.hidden=unlock||spin||protection||destroyDeck||duration.value!=="timed";
+    timedWrap.hidden=unlock||spin||protection||destroyDeck||cardManipulation||duration.value!=="timed";
     if(type.dataset.changed==="true"){
       const target=document.getElementById("adminMechanicsTargetScope");
       const disposition=document.getElementById("adminMechanicsDisposition");
-      target.value=unlock?"none":(destroyDeck?"opponent":"self");disposition.value="consume";
+      target.value="self";disposition.value=key==="transform_card"?"retain":"consume";
     }
   }
   type.addEventListener("change",()=>{type.dataset.changed="true";if(type.value==="tramo_spin_credit")spinValue.value="3";sync();});
@@ -2721,7 +2730,7 @@ async function saveAdminMechanics(){
         is_active:row.querySelector('[data-role="is-active"]').checked
       };
     }
-    if(key==="protection_normal"||key==="protection_ultimate"||key==="destroy_normal_deck"){
+    if(key==="protection_normal"||key==="protection_ultimate"||key==="destroy_normal_deck"||key==="copy_opponent_card"||key==="copy_incoming_card"||key==="steal_opponent_card"||key==="transform_card"){
       return {effect_key:key,is_active:row.querySelector('[data-role="is-active"]').checked};
     }
     const duration=row.querySelector('[data-role="duration-type"]').value;
@@ -2750,6 +2759,19 @@ async function saveAdminMechanics(){
   }
   if(effects.some(effect=>effect.effect_key==="destroy_normal_deck")&&targetScope!=="opponent"){
     notify("Romper baraja debe tener como objetivo a otro entrenador.");
+    return;
+  }
+  const cardManipulationEffects=["copy_opponent_card","copy_incoming_card","steal_opponent_card","transform_card"];
+  if(effects.some(effect=>cardManipulationEffects.includes(effect.effect_key))&&targetScope!=="self"){
+    notify("Estos efectos se aplican sobre quien utiliza la carta.");
+    return;
+  }
+  if(effects.some(effect=>effect.effect_key==="transform_card")&&disposition!=="retain"){
+    notify("Transformar carta debe conservar la carta transformada.");
+    return;
+  }
+  if(effects.some(effect=>effect.effect_key!=="transform_card"&&cardManipulationEffects.includes(effect.effect_key))&&disposition!=="consume"){
+    notify("Copiar o robar una carta requiere consumir la carta utilizada.");
     return;
   }
   const button=document.getElementById("adminSaveMechanics");
