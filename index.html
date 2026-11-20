@@ -1082,6 +1082,11 @@
         <select id="cardActionProtectionSelect"><option value="">Selecciona una carta que te hayan lanzado</option></select>
         <small id="cardActionProtectionHint">La protección cancelará los efectos activos de la carta seleccionada.</small>
       </div>
+      <div class="card-action-target" id="cardActionManipulationWrap" hidden>
+        <label for="cardActionManipulationSelect">SELECCIONA LA CARTA</label>
+        <select id="cardActionManipulationSelect"><option value="">Selecciona una carta</option></select>
+        <small id="cardActionManipulationHint">Elige la carta que quieres copiar, robar o en la que quieres transformar esta carta.</small>
+      </div>
       <div class="card-action-message" id="cardActionMessageWrap" hidden>
         <label for="cardActionMessage">MENSAJE PARA EL MURO <span>OPCIONAL</span></label>
         <textarea id="cardActionMessage" rows="3" placeholder="Escribe un mensaje para el rival o para acompañar tu jugada..."></textarea>
@@ -1119,6 +1124,6 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0"></script>
   <script src="supabase-config.js"></script>
-  <script src="script.js?v=20261120-card-manipulation"></script>
+  <script src="script.js?v=20261120-card-manipulation-v2"></script>
 </body>
 </html>
