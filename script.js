@@ -1558,61 +1558,7 @@ async function openCardAction(instanceId,mode){
     if(manipulationSelect)manipulationSelect.replaceChildren();
     const key=manipulationEffect.effect_key;
 
-    if(key==="swap_full_deck"){
-      // Intercambio completo: solo necesitamos elegir al rival.
-      // No se selecciona una carta individual.
-      if(targetWrap)targetWrap.hidden=false;
-      if(manipulationWrap)manipulationWrap.hidden=true;
-      const targetLabel=targetWrap?.querySelector("label");
-      const targetHint=document.getElementById("cardActionTargetHint");
-      if(targetLabel)targetLabel.textContent="RIVAL OBJETIVO";
-      if(targetHint)targetHint.textContent="Elige al entrenador con quien quieres intercambiar toda la baraja.";
-      targetSelect.replaceChildren();
-      const rivalPlaceholder=document.createElement("option");
-      rivalPlaceholder.value="";
-      rivalPlaceholder.textContent="Selecciona un rival";
-      rivalPlaceholder.disabled=true;
-      rivalPlaceholder.selected=true;
-      targetSelect.append(rivalPlaceholder);
-      try{
-        const [profilesResult,progressResult]=await Promise.all([
-          authClient.from("profiles")
-            .select("id,display_name,avatar_url")
-            .order("display_name",{ascending:true}),
-          authClient.rpc("get_public_trainer_progress")
-        ]);
-        if(profilesResult.error)throw profilesResult.error;
-        const progressMap=Object.create(null);
-        (progressResult.data||[]).forEach(row=>{
-          progressMap[row.trainer_id]=Math.max(0,Number(row.current_tramo)||0);
-        });
-        if(cardActionOpenToken!==cardActionTargetPreviewRequest)return;
-        targetSelect.replaceChildren(rivalPlaceholder);
-        (profilesResult.data||[]).forEach(profile=>{
-          if(profile.id===currentAuthUser.id)return;
-          if((progressMap[profile.id]||0)>=12)return;
-          const option=document.createElement("option");
-          option.value=profile.id;
-          option.textContent=profile.display_name||"Entrenador";
-          targetSelect.append(option);
-        });
-        targetSelect.onchange=()=>{
-          const rivalId=targetSelect.value||"";
-          confirmButton.disabled=!rivalId;
-          feedback.textContent=rivalId
-            ?"La baraja completa de ambos jugadores se intercambiará."
-            :"Selecciona primero un rival.";
-        };
-        confirmButton.disabled=true;
-        feedback.textContent=targetSelect.options.length>1
-          ?"Selecciona primero un rival."
-          :"No hay rivales disponibles para intercambiar barajas.";
-      }catch(error){
-        console.error("No se pudo cargar la lista de rivales para intercambio de baraja:",error);
-        confirmButton.disabled=true;
-        feedback.textContent="No pudimos cargar la lista de rivales.";
-      }
-    }else if(key==="steal_opponent_card"||key==="copy_opponent_card"){
+    if(key==="steal_opponent_card"||key==="copy_opponent_card"){
       // Robar carta: primero elegimos al rival y después cargamos SOLO sus cartas
       // compatibles. Legendarias y Fiesta nunca aparecen.
       if(targetWrap)targetWrap.hidden=false;
