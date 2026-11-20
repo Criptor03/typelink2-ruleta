@@ -1548,6 +1548,7 @@ async function openCardAction(instanceId,mode){
     }
   }
 
+  const cardActionOpenToken=++cardActionTargetPreviewRequest;
   const manipulationEffect=(cardEffectsById[card.card_id]||[]).find(effect=>[
     "copy_opponent_card","copy_incoming_card","steal_opponent_card","transform_card"
   ].includes(effect.effect_key));
@@ -1591,7 +1592,15 @@ async function openCardAction(instanceId,mode){
         try{
           const {data,error}=await authClient.rpc("get_opponent_card_choices_for_trainer",{p_opponent_id:rivalId});
           if(error)throw error;
-          const cards=Array.isArray(data)?data:[];
+          if(cardActionOpenToken!==cardActionTargetPreviewRequest)return;
+          let cards=[];
+          if(Array.isArray(data))cards=data;
+          else if(typeof data==="string"){
+            try{
+              const parsed=JSON.parse(data);
+              cards=Array.isArray(parsed)?parsed:[];
+            }catch(_){}
+          }else if(data&&Array.isArray(data.items))cards=data.items;
           manipulationSelect.replaceChildren();
           const placeholder=document.createElement("option");
           placeholder.value="";
@@ -1636,6 +1645,14 @@ async function openCardAction(instanceId,mode){
         (progressResult.data||[]).forEach(row=>{
           progressMap[row.trainer_id]=Math.max(0,Number(row.current_tramo)||0);
         });
+        if(cardActionOpenToken!==cardActionTargetPreviewRequest)return;
+        targetSelect.replaceChildren();
+        const freshPlaceholder=document.createElement("option");
+        freshPlaceholder.value="";
+        freshPlaceholder.textContent="Selecciona un rival";
+        freshPlaceholder.disabled=true;
+        freshPlaceholder.selected=true;
+        targetSelect.append(freshPlaceholder);
         (profilesResult.data||[]).forEach(profile=>{
           if(profile.id===currentAuthUser.id)return;
           const trainerTramo=progressMap[profile.id]||0;
