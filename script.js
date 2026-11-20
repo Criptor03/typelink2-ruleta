@@ -1552,7 +1552,7 @@ async function openCardAction(instanceId,mode){
 
   const cardActionOpenToken=++cardActionTargetPreviewRequest;
   const manipulationEffect=(cardEffectsById[card.card_id]||[]).find(effect=>[
-    "copy_opponent_card","copy_incoming_card","steal_opponent_card","transform_card"
+    "copy_opponent_card","copy_incoming_card","steal_opponent_card","reverse_effect","transform_card"
   ].includes(effect.effect_key));
   if(manipulationEffect&&mode==="use"){
     if(manipulationWrap)manipulationWrap.hidden=false;
@@ -1690,6 +1690,32 @@ async function openCardAction(instanceId,mode){
         console.error("No se pudo cargar la lista de rivales:",error);
         confirmButton.disabled=true;
         feedback.textContent="No pudimos cargar la lista de rivales.";
+      }
+    }else if(key==="reverse_effect"){
+      const placeholder=document.createElement("option");
+      placeholder.value="";
+      placeholder.disabled=true;
+      placeholder.selected=true;
+      placeholder.textContent="Selecciona la carta que quieres devolver";
+      manipulationSelect?.append(placeholder);
+      try{
+        const {data,error}=await authClient.rpc("get_trainer_reversible_cards",{p_trainer_id:currentAuthUser.id});
+        if(error)throw error;
+        const cards=Array.isArray(data)?data:[];
+        cards.forEach(item=>{
+          const option=document.createElement("option");
+          option.value=item.activity_id;
+          option.textContent=(item.card_name||"Carta TypeLink")+" · "+(item.rarity||"CARTA")+" · de "+(item.sender_name||"otro entrenador");
+          manipulationSelect.append(option);
+        });
+        if(!cards.length){
+          confirmButton.disabled=true;
+          feedback.textContent="No tienes ninguna carta con un efecto activo que puedas devolver.";
+        }
+      }catch(error){
+        console.error("No se pudieron cargar las cartas reversibles:",error);
+        confirmButton.disabled=true;
+        feedback.textContent="No pudimos cargar las cartas que puedes devolver.";
       }
     }else{
       const placeholder=document.createElement("option");
@@ -1952,6 +1978,8 @@ async function confirmCardAction(){
         notify("¡"+card.name+" utilizada! Has robado "+(data.result_name||"la carta seleccionada")+".");
       }else if(data.manipulation_action==="transform"){
         notify("¡"+card.name+" se ha transformado en "+(data.result_name||"la carta seleccionada")+"!");
+      }else if(data.manipulation_action==="reverse"){
+        notify("¡"+card.name+" utilizada! Has devuelto "+(data.result_name||"la carta seleccionada")+" a su rival.");
       }else if(unlock){
         const poolName=unlock.pool_slug==="legendary"?"Ruleta Legendaria":"Ruleta Fiesta";
         const granted=Number(unlock.spins_granted||1);
@@ -2804,8 +2832,8 @@ function createAdminEffectRow(effect={}){
   const typeLabel=document.createElement("label");typeLabel.className="admin-field";
   typeLabel.textContent="TIPO DE EFECTO";
   const type=document.createElement("select");type.dataset.role="effect-key";
-  type.innerHTML='<option value="normal_card_limit">Modificar límite de baraja</option><option value="tramo_spin_credit">Conceder giros extra</option><option value="protection_normal">Protección normal</option><option value="protection_ultimate">Protección definitiva</option><option value="destroy_normal_deck">Romper baraja</option><option value="copy_opponent_card">Copiar carta de un rival</option><option value="copy_incoming_card">Copiar carta recibida</option><option value="steal_opponent_card">Robar carta de un rival</option><option value="steal_full_deck">Robar baraja completa</option><option value="swap_full_deck">Intercambiar barajas completas</option><option value="transform_card">Transformar carta</option><option value="unlock_roulette">Desbloquear ruleta</option>';
-  type.value=["normal_card_limit","tramo_spin_credit","protection_normal","protection_ultimate","destroy_normal_deck","copy_opponent_card","copy_incoming_card","steal_opponent_card","steal_full_deck","transform_card","unlock_roulette"].includes(effect.effect_key)?effect.effect_key:"normal_card_limit";
+  type.innerHTML='<option value="normal_card_limit">Modificar límite de baraja</option><option value="tramo_spin_credit">Conceder giros extra</option><option value="protection_normal">Protección normal</option><option value="protection_ultimate">Protección definitiva</option><option value="destroy_normal_deck">Romper baraja</option><option value="copy_opponent_card">Copiar carta de un rival</option><option value="copy_incoming_card">Copiar carta recibida</option><option value="steal_opponent_card">Robar carta de un rival</option><option value="steal_full_deck">Robar baraja completa</option><option value="swap_full_deck">Intercambiar barajas completas</option><option value="reverse_effect">Revierte Efecto</option><option value="transform_card">Transformar carta</option><option value="unlock_roulette">Desbloquear ruleta</option>';
+  type.value=["normal_card_limit","tramo_spin_credit","protection_normal","protection_ultimate","destroy_normal_deck","copy_opponent_card","copy_incoming_card","steal_opponent_card","steal_full_deck","swap_full_deck","reverse_effect","transform_card","unlock_roulette"].includes(effect.effect_key)?effect.effect_key:"normal_card_limit";
   typeLabel.append(type);
   const activeLabel=document.createElement("label");activeLabel.className="admin-mechanics-check-row";
   const active=document.createElement("input");active.type="checkbox";active.dataset.role="is-active";active.checked=effect.is_active!==false;
@@ -2857,7 +2885,7 @@ function createAdminEffectRow(effect={}){
     const spin=key==="tramo_spin_credit";
     const protection=key==="protection_normal"||key==="protection_ultimate";
     const destroyDeck=key==="destroy_normal_deck";
-    const cardManipulation=["copy_opponent_card","copy_incoming_card","steal_opponent_card","steal_full_deck","swap_full_deck","transform_card"].includes(key);
+    const cardManipulation=["copy_opponent_card","copy_incoming_card","steal_opponent_card","steal_full_deck","swap_full_deck","reverse_effect","transform_card"].includes(key);
     const hideLimitFields=unlock||spin||protection||destroyDeck||cardManipulation;
     limitFields.hidden=hideLimitFields;
     limitFields.style.setProperty("display",hideLimitFields?"none":"", "important");
@@ -3027,7 +3055,7 @@ async function saveAdminMechanics(){
     notify("Romper baraja debe tener como objetivo a otro entrenador.");
     return;
   }
-  const cardManipulationEffects=["copy_opponent_card","copy_incoming_card","steal_opponent_card","transform_card"];
+  const cardManipulationEffects=["copy_opponent_card","copy_incoming_card","steal_opponent_card","reverse_effect","transform_card"];
   if(effects.some(effect=>cardManipulationEffects.includes(effect.effect_key))&&targetScope!=="self"){
     notify("Estos efectos se aplican sobre quien utiliza la carta.");
     return;
