@@ -561,6 +561,7 @@ function effectLabel(effect){
   if(effect.effect_key==="copy_incoming_card")return "Copiar carta recibida";
   if(effect.effect_key==="steal_opponent_card")return "Robar carta de un rival";
   if(effect.effect_key==="steal_full_deck")return "Robar baraja completa";
+  if(effect.effect_key==="swap_full_deck")return "Intercambiar baraja completa";
   if(effect.effect_key==="transform_card")return "Transformar carta";
   const name=String(effect.effect_key||"efecto").replace(/_/g," ");
   return value==null?name:(name+" · "+value);
@@ -1551,14 +1552,68 @@ async function openCardAction(instanceId,mode){
 
   const cardActionOpenToken=++cardActionTargetPreviewRequest;
   const manipulationEffect=(cardEffectsById[card.card_id]||[]).find(effect=>[
-    "copy_opponent_card","copy_incoming_card","steal_opponent_card","transform_card"
+    "copy_opponent_card","copy_incoming_card","steal_opponent_card","transform_card","swap_full_deck"
   ].includes(effect.effect_key));
   if(manipulationEffect&&mode==="use"){
     if(manipulationWrap)manipulationWrap.hidden=false;
     if(manipulationSelect)manipulationSelect.replaceChildren();
     const key=manipulationEffect.effect_key;
 
-    if(key==="steal_opponent_card"||key==="copy_opponent_card"){
+    if(key==="swap_full_deck"){
+      // Intercambio completo: solo necesitamos elegir al rival.
+      // No se selecciona una carta individual.
+      if(targetWrap)targetWrap.hidden=false;
+      if(manipulationWrap)manipulationWrap.hidden=true;
+      const targetLabel=targetWrap?.querySelector("label");
+      const targetHint=document.getElementById("cardActionTargetHint");
+      if(targetLabel)targetLabel.textContent="RIVAL OBJETIVO";
+      if(targetHint)targetHint.textContent="Elige al entrenador con quien quieres intercambiar toda la baraja.";
+      targetSelect.replaceChildren();
+      const rivalPlaceholder=document.createElement("option");
+      rivalPlaceholder.value="";
+      rivalPlaceholder.textContent="Selecciona un rival";
+      rivalPlaceholder.disabled=true;
+      rivalPlaceholder.selected=true;
+      targetSelect.append(rivalPlaceholder);
+      try{
+        const [profilesResult,progressResult]=await Promise.all([
+          authClient.from("profiles")
+            .select("id,display_name,avatar_url")
+            .order("display_name",{ascending:true}),
+          authClient.rpc("get_public_trainer_progress")
+        ]);
+        if(profilesResult.error)throw profilesResult.error;
+        const progressMap=Object.create(null);
+        (progressResult.data||[]).forEach(row=>{
+          progressMap[row.trainer_id]=Math.max(0,Number(row.current_tramo)||0);
+        });
+        if(cardActionOpenToken!==cardActionTargetPreviewRequest)return;
+        targetSelect.replaceChildren(rivalPlaceholder);
+        (profilesResult.data||[]).forEach(profile=>{
+          if(profile.id===currentAuthUser.id)return;
+          if((progressMap[profile.id]||0)>=12)return;
+          const option=document.createElement("option");
+          option.value=profile.id;
+          option.textContent=profile.display_name||"Entrenador";
+          targetSelect.append(option);
+        });
+        targetSelect.onchange=()=>{
+          const rivalId=targetSelect.value||"";
+          confirmButton.disabled=!rivalId;
+          feedback.textContent=rivalId
+            ?"La baraja completa de ambos jugadores se intercambiará."
+            :"Selecciona primero un rival.";
+        };
+        confirmButton.disabled=true;
+        feedback.textContent=targetSelect.options.length>1
+          ?"Selecciona primero un rival."
+          :"No hay rivales disponibles para intercambiar barajas.";
+      }catch(error){
+        console.error("No se pudo cargar la lista de rivales para intercambio de baraja:",error);
+        confirmButton.disabled=true;
+        feedback.textContent="No pudimos cargar la lista de rivales.";
+      }
+    }else if(key==="steal_opponent_card"||key==="copy_opponent_card"){
       // Robar carta: primero elegimos al rival y después cargamos SOLO sus cartas
       // compatibles. Legendarias y Fiesta nunca aparecen.
       if(targetWrap)targetWrap.hidden=false;
@@ -1891,7 +1946,13 @@ async function confirmCardAction(){
 
   if(mode==="use"&&manipulationEffect){
     const selectedCardId=document.getElementById("cardActionManipulationSelect")?.value||null;
-    if(manipulationEffect.effect_key==="steal_opponent_card"){
+    if(manipulationEffect.effect_key==="swap_full_deck"){
+      targetId=targetSelect?.value||null;
+      if(!targetId){
+        feedback.textContent="Selecciona un rival antes de continuar.";
+        return;
+      }
+    }else if(manipulationEffect.effect_key==="steal_opponent_card"){
       targetId=targetSelect?.value||null;
       manipulationCardId=selectedCardId;
       if(!targetId){
@@ -1949,6 +2010,8 @@ async function confirmCardAction(){
         notify("¡"+card.name+" utilizada! Has copiado "+(data.result_name||"la carta seleccionada")+".");
       }else if(data.manipulation_action==="steal"){
         notify("¡"+card.name+" utilizada! Has robado "+(data.result_name||"la carta seleccionada")+".");
+      }else if(data.effects_applied?.some(effect=>effect.effect_key==="swap_full_deck")){
+        notify("¡"+card.name+" utilizada! Tu baraja y la del rival han sido intercambiadas.");
       }else if(data.manipulation_action==="transform"){
         notify("¡"+card.name+" se ha transformado en "+(data.result_name||"la carta seleccionada")+"!");
       }else if(unlock){
@@ -2803,8 +2866,8 @@ function createAdminEffectRow(effect={}){
   const typeLabel=document.createElement("label");typeLabel.className="admin-field";
   typeLabel.textContent="TIPO DE EFECTO";
   const type=document.createElement("select");type.dataset.role="effect-key";
-  type.innerHTML='<option value="normal_card_limit">Modificar límite de baraja</option><option value="tramo_spin_credit">Conceder giros extra</option><option value="protection_normal">Protección normal</option><option value="protection_ultimate">Protección definitiva</option><option value="destroy_normal_deck">Romper baraja</option><option value="copy_opponent_card">Copiar carta de un rival</option><option value="copy_incoming_card">Copiar carta recibida</option><option value="steal_opponent_card">Robar carta de un rival</option><option value="steal_full_deck">Robar baraja completa</option><option value="transform_card">Transformar carta</option><option value="unlock_roulette">Desbloquear ruleta</option>';
-  type.value=["normal_card_limit","tramo_spin_credit","protection_normal","protection_ultimate","destroy_normal_deck","copy_opponent_card","copy_incoming_card","steal_opponent_card","steal_full_deck","transform_card","unlock_roulette"].includes(effect.effect_key)?effect.effect_key:"normal_card_limit";
+  type.innerHTML='<option value="normal_card_limit">Modificar límite de baraja</option><option value="tramo_spin_credit">Conceder giros extra</option><option value="protection_normal">Protección normal</option><option value="protection_ultimate">Protección definitiva</option><option value="destroy_normal_deck">Romper baraja</option><option value="copy_opponent_card">Copiar carta de un rival</option><option value="copy_incoming_card">Copiar carta recibida</option><option value="steal_opponent_card">Robar carta de un rival</option><option value="steal_full_deck">Robar baraja completa</option><option value="swap_full_deck">Intercambiar baraja completa</option><option value="transform_card">Transformar carta</option><option value="unlock_roulette">Desbloquear ruleta</option>';
+  type.value=["normal_card_limit","tramo_spin_credit","protection_normal","protection_ultimate","destroy_normal_deck","copy_opponent_card","copy_incoming_card","steal_opponent_card","steal_full_deck","swap_full_deck","transform_card","unlock_roulette"].includes(effect.effect_key)?effect.effect_key:"normal_card_limit";
   typeLabel.append(type);
   const activeLabel=document.createElement("label");activeLabel.className="admin-mechanics-check-row";
   const active=document.createElement("input");active.type="checkbox";active.dataset.role="is-active";active.checked=effect.is_active!==false;
@@ -2871,7 +2934,7 @@ function createAdminEffectRow(effect={}){
     if(type.dataset.changed==="true"){
       const target=document.getElementById("adminMechanicsTargetScope");
       const disposition=document.getElementById("adminMechanicsDisposition");
-      if(key==="destroy_normal_deck"||key==="steal_full_deck"){
+      if(key==="destroy_normal_deck"||key==="steal_full_deck"||key==="swap_full_deck"){
         target.value="opponent";
       }else{
         target.value="self";
@@ -2885,7 +2948,7 @@ function createAdminEffectRow(effect={}){
     const target=document.getElementById("adminMechanicsTargetScope");
     const disposition=document.getElementById("adminMechanicsDisposition");
     if(target&&disposition){
-      target.value=(type.value==="destroy_normal_deck"||type.value==="steal_full_deck")?"opponent":"self";
+      target.value=(type.value==="destroy_normal_deck"||type.value==="steal_full_deck"||type.value==="swap_full_deck")?"opponent":"self";
       disposition.value="consume";
     }
     sync();
@@ -3035,12 +3098,20 @@ async function saveAdminMechanics(){
     notify("Robar toda la baraja requiere elegir a un rival.");
     return;
   }
+  if(effects.some(effect=>effect.effect_key==="swap_full_deck")&&targetScope!=="opponent"){
+    notify("Intercambiar toda la baraja requiere elegir a un rival.");
+    return;
+  }
   if(effects.some(effect=>effect.effect_key==="transform_card")&&disposition!=="consume"){
     notify("Transformar carta debe consumir la carta utilizada.");
     return;
   }
   if(effects.some(effect=>effect.effect_key!=="transform_card"&&cardManipulationEffects.includes(effect.effect_key))&&disposition!=="consume"){
     notify("Copiar o robar una carta requiere consumir la carta utilizada.");
+    return;
+  }
+  if(effects.some(effect=>effect.effect_key==="swap_full_deck")&&disposition!=="consume"){
+    notify("Intercambiar toda la baraja requiere consumir la carta utilizada.");
     return;
   }
   const button=document.getElementById("adminSaveMechanics");
