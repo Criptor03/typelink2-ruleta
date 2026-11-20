@@ -1555,54 +1555,173 @@ async function openCardAction(instanceId,mode){
     if(manipulationWrap)manipulationWrap.hidden=false;
     if(manipulationSelect)manipulationSelect.replaceChildren();
     const key=manipulationEffect.effect_key;
-    const placeholder=document.createElement("option");
-    placeholder.value="";
-    placeholder.disabled=true;
-    placeholder.selected=true;
-    placeholder.textContent=key==="transform_card"?"Selecciona en qué carta quieres transformarla":"Selecciona una carta";
-    manipulationSelect?.append(placeholder);
-    try{
-      if(key==="copy_incoming_card"){
-        const {data,error}=await authClient.rpc("get_trainer_incoming_cards",{p_trainer_id:currentAuthUser.id});
-        if(error)throw error;
-        (Array.isArray(data)?data:[]).forEach(item=>{
-          const option=document.createElement("option");
-          option.value=item.activity_id;
-          option.textContent=(item.card_name||"Carta TypeLink")+" · "+(item.rarity||"CARTA")+" · de "+(item.sender_name||"otro entrenador");
-          manipulationSelect.append(option);
-        });
-      }else if(key==="transform_card"){
-        const {data,error}=await authClient.from("card_catalog")
-          .select("id,name,rarity,category,image_path,uses_per_card")
-          .eq("is_active",true).order("name",{ascending:true});
-        if(error)throw error;
-        (data||[]).filter(item=>item.id!==card.card_id).forEach(item=>{
-          const option=document.createElement("option");
-          option.value=item.id;
-          option.textContent=(item.name||"Carta TypeLink")+" · "+(item.rarity||"CARTA");
-          manipulationSelect.append(option);
-        });
-      }else{
-        const {data,error}=await authClient.rpc("get_opponent_card_choices");
-        if(error)throw error;
-        (Array.isArray(data)?data:[]).forEach(item=>{
-          const option=document.createElement("option");
-          option.value=item.card_instance_id;
-          option.textContent=(item.card_name||"Carta TypeLink")+" · "+(item.rarity||"CARTA")+" · de "+(item.owner_name||"rival");
-          manipulationSelect.append(option);
-        });
-      }
-      const count=manipulationSelect?.options.length||0;
-      if(count<=1){
+
+    if(key==="steal_opponent_card"){
+      // Robar carta: primero elegimos al rival y después cargamos SOLO sus cartas
+      // compatibles. Legendarias y Fiesta nunca aparecen.
+      if(targetWrap)targetWrap.hidden=false;
+      const targetLabel=targetWrap?.querySelector("label");
+      const targetHint=document.getElementById("cardActionTargetHint");
+      if(targetLabel)targetLabel.textContent="RIVAL OBJETIVO";
+      if(targetHint)targetHint.textContent="Elige primero al entrenador cuya carta quieres robar.";
+      targetSelect.replaceChildren();
+      const rivalPlaceholder=document.createElement("option");
+      rivalPlaceholder.value="";
+      rivalPlaceholder.textContent="Selecciona un rival";
+      rivalPlaceholder.disabled=true;
+      rivalPlaceholder.selected=true;
+      targetSelect.append(rivalPlaceholder);
+
+      const cardPlaceholder=document.createElement("option");
+      cardPlaceholder.value="";
+      cardPlaceholder.textContent="Selecciona una carta";
+      cardPlaceholder.disabled=true;
+      cardPlaceholder.selected=true;
+      manipulationSelect?.append(cardPlaceholder);
+
+      const loadRivalCards=async(rivalId)=>{
+        manipulationSelect.replaceChildren();
+        const waiting=document.createElement("option");
+        waiting.value="";
+        waiting.textContent="Cargando cartas del rival...";
+        waiting.disabled=true;
+        waiting.selected=true;
+        manipulationSelect.append(waiting);
         confirmButton.disabled=true;
-        feedback.textContent=key==="transform_card"
-          ?"No hay otra carta disponible para transformar esta carta."
-          :"No hay cartas compatibles disponibles para seleccionar.";
+        try{
+          const {data,error}=await authClient.rpc("get_opponent_card_choices_for_trainer",{p_opponent_id:rivalId});
+          if(error)throw error;
+          const cards=Array.isArray(data)?data:[];
+          manipulationSelect.replaceChildren();
+          const placeholder=document.createElement("option");
+          placeholder.value="";
+          placeholder.textContent=cards.length?"Selecciona una carta":"Este rival no tiene cartas compatibles para robar";
+          placeholder.disabled=true;
+          placeholder.selected=true;
+          manipulationSelect.append(placeholder);
+          cards.forEach(item=>{
+            const option=document.createElement("option");
+            option.value=item.card_instance_id;
+            option.textContent=(item.card_name||"Carta TypeLink")+" · "+(item.rarity||"CARTA")+" · "+(item.remaining_uses||0)+" usos";
+            manipulationSelect.append(option);
+          });
+          confirmButton.disabled=!cards.length;
+          feedback.textContent=cards.length
+            ?"Ahora selecciona la carta que quieres robar."
+            :"Este rival no tiene cartas disponibles para robar (Legendarias y Fiesta están excluidas).";
+        }catch(error){
+          console.error("No se pudieron cargar las cartas del rival:",error);
+          manipulationSelect.replaceChildren();
+          const errorOption=document.createElement("option");
+          errorOption.value="";
+          errorOption.textContent="No se pudieron cargar las cartas";
+          errorOption.disabled=true;
+          errorOption.selected=true;
+          manipulationSelect.append(errorOption);
+          confirmButton.disabled=true;
+          feedback.textContent="No pudimos cargar las cartas de ese rival.";
+        }
+      };
+
+      try{
+        const [profilesResult,progressResult]=await Promise.all([
+          authClient.from("profiles")
+            .select("id,display_name,avatar_url")
+            .order("display_name",{ascending:true}),
+          authClient.rpc("get_public_trainer_progress")
+        ]);
+        if(profilesResult.error)throw profilesResult.error;
+        if(progressResult.error)console.warn("No se pudo consultar el tramo de los rivales:",progressResult.error.message);
+        const progressMap=Object.create(null);
+        (progressResult.data||[]).forEach(row=>{
+          progressMap[row.trainer_id]=Math.max(0,Number(row.current_tramo)||0);
+        });
+        (profilesResult.data||[]).forEach(profile=>{
+          if(profile.id===currentAuthUser.id)return;
+          const trainerTramo=progressMap[profile.id]||0;
+          if(trainerTramo>=12)return;
+          const option=document.createElement("option");
+          option.value=profile.id;
+          option.textContent=profile.display_name||"Entrenador";
+          targetSelect.append(option);
+        });
+        targetSelect.onchange=()=>{
+          const rivalId=targetSelect.value||"";
+          if(!rivalId){
+            manipulationSelect.replaceChildren();
+            const placeholder=document.createElement("option");
+            placeholder.value="";
+            placeholder.textContent="Selecciona primero un rival";
+            placeholder.disabled=true;
+            placeholder.selected=true;
+            manipulationSelect.append(placeholder);
+            confirmButton.disabled=true;
+            return;
+          }
+          void loadRivalCards(rivalId);
+        };
+        if(targetSelect.options.length===1){
+          confirmButton.disabled=true;
+          feedback.textContent="No hay rivales disponibles para robar cartas.";
+        }else{
+          confirmButton.disabled=true;
+          feedback.textContent="Selecciona primero un rival.";
+        }
+      }catch(error){
+        console.error("No se pudo cargar la lista de rivales:",error);
+        confirmButton.disabled=true;
+        feedback.textContent="No pudimos cargar la lista de rivales.";
       }
-    }catch(error){
-      console.error("No se pudieron cargar las cartas para este efecto:",error);
-      confirmButton.disabled=true;
-      feedback.textContent="No pudimos cargar las cartas disponibles para este efecto.";
+    }else{
+      const placeholder=document.createElement("option");
+      placeholder.value="";
+      placeholder.disabled=true;
+      placeholder.selected=true;
+      placeholder.textContent=key==="transform_card"?"Selecciona en qué carta quieres transformarla":"Selecciona una carta";
+      manipulationSelect?.append(placeholder);
+      try{
+        if(key==="copy_incoming_card"){
+          const {data,error}=await authClient.rpc("get_trainer_incoming_cards",{p_trainer_id:currentAuthUser.id});
+          if(error)throw error;
+          (Array.isArray(data)?data:[]).filter(item=>item.rarity!=="legendary"&&item.category!=="fiesta").forEach(item=>{
+            const option=document.createElement("option");
+            option.value=item.activity_id;
+            option.textContent=(item.card_name||"Carta TypeLink")+" · "+(item.rarity||"CARTA")+" · de "+(item.sender_name||"otro entrenador");
+            manipulationSelect.append(option);
+          });
+        }else if(key==="transform_card"){
+          const {data,error}=await authClient.from("card_catalog")
+            .select("id,name,rarity,category,image_path,uses_per_card")
+            .eq("is_active",true).order("name",{ascending:true});
+          if(error)throw error;
+          (data||[]).filter(item=>item.id!==card.card_id).forEach(item=>{
+            const option=document.createElement("option");
+            option.value=item.id;
+            option.textContent=(item.name||"Carta TypeLink")+" · "+(item.rarity||"CARTA");
+            manipulationSelect.append(option);
+          });
+        }else{
+          const {data,error}=await authClient.rpc("get_opponent_card_choices");
+          if(error)throw error;
+          (Array.isArray(data)?data:[]).forEach(item=>{
+            const option=document.createElement("option");
+            option.value=item.card_instance_id;
+            option.textContent=(item.card_name||"Carta TypeLink")+" · "+(item.rarity||"CARTA")+" · de "+(item.owner_name||"rival");
+            manipulationSelect.append(option);
+          });
+        }
+        const count=manipulationSelect?.options.length||0;
+        if(count<=1){
+          confirmButton.disabled=true;
+          feedback.textContent=key==="transform_card"
+            ?"No hay otra carta disponible para transformar esta carta."
+            :"No hay cartas compatibles disponibles para seleccionar.";
+        }
+      }catch(error){
+        console.error("No se pudieron cargar las cartas para este efecto:",error);
+        confirmButton.disabled=true;
+        feedback.textContent="No pudimos cargar las cartas disponibles para este efecto.";
+      }
     }
   }
 
