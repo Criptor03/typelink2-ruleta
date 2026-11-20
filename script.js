@@ -2710,7 +2710,7 @@ function createAdminEffectRow(effect={}){
     if(type.dataset.changed==="true"){
       const target=document.getElementById("adminMechanicsTargetScope");
       const disposition=document.getElementById("adminMechanicsDisposition");
-      target.value="self";disposition.value=key==="transform_card"?"retain":"consume";
+      target.value="self";disposition.value="consume";
     }
   }
   type.addEventListener("change",()=>{type.dataset.changed="true";if(type.value==="tramo_spin_credit")spinValue.value="3";sync();});
@@ -2845,8 +2845,8 @@ async function saveAdminMechanics(){
     notify("Estos efectos se aplican sobre quien utiliza la carta.");
     return;
   }
-  if(effects.some(effect=>effect.effect_key==="transform_card")&&disposition!=="retain"){
-    notify("Transformar carta debe conservar la carta transformada.");
+  if(effects.some(effect=>effect.effect_key==="transform_card")&&disposition!=="consume"){
+    notify("Transformar carta debe consumir la carta utilizada.");
     return;
   }
   if(effects.some(effect=>effect.effect_key!=="transform_card"&&cardManipulationEffects.includes(effect.effect_key))&&disposition!=="consume"){
