@@ -4353,7 +4353,7 @@ if(document.readyState==="loading"){
   bindAdminMechanicsSaveButton();
 }
 
-document.getElementById("adminSaveMechanics")?.addEventListener("click",saveAdminMechanics);
+
 
 document.getElementById("openAdminRoulettes").addEventListener("click",async()=>{
   if(!isAdmin){notify("Acceso reservado al administrador.");return;}
