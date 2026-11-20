@@ -427,6 +427,7 @@
                     <select id="adminMechanicsDisposition">
                       <option value="consume">Se consume</option>
                       <option value="transfer">Se transfiere a otro entrenador</option>
+                      <option value="retain">Permanece en la baraja</option>
                     </select>
                   </label>
                 </div>
@@ -448,6 +449,10 @@
                   <span><strong>Protección normal:</strong> permite bloquear una carta recibida, excepto Legendarias y Fiesta.</span>
                   <span><strong>Protección definitiva:</strong> permite bloquear cualquier carta recibida, incluidas Legendarias y Fiesta.</span>
                   <span><strong>Romper baraja:</strong> elimina toda la baraja disponible del rival excepto sus cartas Legendarias y Fiesta.</span>
+                  <span><strong>Copiar carta de un rival:</strong> crea una copia de una carta disponible del rival, excepto Legendarias y Fiesta.</span>
+                  <span><strong>Copiar carta recibida:</strong> crea una copia de una carta que te hayan lanzado durante tu tramo.</span>
+                  <span><strong>Robar carta de un rival:</strong> mueve a tu baraja una carta disponible del rival, excepto Legendarias y Fiesta.</span>
+                  <span><strong>Transformar carta:</strong> convierte la carta utilizada en cualquier otra carta del catálogo.</span>
                   <span><strong>Desbloquear ruleta:</strong> acceso Legendario o Fiesta para quien la usa.</span>
                   <span>Otras mecánicas requieren un controlador propio.</span>
                 </div>
@@ -1114,6 +1119,6 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0"></script>
   <script src="supabase-config.js"></script>
-  <script src="script.js?v=20261120-destroy-deck"></script>
+  <script src="script.js?v=20261120-card-manipulation"></script>
 </body>
 </html>
