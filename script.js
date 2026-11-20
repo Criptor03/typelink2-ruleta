@@ -2892,6 +2892,25 @@ async function saveAdminMechanics(){
     button.disabled=false;button.textContent="GUARDAR MECÁNICAS ↗";
   }
 }
+function bindAdminMechanicsSaveButton(){
+  const button=document.getElementById("adminSaveMechanics");
+  if(!button)return false;
+  if(button.dataset.mechanicsSaveBound==="true")return true;
+  button.dataset.mechanicsSaveBound="true";
+  button.addEventListener("click",event=>{
+    event.preventDefault();
+    event.stopPropagation();
+    saveAdminMechanics();
+  });
+  return true;
+}
+if(document.readyState==="loading"){
+  document.addEventListener("DOMContentLoaded",bindAdminMechanicsSaveButton,{once:true});
+}else{
+  bindAdminMechanicsSaveButton();
+}
+
+
 function adminCategoryLabel(category){
   return ({normal:"Normal",tramo:"Tramo",fiesta:"Fiesta"})[category]||category||"—";
 }
@@ -4335,25 +4354,6 @@ document.getElementById("adminEvolutionEnabled").addEventListener("change",event
 });
 document.getElementById("adminEvolutionTrigger").addEventListener("change",updateAdminEvolutionMethodNote);
 document.getElementById("adminEvolutionSameTramo").addEventListener("change",updateAdminEvolutionMethodNote);
-function bindAdminMechanicsSaveButton(){
-  const button=document.getElementById("adminSaveMechanics");
-  if(!button)return false;
-  if(button.dataset.mechanicsSaveBound==="true")return true;
-  button.dataset.mechanicsSaveBound="true";
-  button.addEventListener("click",event=>{
-    event.preventDefault();
-    event.stopPropagation();
-    saveAdminMechanics();
-  });
-  return true;
-}
-if(document.readyState==="loading"){
-  document.addEventListener("DOMContentLoaded",bindAdminMechanicsSaveButton,{once:true});
-}else{
-  bindAdminMechanicsSaveButton();
-}
-
-
 
 document.getElementById("openAdminRoulettes").addEventListener("click",async()=>{
   if(!isAdmin){notify("Acceso reservado al administrador.");return;}
