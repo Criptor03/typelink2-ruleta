@@ -1484,6 +1484,8 @@ async function openCardAction(instanceId,mode){
   const targetSelect=document.getElementById("cardActionTarget");
   const protectionWrap=document.getElementById("cardActionProtectionWrap");
   const protectionSelect=document.getElementById("cardActionProtectionSelect");
+  const manipulationWrap=document.getElementById("cardActionManipulationWrap");
+  const manipulationSelect=document.getElementById("cardActionManipulationSelect");
   const messageWrap=document.getElementById("cardActionMessageWrap");
   const messageInput=document.getElementById("cardActionMessage");
   const messageCount=document.getElementById("cardActionMessageCount");
@@ -1499,6 +1501,8 @@ async function openCardAction(instanceId,mode){
   targetWrap.hidden=true;
   if(protectionWrap)protectionWrap.hidden=true;
   if(protectionSelect)protectionSelect.replaceChildren();
+  if(manipulationWrap)manipulationWrap.hidden=true;
+  if(manipulationSelect)manipulationSelect.replaceChildren();
   resultPreview.hidden=true;
   setCardActionTargetProfile(null);
   cardActionTargetProfiles=Object.create(null);
@@ -1541,6 +1545,64 @@ async function openCardAction(instanceId,mode){
       console.error("No se pudieron cargar las cartas recibidas para proteger:",error);
       confirmButton.disabled=true;
       feedback.textContent="No pudimos cargar las cartas que te han lanzado.";
+    }
+  }
+
+  const manipulationEffect=(cardEffectsById[card.card_id]||[]).find(effect=>[
+    "copy_opponent_card","copy_incoming_card","steal_opponent_card","transform_card"
+  ].includes(effect.effect_key));
+  if(manipulationEffect&&mode==="use"){
+    if(manipulationWrap)manipulationWrap.hidden=false;
+    if(manipulationSelect)manipulationSelect.replaceChildren();
+    const key=manipulationEffect.effect_key;
+    const placeholder=document.createElement("option");
+    placeholder.value="";
+    placeholder.disabled=true;
+    placeholder.selected=true;
+    placeholder.textContent=key==="transform_card"?"Selecciona en qué carta quieres transformarla":"Selecciona una carta";
+    manipulationSelect?.append(placeholder);
+    try{
+      if(key==="copy_incoming_card"){
+        const {data,error}=await authClient.rpc("get_trainer_incoming_cards",{p_trainer_id:currentAuthUser.id});
+        if(error)throw error;
+        (Array.isArray(data)?data:[]).forEach(item=>{
+          const option=document.createElement("option");
+          option.value=item.activity_id;
+          option.textContent=(item.card_name||"Carta TypeLink")+" · "+(item.rarity||"CARTA")+" · de "+(item.sender_name||"otro entrenador");
+          manipulationSelect.append(option);
+        });
+      }else if(key==="transform_card"){
+        const {data,error}=await authClient.from("card_catalog")
+          .select("id,name,rarity,category,image_path,uses_per_card")
+          .eq("is_active",true).order("name",{ascending:true});
+        if(error)throw error;
+        (data||[]).filter(item=>item.id!==card.card_id).forEach(item=>{
+          const option=document.createElement("option");
+          option.value=item.id;
+          option.textContent=(item.name||"Carta TypeLink")+" · "+(item.rarity||"CARTA");
+          manipulationSelect.append(option);
+        });
+      }else{
+        const {data,error}=await authClient.rpc("get_opponent_card_choices");
+        if(error)throw error;
+        (Array.isArray(data)?data:[]).forEach(item=>{
+          const option=document.createElement("option");
+          option.value=item.card_instance_id;
+          option.textContent=(item.card_name||"Carta TypeLink")+" · "+(item.rarity||"CARTA")+" · de "+(item.owner_name||"rival");
+          manipulationSelect.append(option);
+        });
+      }
+      const count=manipulationSelect?.options.length||0;
+      if(count<=1){
+        confirmButton.disabled=true;
+        feedback.textContent=key==="transform_card"
+          ?"No hay otra carta disponible para transformar esta carta."
+          :"No hay cartas compatibles disponibles para seleccionar.";
+      }
+    }catch(error){
+      console.error("No se pudieron cargar las cartas para este efecto:",error);
+      confirmButton.disabled=true;
+      feedback.textContent="No pudimos cargar las cartas disponibles para este efecto.";
     }
   }
 
@@ -1669,12 +1731,15 @@ async function confirmCardAction(){
   const messageInput=document.getElementById("cardActionMessage");
   let targetId=null;
   const protectionEffect=(cardEffectsById[card.card_id]||[]).find(effect=>effect.effect_key==="protection_normal"||effect.effect_key==="protection_ultimate");
+  const manipulationEffect=(cardEffectsById[card.card_id]||[]).find(effect=>[
+    "copy_opponent_card","copy_incoming_card","steal_opponent_card","transform_card"
+  ].includes(effect.effect_key));
   if(mode==="use"&&protectionEffect){
     targetId=document.getElementById("cardActionProtectionSelect")?.value||null;
     if(!targetId){feedback.textContent="Selecciona una carta que te hayan lanzado antes de continuar.";return;}
   }
 
-  if(mode!=="evolve"&&!protectionEffect&&(card.target_scope==="opponent"||card.target_scope==="either")){
+  if(mode!=="evolve"&&!protectionEffect&&!manipulationEffect&&(card.target_scope==="opponent"||card.target_scope==="either")){
     targetId=targetSelect.value||null;
     if(card.target_scope==="opponent"&&!targetId){
       feedback.textContent="Selecciona un entrenador antes de continuar.";
@@ -1682,6 +1747,14 @@ async function confirmCardAction(){
     }
     if(mode==="transfer"&&!targetId){
       feedback.textContent="Selecciona quién recibirá la carta.";
+      return;
+    }
+  }
+
+  if(mode==="use"&&manipulationEffect){
+    targetId=document.getElementById("cardActionManipulationSelect")?.value||null;
+    if(!targetId){
+      feedback.textContent="Selecciona una carta antes de continuar.";
       return;
     }
   }
@@ -1718,6 +1791,12 @@ async function confirmCardAction(){
       const unlock=Array.isArray(data.roulette_unlocks)?data.roulette_unlocks[0]:null;
       if(data.protection){
         notify("¡"+card.name+" utilizada! Te has protegido de "+(data.protected_card_name||"la carta seleccionada")+".");
+      }else if(data.manipulation_action==="copy"){
+        notify("¡"+card.name+" utilizada! Has copiado "+(data.result_name||"la carta seleccionada")+".");
+      }else if(data.manipulation_action==="steal"){
+        notify("¡"+card.name+" utilizada! Has robado "+(data.result_name||"la carta seleccionada")+".");
+      }else if(data.manipulation_action==="transform"){
+        notify("¡"+card.name+" se ha transformado en "+(data.result_name||"la carta seleccionada")+"!");
       }else if(unlock){
         const poolName=unlock.pool_slug==="legendary"?"Ruleta Legendaria":"Ruleta Fiesta";
         const granted=Number(unlock.spins_granted||1);
