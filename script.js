@@ -2857,18 +2857,39 @@ function createAdminEffectRow(effect={}){
     const protection=key==="protection_normal"||key==="protection_ultimate";
     const destroyDeck=key==="destroy_normal_deck";
     const cardManipulation=["copy_opponent_card","copy_incoming_card","steal_opponent_card","steal_opponent_deck","transform_card"].includes(key);
-    limitFields.hidden=unlock||spin||protection||destroyDeck||cardManipulation;
+    const hideLimitFields=unlock||spin||protection||destroyDeck||cardManipulation;
+    limitFields.hidden=hideLimitFields;
+    limitFields.style.display=hideLimitFields?"none":"";
     spinFields.hidden=!spin;
+    spinFields.style.display=spin?"":"none";
     protectionFields.hidden=!protection;
+    protectionFields.style.display=protection?"":"none";
     unlockFields.hidden=!unlock;
-    timedWrap.hidden=unlock||spin||protection||destroyDeck||cardManipulation||duration.value!=="timed";
+    unlockFields.style.display=unlock?"":"none";
+    timedWrap.hidden=hideLimitFields||duration.value!=="timed";
+    timedWrap.style.display=(hideLimitFields||duration.value!=="timed")?"none":"";
     if(type.dataset.changed==="true"){
       const target=document.getElementById("adminMechanicsTargetScope");
       const disposition=document.getElementById("adminMechanicsDisposition");
-      target.value="self";disposition.value="consume";
+      if(key==="destroy_normal_deck"||key==="steal_opponent_deck"){
+        target.value="opponent";
+      }else{
+        target.value="self";
+      }
+      disposition.value="consume";
     }
   }
-  type.addEventListener("change",()=>{type.dataset.changed="true";if(type.value==="tramo_spin_credit")spinValue.value="3";sync();});
+  type.addEventListener("change",()=>{
+    type.dataset.changed="true";
+    if(type.value==="tramo_spin_credit")spinValue.value="3";
+    const target=document.getElementById("adminMechanicsTargetScope");
+    const disposition=document.getElementById("adminMechanicsDisposition");
+    if(target&&disposition){
+      target.value=(type.value==="destroy_normal_deck"||type.value==="steal_opponent_deck")?"opponent":"self";
+      disposition.value="consume";
+    }
+    sync();
+  });
   duration.addEventListener("change",sync);
   row.append(top,limitFields,spinFields,protectionFields,unlockFields);
   row._sync=sync;
@@ -2999,6 +3020,10 @@ async function saveAdminMechanics(){
   const cardManipulationEffects=["copy_opponent_card","copy_incoming_card","steal_opponent_card","transform_card"];
   if(effects.some(effect=>cardManipulationEffects.includes(effect.effect_key))&&targetScope!=="self"){
     notify("Estos efectos se aplican sobre quien utiliza la carta.");
+    return;
+  }
+  if(effects.some(effect=>effect.effect_key==="steal_opponent_deck")&&targetScope!=="opponent"){
+    notify("Robar toda la baraja requiere elegir a un rival.");
     return;
   }
   if(effects.some(effect=>effect.effect_key==="transform_card")&&disposition!=="consume"){
