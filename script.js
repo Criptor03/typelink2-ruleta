@@ -1312,19 +1312,10 @@ async function showPublicPlayer(playerId,currentTramo=0){
       cardItem.setAttribute("role","button");
       cardItem.setAttribute("tabindex","0");
       cardItem.setAttribute("aria-label","Ver información de "+(item.name||"carta"));
-      const open=()=>openActivityCardPreview(
-        item.image_path,
-        item.name,
-        item.rarity,
-        cardItem,
-        item.description||"Sin descripción disponible."
-      );
-      cardItem.addEventListener("click",open);
-      cardItem.addEventListener("keydown",event=>{
-        if(event.key==="Enter"||event.key===" "){
-          event.preventDefault();open();
-        }
-      });
+      cardItem.dataset.cardPreviewImage=item.image_path||"";
+      cardItem.dataset.cardPreviewName=item.name||"Carta TypeLink";
+      cardItem.dataset.cardPreviewRarity=item.rarity||"CARTA TYPELINK";
+      cardItem.dataset.cardPreviewDescription=item.description||"Sin descripción disponible.";
       container.append(cardItem);
     });
   }
@@ -4724,6 +4715,30 @@ document.getElementById("cancelCardAction").addEventListener("click",closeCardAc
 document.getElementById("confirmCardAction").addEventListener("click",confirmCardAction);
 document.getElementById("cardActionModal").addEventListener("click",event=>{if(event.target.id==="cardActionModal")closeCardAction();});
 document.getElementById("publicProfileModal").addEventListener("click",event=>{if(event.target.id==="publicProfileModal")closePublicPlayer();});
+document.getElementById("publicPlayerCards").addEventListener("click",event=>{
+  const card=event.target.closest?.(".public-profile-card-clickable");
+  if(!card)return;
+  openActivityCardPreview(
+    card.dataset.cardPreviewImage,
+    card.dataset.cardPreviewName,
+    card.dataset.cardPreviewRarity,
+    card,
+    card.dataset.cardPreviewDescription||"Sin descripción disponible."
+  );
+});
+document.getElementById("publicPlayerCards").addEventListener("keydown",event=>{
+  if(event.key!=="Enter"&&event.key!==" ")return;
+  const card=event.target.closest?.(".public-profile-card-clickable");
+  if(!card)return;
+  event.preventDefault();
+  openActivityCardPreview(
+    card.dataset.cardPreviewImage,
+    card.dataset.cardPreviewName,
+    card.dataset.cardPreviewRarity,
+    card,
+    card.dataset.cardPreviewDescription||"Sin descripción disponible."
+  );
+});
 document.getElementById("closeActivityCardModal").addEventListener("click",closeActivityCardPreview);
 document.getElementById("activityCardModal").addEventListener("click",event=>{
   if(event.target.id==="activityCardModal")closeActivityCardPreview();
