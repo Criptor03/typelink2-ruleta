@@ -258,6 +258,28 @@ function drawWheel(){
 function createDeckItem(card,index,route=false,allowActions=false){
   const row=document.createElement("div");row.className="deck-item";
   const img=document.createElement("img");img.className="deck-thumb";img.src=cardImage(card);img.alt=card.name||"Carta";
+  img.setAttribute("role","button");
+  img.setAttribute("tabindex","0");
+  img.setAttribute("aria-label","Ver "+(card.name||"Carta TypeLink"));
+  img.style.cursor="pointer";
+  const openDeckCard=event=>{
+    event.preventDefault();
+    event.stopPropagation();
+    openActivityCardPreview(
+      cardImage(card),
+      card.name||"Carta TypeLink",
+      card.rarity||"CARTA TYPELINK",
+      img,
+      card.description||"Sin descripción disponible."
+    );
+  };
+  img.addEventListener("click",openDeckCard);
+  img.addEventListener("keydown",event=>{
+    if(event.key==="Enter"||event.key===" "){
+      event.preventDefault();
+      openDeckCard(event);
+    }
+  });
   const info=document.createElement("div");info.className="deck-info";
   const name=document.createElement("strong");name.textContent=card.name||"Carta TypeLink";
   const small=document.createElement("small");
