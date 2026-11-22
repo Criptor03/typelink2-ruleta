@@ -4718,6 +4718,20 @@ document.getElementById("publicProfileModal").addEventListener("click",event=>{i
 document.getElementById("publicPlayerCards").addEventListener("click",event=>{
   const card=event.target.closest?.(".public-profile-card-clickable");
   if(!card)return;
+  event.preventDefault();
+  event.stopPropagation();
+  openActivityCardPreview(
+    card.dataset.cardPreviewImage,
+    card.dataset.cardPreviewName,
+    card.dataset.cardPreviewRarity,
+    card,
+    card.dataset.cardPreviewDescription||"Sin descripción disponible."
+  );
+});
+document.addEventListener("click",event=>{
+  const card=event.target.closest?.("#publicPlayerCards .public-profile-card-clickable");
+  if(!card)return;
+  event.preventDefault();
   openActivityCardPreview(
     card.dataset.cardPreviewImage,
     card.dataset.cardPreviewName,
