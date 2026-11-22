@@ -267,12 +267,38 @@ function createDeckItem(card,index,route=false,allowActions=false){
   const number=document.createElement("span");number.className="deck-index";number.textContent=String(index+1).padStart(2,"0");
   row.append(img,info,number);
 
+  // Vista ampliada de la carta en "Mi baraja".
+  // Los botones de acción mantienen su comportamiento independiente.
+  row.classList.add("my-deck-card-clickable");
+  row.setAttribute("role","button");
+  row.setAttribute("tabindex","0");
+  row.setAttribute("aria-label","Ver información de "+(card.name||"carta"));
+  const openDeckPreview=()=>{
+    openActivityCardPreview(
+      cardImage(card),
+      card.name||"Carta TypeLink",
+      card.rarity||"CARTA TYPELINK",
+      row,
+      card.description||"Sin descripción disponible."
+    );
+  };
+  row.addEventListener("click",event=>{
+    if(event.target.closest(".deck-actions,button"))return;
+    openDeckPreview();
+  });
+  row.addEventListener("keydown",event=>{
+    if(event.key!=="Enter"&&event.key!==" ")return;
+    if(event.target.closest(".deck-actions,button"))return;
+    event.preventDefault();
+    openDeckPreview();
+  });
+
   if(allowActions&&card.status==="available"&&cloudMode){
     const actions=document.createElement("div");actions.className="deck-actions";
     const actionButton=document.createElement("button");actionButton.type="button";
     if(card.disposition==="transfer"){
       actionButton.className="deck-action-button transfer";actionButton.textContent="TRANSFERIR";
-      actionButton.addEventListener("click",()=>openCardAction(card.instance_id,"transfer"));
+      actionButton.addEventListener("click",event=>{event.stopPropagation();openCardAction(card.instance_id,"transfer");});
     }else{
       const hasEffects=Boolean(cardEffectsById[card.card_id]?.length);
       const allowsNoEffect=card.allow_no_effect_play===true;
@@ -284,14 +310,14 @@ function createDeckItem(card,index,route=false,allowActions=false){
         :allowsNoEffect
           ?"Lanzar sin efecto automático."
           :"Sin efectos ni permiso de uso manual.";
-      actionButton.addEventListener("click",()=>openCardAction(card.instance_id,"use"));
+      actionButton.addEventListener("click",event=>{event.stopPropagation();openCardAction(card.instance_id,"use");});
     }
     actions.append(actionButton);
     const evolution=evolutionRulesBySource[card.card_id];
     if(evolution){
       const evolveButton=document.createElement("button");evolveButton.type="button";
       evolveButton.className="deck-action-button evolve";evolveButton.textContent="EVOLUCIONAR";
-      evolveButton.addEventListener("click",()=>openCardAction(card.instance_id,"evolve"));
+      evolveButton.addEventListener("click",event=>{event.stopPropagation();openCardAction(card.instance_id,"evolve");});
       actions.append(evolveButton);
     }
     row.append(actions);
