@@ -843,7 +843,7 @@ function activityTargetLabel(entry,details,targetName){
   return "CONSUMO PROPIO";
 }
 
-function openActivityCardPreview(imagePath,cardName,rarity,trigger){
+function openActivityCardPreview(imagePath,cardName,rarity,trigger,description=""){
   if(!imagePath)return;
   const modal=document.getElementById("activityCardModal");
   const image=document.getElementById("activityCardModalImage");
@@ -853,6 +853,8 @@ function openActivityCardPreview(imagePath,cardName,rarity,trigger){
   image.alt=cardName||"Carta TypeLink";
   setText("activityCardModalName",cardName||"Carta TypeLink");
   setText("activityCardModalRarity",rarity||"CARTA TYPELINK");
+  setText("activityCardModalDescription",description||"");
+  setText("activityCardModalHint","Toca fuera de la carta o pulsa × para volver.");
   modal.hidden=false;
   document.getElementById("closeActivityCardModal")?.focus();
 }
@@ -1290,7 +1292,7 @@ async function showPublicPlayer(playerId,currentTramo=0){
 
   const [cardsResult,typesResult,incomingResult]=await Promise.all([
     authClient.from("player_cards")
-      .select("id,card_id,source,tramo_number,status,remaining_uses,obtained_at,card_catalog(id,name,category,rarity,image_path,uses_per_card,target_scope,disposition,counts_toward_normal_limit)")
+      .select("id,card_id,source,tramo_number,status,remaining_uses,obtained_at,card_catalog(id,name,category,rarity,description,image_path,uses_per_card,target_scope,disposition,counts_toward_normal_limit)")
       .eq("owner_id",playerId).eq("status","available").gt("remaining_uses",0).order("obtained_at",{ascending:true}),
     authClient.from("player_type_status").select("type_slug,is_enabled").eq("owner_id",playerId),
     authClient.rpc("get_trainer_incoming_cards",{p_trainer_id:playerId})
@@ -1304,7 +1306,27 @@ async function showPublicPlayer(playerId,currentTramo=0){
   if(!items.length){
     const empty=document.createElement("div");empty.className="deck-empty";empty.textContent="Sin cartas todavía.";container.append(empty);
   }else{
-    items.forEach((item,index)=>container.append(createDeckItem(item,index,item.category==="tramo")));
+    items.forEach((item,index)=>{
+      const cardItem=createDeckItem(item,index,item.category==="tramo");
+      cardItem.classList.add("public-profile-card-clickable");
+      cardItem.setAttribute("role","button");
+      cardItem.setAttribute("tabindex","0");
+      cardItem.setAttribute("aria-label","Ver información de "+(item.name||"carta"));
+      const open=()=>openActivityCardPreview(
+        item.image_path,
+        item.name,
+        item.rarity,
+        cardItem,
+        item.description||"Sin descripción disponible."
+      );
+      cardItem.addEventListener("click",open);
+      cardItem.addEventListener("keydown",event=>{
+        if(event.key==="Enter"||event.key===" "){
+          event.preventDefault();open();
+        }
+      });
+      container.append(cardItem);
+    });
   }
 
   renderPublicPlayerTypes(typesResult.data||[],typesResult.error);
