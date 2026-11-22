@@ -260,26 +260,13 @@ function createDeckItem(card,index,route=false,allowActions=false){
   const img=document.createElement("img");img.className="deck-thumb";img.src=cardImage(card);img.alt=card.name||"Carta";
   img.setAttribute("role","button");
   img.setAttribute("tabindex","0");
-  img.setAttribute("aria-label","Ver "+(card.name||"Carta TypeLink"));
+  img.setAttribute("aria-label","Ver información de "+(card.name||"Carta TypeLink"));
+  img.dataset.cardPreviewImage=cardImage(card);
+  img.dataset.cardPreviewName=card.name||"Carta TypeLink";
+  img.dataset.cardPreviewRarity=card.rarity||"CARTA TYPELINK";
+  img.dataset.cardPreviewDescription=card.description||"Sin descripción disponible.";
+  img.classList.add("deck-thumb-clickable");
   img.style.cursor="pointer";
-  const openDeckCard=event=>{
-    event.preventDefault();
-    event.stopPropagation();
-    openActivityCardPreview(
-      cardImage(card),
-      card.name||"Carta TypeLink",
-      card.rarity||"CARTA TYPELINK",
-      img,
-      card.description||"Sin descripción disponible."
-    );
-  };
-  img.addEventListener("click",openDeckCard);
-  img.addEventListener("keydown",event=>{
-    if(event.key==="Enter"||event.key===" "){
-      event.preventDefault();
-      openDeckCard(event);
-    }
-  });
   const info=document.createElement("div");info.className="deck-info";
   const name=document.createElement("strong");name.textContent=card.name||"Carta TypeLink";
   const small=document.createElement("small");
@@ -292,28 +279,13 @@ function createDeckItem(card,index,route=false,allowActions=false){
   // Vista ampliada de la carta en "Mi baraja".
   // Los botones de acción mantienen su comportamiento independiente.
   row.classList.add("my-deck-card-clickable");
+  row.dataset.cardPreviewImage=cardImage(card);
+  row.dataset.cardPreviewName=card.name||"Carta TypeLink";
+  row.dataset.cardPreviewRarity=card.rarity||"CARTA TYPELINK";
+  row.dataset.cardPreviewDescription=card.description||"Sin descripción disponible.";
   row.setAttribute("role","button");
   row.setAttribute("tabindex","0");
   row.setAttribute("aria-label","Ver información de "+(card.name||"carta"));
-  const openDeckPreview=()=>{
-    openActivityCardPreview(
-      cardImage(card),
-      card.name||"Carta TypeLink",
-      card.rarity||"CARTA TYPELINK",
-      row,
-      card.description||"Sin descripción disponible."
-    );
-  };
-  row.addEventListener("click",event=>{
-    if(event.target.closest(".deck-actions,button"))return;
-    openDeckPreview();
-  });
-  row.addEventListener("keydown",event=>{
-    if(event.key!=="Enter"&&event.key!==" ")return;
-    if(event.target.closest(".deck-actions,button"))return;
-    event.preventDefault();
-    openDeckPreview();
-  });
 
   if(allowActions&&card.status==="available"&&cloudMode){
     const actions=document.createElement("div");actions.className="deck-actions";
@@ -4763,6 +4735,32 @@ document.getElementById("cancelCardAction").addEventListener("click",closeCardAc
 document.getElementById("confirmCardAction").addEventListener("click",confirmCardAction);
 document.getElementById("cardActionModal").addEventListener("click",event=>{if(event.target.id==="cardActionModal")closeCardAction();});
 document.getElementById("publicProfileModal").addEventListener("click",event=>{if(event.target.id==="publicProfileModal")closePublicPlayer();});
+document.addEventListener("click",event=>{
+  const card=event.target.closest?.("#deckListFull .my-deck-card-clickable, #routeListFull .my-deck-card-clickable, #specialListFull .my-deck-card-clickable");
+  if(!card||event.target.closest(".deck-actions,button"))return;
+  event.preventDefault();
+  event.stopPropagation();
+  openActivityCardPreview(
+    card.dataset.cardPreviewImage,
+    card.dataset.cardPreviewName,
+    card.dataset.cardPreviewRarity,
+    card,
+    card.dataset.cardPreviewDescription||"Sin descripción disponible."
+  );
+});
+document.addEventListener("keydown",event=>{
+  if(event.key!=="Enter"&&event.key!==" ")return;
+  const card=event.target.closest?.("#deckListFull .my-deck-card-clickable, #routeListFull .my-deck-card-clickable, #specialListFull .my-deck-card-clickable");
+  if(!card||event.target.closest(".deck-actions,button"))return;
+  event.preventDefault();
+  openActivityCardPreview(
+    card.dataset.cardPreviewImage,
+    card.dataset.cardPreviewName,
+    card.dataset.cardPreviewRarity,
+    card,
+    card.dataset.cardPreviewDescription||"Sin descripción disponible."
+  );
+});
 document.getElementById("publicPlayerCards").addEventListener("click",event=>{
   const card=event.target.closest?.(".public-profile-card-clickable");
   if(!card)return;
