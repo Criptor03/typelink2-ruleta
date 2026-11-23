@@ -3600,18 +3600,18 @@ body{
 .welcome-banner{min-height:350px}
 .welcome-banner:before{z-index:0;background:linear-gradient(90deg,rgba(7,12,18,.94) 0%,rgba(7,12,18,.78) 42%,rgba(7,12,18,.35) 70%,rgba(7,12,18,.55) 100%)}
 .welcome-copy{z-index:3}
-.home-roulette-section{margin-top:18px;padding:0;display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:14px;background:#111b24;border:1px solid #2b3a47;overflow:hidden;position:relative}
-.home-roulette-copy{padding:25px 28px}
-.home-roulette-copy .eyebrow{color:#aebbc6}
-.home-roulette-copy h2{font:900 32px/1 'Barlow Condensed';letter-spacing:.5px;margin:7px 0 8px;color:#f3f6f8}
-.home-roulette-copy h2 em{font-style:normal;color:#b9c5ce}
-.home-roulette-copy p{font-size:10px;color:#9ca9b4;line-height:1.8;margin:0 0 18px;max-width:600px}
-.home-roulette-meta{display:flex;gap:22px;flex-wrap:wrap}
+.home-roulette-section{margin-top:18px;padding:20px 22px;background:#111b24;border:1px solid #2b3a47;overflow:hidden;position:relative;color:#f3f6f8}
+.home-roulette-top{display:grid;grid-template-columns:40px 42px minmax(0,1fr) auto;align-items:center;gap:14px;position:relative}
+.home-roulette-top .overview-number{position:static;align-self:start;padding-top:3px;color:#7f9aad}
+.home-roulette-top .overview-icon{font-size:28px;color:#dce7ee;margin:0}
+.home-roulette-heading .eyebrow{color:#aebbc6}
+.home-roulette-heading h2{font:900 30px/1 'Barlow Condensed';letter-spacing:.5px;margin:5px 0 6px;color:#f3f6f8}
+.home-roulette-heading h2 em{font-style:normal;color:#b9c5ce}
+.home-roulette-heading p{font-size:10px;color:#9ca9b4;line-height:1.7;margin:0;max-width:650px}
+.home-roulette-meta{display:flex;gap:22px;flex-wrap:wrap;margin-top:16px;padding-left:96px}
 .home-roulette-meta span{font-size:8px;letter-spacing:1.5px;color:#6f7f8c}
 .home-roulette-meta b{color:#dce3e8}
-.home-roulette-action{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#172530,#0d151d);border-left:1px solid #2b3a47;position:relative}
-.home-roulette-action:before{content:"";position:absolute;width:150px;height:150px;border:1px solid #3a4d5b;border-radius:50%;opacity:.35}
-.home-roulette-button{position:relative;z-index:1;border:1px solid #d7dfe4;background:#eef2f4;color:#10171d;padding:14px 22px;font:900 10px Inter;letter-spacing:1.4px;cursor:pointer;transition:.18s}
-.home-roulette-button span{margin-left:12px;color:var(--red);font-size:15px}
+.home-roulette-button{border:1px solid #d7dfe4;background:#eef2f4;color:#10171d;padding:13px 20px;font:900 10px Inter;letter-spacing:1.4px;cursor:pointer;transition:.18s;white-space:nowrap}
+.home-roulette-button span{margin-left:10px;color:var(--red);font-size:15px}
 .home-roulette-button:hover{transform:translateY(-2px);background:#fff}
 @media(max-width:900px){.home-roulette-section{grid-template-columns:1fr}.home-roulette-action{min-height:130px;border-left:0;border-top:1px solid #2b3a47}.welcome-banner{min-height:380px}.welcome-watermark{background-size:auto 100%;background-position:center}}
