@@ -2014,6 +2014,9 @@ async function confirmCardAction(){
         :{p_card_instance_id:instanceId,p_target_id:targetId};
     const {data,error}=await authClient.rpc(rpcName,args);
     if(error)throw error;
+    if(mode==="use"){
+      void sendCardActivityToDiscord({card,targetId,customMessage,mode,data});
+    }
     closeCardAction();
     await loadCloudInventory();
     if(mode==="use")await loadRouletteAccess();
