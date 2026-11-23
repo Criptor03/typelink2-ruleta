@@ -2256,6 +2256,52 @@ function adminTrainerDurationLabel(effect){
   if(effect.duration_type==="permanent")return "Permanente";
   return effect.duration_type||"Duración no indicada";
 }
+function renderAdminTrainerIncomingCards(cards){
+  const wrap=document.getElementById("adminTrainerIncomingCards");
+  if(!wrap)return;
+  wrap.replaceChildren();
+  const rows=Array.isArray(cards)?cards:[];
+  setText("adminTrainerIncomingCount",rows.length+" "+(rows.length===1?"CARTA":"CARTAS"));
+  if(!rows.length){
+    const empty=document.createElement("div");
+    empty.className="profile-module-empty";
+    empty.textContent="Todavía no le han lanzado cartas en este tramo.";
+    wrap.append(empty);
+    return;
+  }
+  rows.forEach(card=>{
+    const row=document.createElement("article");
+    row.className="admin-trainer-incoming-card";
+    const art=document.createElement("div");
+    art.className="admin-trainer-incoming-art";
+    if(card.image_path){
+      const image=document.createElement("img");
+      image.src=card.image_path;
+      image.alt=card.card_name||"Carta TypeLink";
+      image.loading="lazy";
+      image.onerror=()=>{image.remove();const fallback=document.createElement("span");fallback.textContent="▧";art.append(fallback);};
+      art.append(image);
+    }else{
+      const fallback=document.createElement("span");fallback.textContent="▧";art.append(fallback);
+    }
+
+    const copy=document.createElement("div");
+    copy.className="admin-trainer-incoming-copy";
+    const title=document.createElement("strong");
+    title.textContent=card.card_name||"Carta TypeLink";
+    const meta=document.createElement("small");
+    meta.textContent=(adminRarityLabel(card.rarity)||"CARTA")+" · LANZADA POR "+(card.sender_name||"Entrenador");
+    const message=document.createElement("p");
+    const customMessage=typeof card.custom_message==="string"?card.custom_message.trim():"";
+    message.textContent=customMessage?("“"+customMessage+"”"):"Sin mensaje personalizado.";
+    const when=document.createElement("span");
+    when.textContent="Lanzada el "+formatDate(card.created_at);
+    copy.append(title,meta,message,when);
+    row.append(art,copy);
+    wrap.append(row);
+  });
+}
+
 function renderAdminTrainerDetail(data){
   if(!data)return;
   const trainer=data.trainer||{};
@@ -2341,6 +2387,7 @@ function renderAdminTrainerDetail(data){
   const effectsWrap=document.getElementById("adminTrainerEffects");
   effectsWrap.replaceChildren();
   const effects=Array.isArray(data.effects)?data.effects:[];
+  renderAdminTrainerIncomingCards(data.incoming_cards);
   setText("adminTrainerEffectsCount",effects.length+" ACTIVOS");
   if(!effects.length){
     const empty=document.createElement("div");empty.className="profile-module-empty";
@@ -2443,11 +2490,19 @@ async function openAdminTrainerDetail(playerId){
   const inventory=document.getElementById("adminTrainerInventory");
   if(inventory){inventory.replaceChildren();const loading=document.createElement("div");loading.className="admin-catalog-loading";loading.textContent="Cargando ficha del entrenador...";inventory.append(loading);}
   try{
-    const {data,error}=await authClient.rpc("admin_get_trainer",{p_player_id:playerId});
-    if(error)throw error;
-    if(!data?.trainer?.id)throw new Error("Supabase no devolvió la ficha del entrenador.");
-    adminTrainerDetail=data;
-    renderAdminTrainerDetail(data);
+    const [trainerResult,incomingResult]=await Promise.all([
+      authClient.rpc("admin_get_trainer",{p_player_id:playerId}),
+      authClient.rpc("get_trainer_incoming_cards",{p_trainer_id:playerId})
+    ]);
+    if(trainerResult.error)throw trainerResult.error;
+    if(!trainerResult.data?.trainer?.id)throw new Error("Supabase no devolvió la ficha del entrenador.");
+    const incomingCards=Array.isArray(incomingResult.data)?incomingResult.data:[];
+    if(incomingResult.error){
+      console.warn("No se pudieron cargar las cartas lanzadas al entrenador:",incomingResult.error.message);
+    }
+    trainerResult.data.incoming_cards=incomingCards;
+    adminTrainerDetail=trainerResult.data;
+    renderAdminTrainerDetail(trainerResult.data);
   }catch(error){
     console.error("No se pudo abrir la ficha del entrenador:",error);
     notify("No se pudo abrir el entrenador: "+(error.message||"error desconocido"));
