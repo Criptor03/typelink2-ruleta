@@ -2269,41 +2269,63 @@ function renderAdminTrainerIncomingCards(cards){
     wrap.append(empty);
     return;
   }
+
+  // Las cartas lanzadas usan exactamente la misma ficha visual que las cartas
+  // que el entrenador tiene en su inventario. Solo cambia la información y
+  // la acción disponible (retirar la carta lanzada).
   rows.forEach(card=>{
     const row=document.createElement("article");
-    row.className="admin-trainer-incoming-card";
-    const art=document.createElement("div");
-    art.className="admin-trainer-incoming-art";
+    row.className="admin-trainer-card-item";
+
+    const imageWrap=document.createElement("div");
+    imageWrap.className="admin-trainer-card-image";
     if(card.image_path){
       const image=document.createElement("img");
       image.src=card.image_path;
       image.alt=card.card_name||"Carta TypeLink";
       image.loading="lazy";
-      image.onerror=()=>{image.remove();const fallback=document.createElement("span");fallback.textContent="▧";art.append(fallback);};
-      art.append(image);
+      image.onerror=()=>{
+        image.remove();
+        const fallback=document.createElement("span");
+        fallback.textContent="▧";
+        imageWrap.append(fallback);
+      };
+      imageWrap.append(image);
     }else{
-      const fallback=document.createElement("span");fallback.textContent="▧";art.append(fallback);
+      const fallback=document.createElement("span");
+      fallback.textContent="▧";
+      imageWrap.append(fallback);
     }
 
-    const copy=document.createElement("div");
-    copy.className="admin-trainer-incoming-copy";
+    const body=document.createElement("div");
+    body.className="admin-trainer-card-body";
+
     const title=document.createElement("strong");
     title.textContent=card.card_name||"Carta TypeLink";
+
     const meta=document.createElement("small");
-    meta.textContent=(adminRarityLabel(card.rarity)||"CARTA")+" · LANZADA POR "+(card.sender_name||"Entrenador");
-    const message=document.createElement("p");
+    meta.textContent=(adminCategoryLabel(card.category)||"CARTA")+" · "+
+      (adminRarityLabel(card.rarity)||"CARTA")+" · LANZADA POR "+(card.sender_name||"Entrenador");
+
+    const message=document.createElement("span");
     const customMessage=typeof card.custom_message==="string"?card.custom_message.trim():"";
-    message.textContent=customMessage?("“"+customMessage+"”"):"Sin mensaje personalizado.";
+    message.textContent=customMessage
+      ? "MENSAJE: “"+customMessage+"”"
+      : "SIN MENSAJE PERSONALIZADO";
+
     const when=document.createElement("span");
-    when.textContent="Lanzada el "+formatDate(card.created_at);
-    copy.append(title,meta,message,when);
+    when.textContent="LANZADA EL "+formatDate(card.created_at);
+
+    body.append(title,meta,message,when);
+
     const remove=document.createElement("button");
     remove.type="button";
     remove.className="admin-trainer-card-remove";
     remove.textContent="RETIRAR CARTA LANZADA";
     remove.title="Retirar esta carta del apartado de cartas lanzadas";
     remove.addEventListener("click",()=>removeAdminTrainerIncomingCard(card));
-    row.append(art,copy,remove);
+
+    row.append(imageWrap,body,remove);
     wrap.append(row);
   });
 }
