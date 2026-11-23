@@ -1001,9 +1001,11 @@ async function loadActivityFeed(){
     container.replaceChildren(makeActivityPlaceholder("Inicia sesión para ver el chat."));
     return;
   }
+  const wallSince=new Date(Date.now()-24*60*60*1000).toISOString();
   const {data,error}=await authClient.from("card_activity")
     .select("id,actor_id,target_id,activity_type,details,created_at")
     .eq("activity_type","play")
+    .gte("created_at",wallSince)
     .order("created_at",{ascending:false})
     .limit(80);
   if(error){
