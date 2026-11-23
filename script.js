@@ -2297,7 +2297,13 @@ function renderAdminTrainerIncomingCards(cards){
     const when=document.createElement("span");
     when.textContent="Lanzada el "+formatDate(card.created_at);
     copy.append(title,meta,message,when);
-    row.append(art,copy);
+    const remove=document.createElement("button");
+    remove.type="button";
+    remove.className="admin-trainer-card-remove";
+    remove.textContent="RETIRAR CARTA LANZADA";
+    remove.title="Retirar esta carta del apartado de cartas lanzadas";
+    remove.addEventListener("click",()=>removeAdminTrainerIncomingCard(card));
+    row.append(art,copy,remove);
     wrap.append(row);
   });
 }
@@ -2599,6 +2605,31 @@ async function grantAdminTrainerCard(){
     button.disabled=false;button.textContent="ENTREGAR CARTA ↗";
   }
 }
+async function removeAdminTrainerIncomingCard(card){
+  if(!isAdmin||!authClient||!adminSelectedTrainerId||!card?.activity_id){
+    notify("No se pudo identificar la carta lanzada que quieres retirar.");
+    return;
+  }
+  const cardName=card.card_name||"esta carta";
+  if(!window.confirm("¿Retirar «"+cardName+"» de las cartas lanzadas a "+adminSelectedTrainerName+"?\\n\\nSe quitará de este tramo y quedará registrado que fue retirada por administración. Los efectos que ya se hayan aplicado no se revierten."))return;
+  try{
+    const {data,error}=await authClient.rpc("admin_remove_incoming_card",{
+      p_player_id:adminSelectedTrainerId,
+      p_activity_id:card.activity_id
+    });
+    if(error)throw error;
+    const result=Array.isArray(data)?data[0]:data;
+    if(!result?.success)throw new Error("El servidor no confirmó la retirada.");
+    notify("Se retiró «"+(result.card_name||cardName)+"» de las cartas lanzadas.");
+    await openAdminTrainerDetail(adminSelectedTrainerId);
+    await loadActivityFeed();
+    await loadPlayers();
+  }catch(error){
+    console.error("No se pudo retirar la carta lanzada:",error);
+    notify("No se pudo retirar la carta lanzada: "+(error.message||"error desconocido"));
+  }
+}
+
 async function removeAdminTrainerCard(item,card){
   if(!isAdmin||!authClient||!adminSelectedTrainerId||!item?.id){notify("No se pudo identificar la copia que quieres retirar.");return;}
   const cardName=card?.name||"esta carta";
