@@ -1920,6 +1920,33 @@ function closeCardAction(){
   if(messageCount)messageCount.textContent="0";
 }
 
+async function sendCardActivityToDiscord({card,targetId,customMessage,mode,data}){
+  if(!authClient||!currentAuthUser||mode!=="use"||!card)return;
+  try{
+    const targetProfile=targetId?cardActionTargetProfiles[targetId]:null;
+    const targetName=targetProfile?.display_name||"";
+    const imagePath=card.image_path||cardImage(card)||"";
+    const absoluteImagePath=imagePath
+      ?new URL(imagePath,window.location.href).href
+      :"";
+    const actorName=currentProfile?.display_name||currentAuthUser.user_metadata?.full_name||currentAuthUser.user_metadata?.name||"Entrenador";
+    const actionLabel=targetName?"CARTA LANZADA":"CARTA UTILIZADA";
+    await authClient.functions.invoke("discord-card-wall",{
+      body:{
+        actor_name:actorName,
+        target_name:targetName||null,
+        card_name:card.name||"Carta TypeLink",
+        rarity:card.rarity||"CARTA TYPELINK",
+        image_path:absoluteImagePath||null,
+        custom_message:customMessage||null,
+        action_label:actionLabel
+      }
+    });
+  }catch(error){
+    console.warn("No se pudo registrar la carta en Discord:",error?.message||error);
+  }
+}
+
 async function confirmCardAction(){
   if(!pendingCardAction||!authClient||!currentAuthUser)return;
   const {instanceId,mode,card}=pendingCardAction;
