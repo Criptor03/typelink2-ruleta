@@ -3600,18 +3600,18 @@ body{
 .welcome-banner{min-height:350px}
 .welcome-banner:before{z-index:0;background:linear-gradient(90deg,rgba(7,12,18,.94) 0%,rgba(7,12,18,.78) 42%,rgba(7,12,18,.35) 70%,rgba(7,12,18,.55) 100%)}
 .welcome-copy{z-index:3}
-.home-roulette-section{margin-top:18px;padding:20px 22px;background:#111b24;border:1px solid #2b3a47;overflow:hidden;position:relative;color:#f3f6f8}
-.home-roulette-top{display:grid;grid-template-columns:40px 42px minmax(0,1fr) auto;align-items:center;gap:14px;position:relative}
-.home-roulette-top .overview-number{position:static;align-self:start;padding-top:3px;color:#7f9aad}
-.home-roulette-top .overview-icon{font-size:28px;color:#dce7ee;margin:0}
-.home-roulette-heading .eyebrow{color:#aebbc6}
-.home-roulette-heading h2{font:900 30px/1 'Barlow Condensed';letter-spacing:.5px;margin:5px 0 6px;color:#f3f6f8}
-.home-roulette-heading h2 em{font-style:normal;color:#b9c5ce}
-.home-roulette-heading p{font-size:10px;color:#9ca9b4;line-height:1.7;margin:0;max-width:650px}
-.home-roulette-meta{display:flex;gap:22px;flex-wrap:wrap;margin-top:16px;padding-left:96px}
-.home-roulette-meta span{font-size:8px;letter-spacing:1.5px;color:#6f7f8c}
-.home-roulette-meta b{color:#dce3e8}
-.home-roulette-button{border:1px solid #d7dfe4;background:#eef2f4;color:#10171d;padding:13px 20px;font:900 10px Inter;letter-spacing:1.4px;cursor:pointer;transition:.18s;white-space:nowrap}
-.home-roulette-button span{margin-left:10px;color:var(--red);font-size:15px}
-.home-roulette-button:hover{transform:translateY(-2px);background:#fff}
+.home-roulette-section{margin-top:18px}
+.home-roulette-card{min-height:128px;box-sizing:border-box;display:grid;grid-template-columns:40px 42px minmax(230px,1fr) auto 28px;align-items:center;gap:14px;padding:22px 28px;background:#111b24;border:1px solid #2b3a47;position:relative;cursor:pointer;transition:border-color .18s,transform .18s,background .18s}
+.home-roulette-card:hover{border-color:#486070;background:#14212b;transform:translateY(-1px)}
+.home-roulette-card:focus-visible{outline:2px solid #9db4c2;outline-offset:2px}
+.home-roulette-card .overview-number{position:static;color:#7f9aad;align-self:start}
+.home-roulette-card .overview-icon{font-size:28px;color:#dce7ee}
+.home-roulette-copy{min-width:0}
+.home-roulette-copy .eyebrow{margin-bottom:5px;color:#aebbc6}
+.home-roulette-copy strong{display:block;font:900 27px/1 'Barlow Condensed';letter-spacing:.5px;color:#f3f6f8}
+.home-roulette-copy small{display:block;margin-top:7px;font-size:10px;line-height:1.6;color:#9ca9b4;max-width:620px}
+.home-roulette-info{display:flex;gap:20px;align-items:center;justify-content:flex-end}
+.home-roulette-info span{font-size:8px;letter-spacing:1.3px;color:#6f7f8c;white-space:nowrap}
+.home-roulette-info b{color:#dce3e8;margin-right:4px}
+.home-roulette-card .card-arrow{position:static;justify-self:end;color:var(--red);font-size:17px}
 @media(max-width:900px){.home-roulette-section{grid-template-columns:1fr}.home-roulette-action{min-height:130px;border-left:0;border-top:1px solid #2b3a47}.welcome-banner{min-height:380px}.welcome-watermark{background-size:auto 100%;background-position:center}}
