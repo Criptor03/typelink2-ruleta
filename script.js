@@ -2806,9 +2806,15 @@ function renderAdminMechanicsList(){
     const nameMatch=!search||String(card.name||"").toLowerCase().includes(search)||String(card.slug||"").toLowerCase().includes(search);
     return nameMatch&&(category==="all"||card.category===category);
   });
+  const activeEffectCount=item=> (item.effects||[]).filter(effect=>effect.is_active).length;
+  const pendingCount=adminMechanicsItems.filter(item=>{
+    const card=item.card||{};
+    return activeEffectCount(item)===0 && card.allow_no_effect_play!==true && card.category!=="tramo";
+  }).length;
   setText("adminMechanicsCardsTotal",adminMechanicsItems.length);
-  setText("adminMechanicsEffectsTotal",adminMechanicsItems.filter(item=>(item.effects||[]).some(effect=>effect.is_active)).length);
+  setText("adminMechanicsEffectsTotal",adminMechanicsItems.filter(item=>activeEffectCount(item)>0).length);
   setText("adminMechanicsEvolutionsTotal",adminMechanicsItems.filter(item=>item.evolution?.is_active).length);
+  setText("adminMechanicsPendingTotal",pendingCount);
   grid.replaceChildren();
   if(!filtered.length){
     const empty=document.createElement("div");empty.className="admin-catalog-loading";
@@ -2825,7 +2831,17 @@ function renderAdminMechanicsList(){
     const name=document.createElement("strong");name.textContent=card.name||"Carta";
     const meta=document.createElement("small");meta.textContent=adminCategoryLabel(card.category)+" · "+adminRarityLabel(card.rarity);
     const effectCount=(item.effects||[]).filter(effect=>effect.is_active).length;
-    const effect=document.createElement("span");effect.textContent=effectCount?effectCount+" efecto(s) activo(s)":"Sin efectos activos";
+    const effect=document.createElement("span");
+    if(effectCount){
+      effect.textContent=effectCount+" efecto(s) activo(s)";
+      effect.className="is-configured";
+    }else if(card.allow_no_effect_play===true){
+      effect.textContent="Sin efecto automático · permitido";
+      effect.className="is-neutral";
+    }else{
+      effect.textContent="PENDIENTE · sin efecto configurado";
+      effect.className="is-pending";
+    }
     const evolution=document.createElement("span");
     if(item.evolution?.is_active){
       evolution.textContent=item.evolution.trigger_type==="tramo_advance"?"Evoluciona al avanzar de tramo":"Evolución manual configurada";
