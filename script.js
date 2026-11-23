@@ -714,7 +714,7 @@ async function loadMyProfile(){
     renderProfile(null);renderTypeTracker();renderIncomingEffects([]);return;
   }
   const {data,error}=await authClient.from("profiles")
-    .select("id,display_name,avatar_url,created_at")
+    .select("id,display_name,avatar_url,discord_id,created_at")
     .eq("id",currentAuthUser.id).single();
   if(error){
     console.error("No se pudo cargar el perfil:",error.message);
@@ -1021,7 +1021,7 @@ async function loadActivityFeed(){
   const profileIds=[...new Set(visibleEntries.flatMap(row=>[row.actor_id,row.target_id]).filter(Boolean))];
   let profiles={};
   if(profileIds.length){
-    const result=await authClient.from("profiles").select("id,display_name,avatar_url").in("id",profileIds);
+    const result=await authClient.from("profiles").select("id,display_name,avatar_url,discord_id").in("id",profileIds);
     if(!result.error)profiles=Object.fromEntries((result.data||[]).map(profile=>[profile.id,profile]));
   }
   renderActivityFeed(visibleEntries,profiles);
@@ -1237,7 +1237,7 @@ async function loadPlayers(){
   }
   const loading=document.createElement("div");loading.className="players-loading";loading.textContent="Cargando participantes...";container.append(loading);
   const {data:profiles,error}=await authClient.from("profiles")
-    .select("id,display_name,avatar_url,created_at")
+    .select("id,display_name,avatar_url,discord_id,created_at")
     .order("created_at",{ascending:true});
   if(error){
     console.error("No se pudieron cargar los jugadores:",error.message);
@@ -1304,7 +1304,7 @@ async function showPublicPlayer(playerId,currentTramo=0){
   const modal=document.getElementById("publicProfileModal");
   modal.dataset.playerId=playerId;
   const {data:profile,error}=await authClient.from("profiles")
-    .select("id,display_name,avatar_url,created_at").eq("id",playerId).single();
+    .select("id,display_name,avatar_url,discord_id,created_at").eq("id",playerId).single();
   if(error||!profile){notify("No pudimos abrir este perfil.");return;}
   setText("publicPlayerName",profile.display_name||"Entrenador");
   setText("publicPlayerJoined","Entrenador desde "+formatDate(profile.created_at));
@@ -1850,7 +1850,7 @@ async function openCardAction(instanceId,mode){
       try{
         const [profilesResult,progressResult]=await Promise.all([
           authClient.from("profiles")
-            .select("id,display_name,avatar_url").order("display_name",{ascending:true}),
+            .select("id,display_name,avatar_url,discord_id").order("display_name",{ascending:true}),
           authClient.rpc("get_public_trainer_progress")
         ]);
         if(profilesResult.error)throw profilesResult.error;
@@ -1934,7 +1934,9 @@ async function sendCardActivityToDiscord({card,targetId,customMessage,mode,data}
     await authClient.functions.invoke("discord-card-wall",{
       body:{
         actor_name:actorName,
+        actor_discord_id:currentProfile?.discord_id||currentAuthUser.user_metadata?.provider_id||currentAuthUser.user_metadata?.sub||null,
         target_name:targetName||null,
+        target_discord_id:targetProfile?.discord_id||null,
         card_name:card.name||"Carta TypeLink",
         rarity:card.rarity||"CARTA TYPELINK",
         image_path:absoluteImagePath||null,
@@ -3633,6 +3635,11 @@ async function activateUserSession(user){
   }
   if(activeSessionUserId===user.id&&cloudMode)return;
   activeSessionUserId=user.id;currentAuthUser=user;cloudMode=true;
+  const discordId=user.user_metadata?.provider_id||user.user_metadata?.sub||null;
+  if(discordId){
+    const {error:discordProfileError}=await authClient.from("profiles").update({discord_id:String(discordId)}).eq("id",user.id);
+    if(discordProfileError)console.warn("No se pudo sincronizar el Discord ID del perfil:",discordProfileError.message);
+  }
   cloudDeck=[];cloudRoute=[];cloudSpecial=[];cloudInventory=[];
   renderAuthState(user);renderDeck();
   await Promise.all([loadAdminAccess(),loadMyProfile(),loadCloudInventory(),loadPlayers(),loadActivityFeed(),loadNotifications(),loadPublicNormalCards(),loadRouletteAccess()]);
