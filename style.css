@@ -608,7 +608,7 @@ button[hidden]{display:none!important}
 .admin-mechanics-list-copy{min-width:0;display:flex;flex-direction:column;gap:4px}
 .admin-mechanics-list-copy strong{font:800 16px 'Barlow Condensed';color:#293843;overflow-wrap:anywhere}
 .admin-mechanics-list-copy small,.admin-mechanics-list-copy span{font-size:7px;line-height:1.5;color:#78868f}
-.admin-mechanics-list-copy span.is-configured{color:#4f805d;font-weight:900}
+.admin-mechanics-list-copy span.is-configured{color:#4f805d;font-weight:900}.admin-mechanics-list-copy span.is-pending{color:#a35a46;font-weight:900}.admin-mechanics-list-copy span.is-neutral{color:#78868f;font-weight:700}
 .admin-mechanics-card .admin-card-edit{grid-column:3;align-self:center;white-space:nowrap}
 .admin-mechanics-card-heading{display:flex;align-items:center;gap:14px;padding:14px;margin:12px 0}
 .admin-mechanics-card-art{width:76px;aspect-ratio:403/603;flex:none;background:#e6ebef;border:1px solid #c9d2d9;display:grid;place-items:center;overflow:hidden;color:#84919a;font-size:24px}
