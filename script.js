@@ -2242,24 +2242,56 @@ function localizedName(data){
   const name=data?.names?.find(entry=>entry.language?.name==="es");
   return name?.name||data?.name||"—";
 }
+const GEN5_ITEM_GAME_INDEX_URL="https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/item_game_indices.csv";
+let gen5ItemApiIdMapPromise=null;
+function loadGen5ItemApiIdMap(){
+  if(gen5ItemApiIdMapPromise)return gen5ItemApiIdMapPromise;
+  gen5ItemApiIdMapPromise=fetch(GEN5_ITEM_GAME_INDEX_URL).then(r=>{
+    if(!r.ok)throw new Error("No se pudo cargar el índice de objetos de Gen 5");
+    return r.text();
+  }).then(csv=>{
+    const map=new Map();
+    const lines=csv.split(/\r?\n/);
+    for(let i=1;i<lines.length;i++){
+      const cols=lines[i].split(",");
+      if(cols.length<3)continue;
+      const itemId=Number(cols[0]), generationId=Number(cols[1]), gameIndex=Number(cols[2]);
+      if(generationId===5&&!map.has(gameIndex))map.set(gameIndex,itemId);
+    }
+    return map;
+  }).catch(error=>{
+    gen5ItemApiIdMapPromise=null;
+    throw error;
+  });
+  return gen5ItemApiIdMapPromise;
+}
+async function resolveGen5ItemName(itemId){
+  const id=Number(itemId);
+  if(!id)return "Sin objeto";
+  try{
+    const map=await loadGen5ItemApiIdMap();
+    const apiId=map.get(id);
+    if(!apiId)return "Objeto #"+id;
+    const itemData=await pokeApiJson("item/"+apiId);
+    return localizedName(itemData)||itemData.name||("Objeto #"+id);
+  }catch(error){
+    return "Objeto #"+id;
+  }
+}
 async function resolvePokemonDetailNames(mon){
   const result={moveDetails:[],ability:"—",item:"—"};
   const moveIds=(mon.moves||[]).filter(id=>Number(id)>0);
-  const [moves, pokemonData, itemData]=await Promise.all([
+  const [moves,abilityData]=await Promise.all([
     Promise.all(moveIds.map(id=>pokeApiJson("move/"+id).catch(()=>null))),
-    pokeApiJson("pokemon/"+mon.species_id).catch(()=>null),
-    Number(mon.held_item_id)>0?pokeApiJson("item/"+mon.held_item_id).catch(()=>null):Promise.resolve(null)
+    Number(mon.ability_id)>0?pokeApiJson("ability/"+Number(mon.ability_id)).catch(()=>null):Promise.resolve(null)
   ]);
   result.moveDetails=moves.map((move,index)=>move?{
     id:move.id,name:localizedName(move),type:move.type?.name||"",
     power:move.power,accuracy:move.accuracy,pp:mon.move_pp?.[index]??move.pp,
     ppUps:mon.move_pp_ups?.[index]??0
   }:{id:moveIds[index],name:"Movimiento #"+moveIds[index],type:"",power:null,accuracy:null,pp:mon.move_pp?.[index]??"—",ppUps:mon.move_pp_ups?.[index]??0});
-  if(Number(mon.ability_id)>0){
-    const abilityData=await pokeApiJson("ability/"+Number(mon.ability_id)).catch(()=>null);
-    result.ability=localizedName(abilityData)||("Habilidad #"+mon.ability_id);
-  }
-  if(itemData)result.item=localizedName(itemData);
+  if(abilityData)result.ability=localizedName(abilityData)||abilityData.name;
+  result.item=await resolveGen5ItemName(mon.held_item_id);
   return result;
 }
 function natureStatModifiers(natureId){
@@ -2273,26 +2305,56 @@ function natureStatModifiers(natureId){
   if(up&&down){mods[up]=1.1;mods[down]=0.9;}
   return mods;
 }
-function calculatePokemonStats(mon,baseStats){
-  const level=Number(mon.level);
-  if(!level||!baseStats)return null;
+function expForLevel(level,growth){
+  const n=Number(level);
+  if(growth==="fast")return Math.floor(4*n*n*n/5);
+  if(growth==="medium-slow")return Math.floor(6*n*n*n/5-15*n*n+100*n-140);
+  if(growth==="slow")return Math.floor(5*n*n*n/4);
+  if(growth==="erratic"){
+    if(n<=50)return Math.floor(n*n*n*(100-n)/50);
+    if(n<=68)return Math.floor(n*n*n*(150-n)/100);
+    if(n<=98)return Math.floor(n*n*n*((1911-10*n)/3)/500);
+    return Math.floor(n*n*n*(160-n)/100);
+  }
+  if(growth==="fluctuating"){
+    if(n<=15)return Math.floor(n*n*n*((n+1)/3+24)/50);
+    if(n<=36)return Math.floor(n*n*n*(n+14)/50);
+    return Math.floor(n*n*n*((n/2)+32)/50);
+  }
+  return n*n*n;
+}
+function levelFromExp(exp,growth){
+  const value=Math.max(0,Number(exp)||0);
+  let low=1,high=100,best=1;
+  while(low<=high){
+    const mid=(low+high)>>1;
+    if(expForLevel(mid,growth)<=value){best=mid;low=mid+1;}else high=mid-1;
+  }
+  return best;
+}
+function calculatePokemonStats(mon,baseStats,level){
+  const lvl=Number(level||mon.level);
+  if(!lvl||!baseStats)return null;
   const evs=mon.evs||[0,0,0,0,0,0], ivs=mon.ivs||[0,0,0,0,0,0];
   const mods=natureStatModifiers(mon.nature_id);
-  const raw=baseStats.map((base,i)=>Math.floor(((2*Number(base)+Number(ivs[i]||0)+Math.floor(Number(evs[i]||0)/4))*level)/100));
+  const raw=baseStats.map((base,i)=>Math.floor(((2*Number(base)+Number(ivs[i]||0)+Math.floor(Number(evs[i]||0)/4))*lvl)/100));
   return {
-    hp:raw[0]+level+10,
+    hp:raw[0]+lvl+10,
     attack:Math.floor((raw[1]+5)*mods[1]),
     defense:Math.floor((raw[2]+5)*mods[2]),
     speed:Math.floor((raw[3]+5)*mods[3]),
-    special_attack:Math.floor((raw[4]+5)*mods[4]),
-    special_defense:Math.floor((raw[5]+5)*mods[5])
+    spAtk:Math.floor((raw[4]+5)*mods[4]),
+    spDef:Math.floor((raw[5]+5)*mods[5])
   };
 }
-function pokemonDetailStatSet(mon,baseStats){
+function pokemonDetailStatSet(mon,baseStats,level){
   const stats=mon.current_stats||mon.stats||null;
   const complete=stats && [stats.hp,stats.attack,stats.defense,stats.speed,stats.special_attack,stats.special_defense].every(v=>Number(v)>0);
-  if(complete)return stats;
-  return calculatePokemonStats(mon,baseStats)||{
+  if(complete)return {
+    hp:stats.hp,attack:stats.attack,defense:stats.defense,speed:stats.speed,
+    spAtk:stats.special_attack,spDef:stats.special_defense
+  };
+  return calculatePokemonStats(mon,baseStats,level)||{
     hp:stats?.hp??mon.max_hp??mon.current_hp??"—",
     attack:stats?.attack??"—",
     defense:stats?.defense??"—",
@@ -2325,15 +2387,23 @@ async function openPokemonDetail(mon){
   if(sprite){sprite.src=pokemonSpriteUrl(mon);sprite.alt=name;}
   const shiny=document.getElementById("pokemonDetailShiny");
   if(shiny)shiny.hidden=!mon.shiny;
-  let baseStats=null;
+  let baseStats=null, calculatedLevel=Number(mon.level)||null;
   try{
     const speciesData=await pokeApiJson("pokemon/"+mon.species_id);
     baseStats=["hp","attack","defense","speed","special-attack","special-defense"].map(name=>{
       const entry=speciesData.stats?.find(st=>st.stat?.name===name);
       return entry?.base_stat||0;
     });
-  }catch(error){console.warn("No se pudieron cargar las estadísticas base:",error);}
-  const stats=pokemonDetailStatSet(mon,baseStats);
+    if(!calculatedLevel && mon.exp!=null){
+      const growthUrl=speciesData.species?.url;
+      const speciesDataDetail=growthUrl?await pokeApiJson(growthUrl.replace("https://pokeapi.co/api/v2/","")):null;
+      const growth=speciesDataDetail?.growth_rate?.name||"medium-fast";
+      calculatedLevel=levelFromExp(mon.exp,growth);
+    }
+  }catch(error){console.warn("No se pudieron cargar los datos de estadísticas:",error);}
+  if(!calculatedLevel && mon.level)calculatedLevel=Number(mon.level);
+  setText("pokemonDetailMeta","N.º "+String(mon.species_id).padStart(3,"0")+" · NIVEL "+(calculatedLevel||"—"));
+  const stats=pokemonDetailStatSet(mon,baseStats,calculatedLevel);
   setText("pokemonStatHp",stats.hp);setText("pokemonStatAttack",stats.attack);setText("pokemonStatDefense",stats.defense);
   setText("pokemonStatSpAtk",stats.spAtk);setText("pokemonStatSpDef",stats.spDef);setText("pokemonStatSpeed",stats.speed);
   setText("pokemonDetailNature",pokemonNatureName(mon.nature_id));
