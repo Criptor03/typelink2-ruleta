@@ -124,7 +124,7 @@
 
   function parseSave(input){
     const bytes=normalizeSave(input);
-    if(bytes.length<0x26000)throw new Error("La partida es demasiado pequeña para ser una partida válida de Pokémon Black/White.");
+    if(bytes.length!==0x80000)throw new Error("La partida no tiene los 512 KiB esperados para una partida de Negro 2 / Blanco 2.");
     const gameVersion=bytes[GAME_VERSION_OFFSET];
     const isB2W2=gameVersion===22||gameVersion===23;
     if(!isB2W2){
@@ -162,7 +162,7 @@
       boxes.push({number:box+1,slots});
     }
     return {
-      format:isB2W2?"gen5-b2w2":"gen5-bw",
+      format:"gen5-b2w2",
       parser_version:"typelink-b2w2-1.1.0",
       trainer,
       game_title:gameTitle,
