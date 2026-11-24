@@ -88,7 +88,7 @@
       exp:u32(d,0x10),
       held_item_id:u16(d,0x0A),
       ability_id:d[0x15],
-      ability_slot:d[0x15],
+      ability_slot:null,
       friendship:d[0x14],
       nature_id:d[0x41],
       is_egg:Boolean(ivs&0x40000000),
@@ -105,9 +105,17 @@
     };
     if(isParty){
       const stats=decryptBattleStats(stored);
-      pokemon.level=stats[4+0x88-0x88]; // level byte is at 0x8C => index 4
+      pokemon.level=stats[0x8c-0x88];
       pokemon.current_hp=u16(stats,0x8e-0x88);
       pokemon.max_hp=u16(stats,0x90-0x88);
+      pokemon.current_stats={
+        hp:pokemon.max_hp,
+        attack:u16(stats,0x92-0x88),
+        defense:u16(stats,0x94-0x88),
+        speed:u16(stats,0x96-0x88),
+        special_attack:u16(stats,0x98-0x88),
+        special_defense:u16(stats,0x9a-0x88)
+      };
     }
     return pokemon;
   }
