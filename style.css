@@ -2655,7 +2655,7 @@ button:disabled{cursor:not-allowed}
 .public-player-types-legend i.is-blocked{background:#7d8b95}
 
 
-/* Ruta de Teselia y confirmación de avance de tramo */
+/* Ruta de TESELIA y confirmación de avance de tramo */
 .page-view .tramo-tool{
   display:grid;
   grid-template-columns:minmax(0,1fr) auto;
