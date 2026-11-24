@@ -2450,7 +2450,11 @@ function bindPublicPokemonViewer(){
     section.hidden=false;
     section.classList.add("is-revealed");
     button.closest(".public-profile-pokemon-cta")?.classList.add("is-open");
-    requestAnimationFrame(()=>section.scrollIntoView({behavior:"smooth",block:"start"}));
+    requestAnimationFrame(()=>{
+      const cta=button.closest(".public-profile-pokemon-cta");
+      const top=cta ? cta.getBoundingClientRect().bottom + window.scrollY - 18 : window.scrollY;
+      window.scrollTo({top,behavior:"smooth"});
+    });
   });
 }
 async function showPublicPokemonSnapshot(playerId){
