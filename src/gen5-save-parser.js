@@ -174,7 +174,7 @@
     }
     return {
       format:"gen5-b2w2",
-      parser_version:"typelink-b2w2-1.1.0",
+      parser_version:"typelink-b2w2-1.2.0",
       trainer,
       game_title:gameTitle,
       party,
