@@ -104,6 +104,89 @@ let adminMechanicsItems = [];
 let adminSelectedMechanicsCardId = null;
 let spinRewardResolver = null;
 let typeLeagueVisible = false;
+let rouletteAudio = null;
+let rouletteAudioLastTick = null;
+let rouletteAudioTickCount = 0;
+
+function getRouletteAudio(){
+  if(rouletteAudio)return rouletteAudio;
+  try{
+    const AudioCtx=window.AudioContext||window.webkitAudioContext;
+    if(!AudioCtx)return null;
+    rouletteAudio=new AudioCtx();
+    return rouletteAudio;
+  }catch(error){
+    console.warn("El audio de la ruleta no está disponible:",error);
+    return null;
+  }
+}
+
+function playRouletteTone(frequency,duration,gainValue,type="square",when=0){
+  const audio=getRouletteAudio();
+  if(!audio)return;
+  try{
+    if(audio.state==="suspended")audio.resume();
+    const now=audio.currentTime+when;
+    const oscillator=audio.createOscillator();
+    const gain=audio.createGain();
+    oscillator.type=type;
+    oscillator.frequency.setValueAtTime(frequency,now);
+    gain.gain.setValueAtTime(0.0001,now);
+    gain.gain.exponentialRampToValueAtTime(Math.max(0.0001,gainValue),now+0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001,now+duration);
+    oscillator.connect(gain);
+    gain.connect(audio.destination);
+    oscillator.start(now);
+    oscillator.stop(now+duration+0.015);
+  }catch(error){
+    console.warn("No se pudo reproducir un sonido de la ruleta:",error);
+  }
+}
+
+function startRouletteAudio(){
+  const audio=getRouletteAudio();
+  if(!audio)return;
+  try{
+    if(audio.state==="suspended")audio.resume();
+    rouletteAudioLastTick=rotation;
+    rouletteAudioTickCount=0;
+    // Pequeño golpe inicial para marcar que la ruleta arrancó.
+    playRouletteTone(170,0.16,0.045,"sawtooth");
+    playRouletteTone(330,0.12,0.028,"triangle",0.025);
+  }catch(error){
+    console.warn("No se pudo iniciar el audio de la ruleta:",error);
+  }
+}
+
+function updateRouletteAudio(previousRotation,currentRotation){
+  const audio=getRouletteAudio();
+  if(!audio||rouletteAudioLastTick==null)return;
+  const distance=Math.abs(currentRotation-rouletteAudioLastTick);
+  const tickDistance=0.36;
+  if(distance<tickDistance)return;
+  const ticks=Math.min(4,Math.floor(distance/tickDistance));
+  for(let i=0;i<ticks;i++){
+    rouletteAudioTickCount++;
+    const frequency=rouletteAudioTickCount%5===0?980:760;
+    playRouletteTone(frequency,0.045,0.022,"square");
+  }
+  rouletteAudioLastTick=currentRotation;
+}
+
+function finishRouletteAudio(){
+  const audio=getRouletteAudio();
+  if(!audio)return;
+  try{
+    playRouletteTone(660,0.18,0.035,"triangle");
+    playRouletteTone(880,0.24,0.045,"triangle",0.12);
+    playRouletteTone(1320,0.32,0.035,"sine",0.25);
+    rouletteAudioLastTick=null;
+  }catch(error){
+    console.warn("No se pudo cerrar el audio de la ruleta:",error);
+  }
+}
+
+
 let typeLeagueProfiles = [];
 let typeLeagueMatches = [];
 let typeLeagueChannel = null;
@@ -3769,14 +3852,18 @@ function startWheelAnimation(card){
     const delta=(desiredNorm-currentNorm+TAU)%TAU;
     const start=rotation,target=start+TAU*7+delta;
     const duration=7200,startTime=performance.now();
+    rouletteAudioLastTick=start;
     function animate(now){
       const progress=Math.min(1,(now-startTime)/duration);
       const eased=1-Math.pow(1-progress,5);
+      const previousRotation=rotation;
       rotation=start+(target-start)*eased;
       drawWheel();
+      updateRouletteAudio(previousRotation,rotation);
       if(progress<1){requestAnimationFrame(animate);return;}
       rotation=target%TAU;
       drawWheel();
+      finishRouletteAudio();
       resolve();
     }
     requestAnimationFrame(animate);
@@ -3792,6 +3879,7 @@ async function spin(){
   if(activeNormalCards().length>=normalCardLimit&&bonusTramoSpinsRemaining<=0){notify("Tu baraja ya alcanzó el límite. Necesitas giros extra para superarlo.");return;}
   if(tramoSpinsRemaining+bonusTramoSpinsRemaining<=0){notify("Sin giros. Avanza de tramo para recibir "+normalSpinsPerTramo+" giros.");return;}
   spinning=true;renderDeck();
+  startRouletteAudio();
   try{
     // The server selects and awards the card in one protected transaction.
     const {data,error}=await authClient.rpc("draw_random_card");
@@ -3881,6 +3969,7 @@ async function spinSpecialRoulette(poolSlug){
   spinning=true;
   updateSpecialRouletteAccessUI();
   renderDeck();
+  startRouletteAudio();
   try{
     // The server consumes one unlock and selects the prize in the same protected transaction.
     const {data,error}=await authClient.rpc("draw_special_roulette_card",{p_pool_slug:poolSlug});
