@@ -1384,7 +1384,7 @@ async function loadPlayers(){
     totalCards.textContent=availableCount+" "+(availableCount===1?"CARTA":"CARTAS");
     stats.append(totalCards);
     const action=document.createElement("span");action.className="player-view-button";
-    action.textContent=pokemonSyncByPlayer[profile.id]?"VER EQUIPO POKÉMON ↗":"VER PERFIL ↗";
+    action.textContent="VER PERFIL ↗";
     card.append(avatar,info,stats,action);
     card.addEventListener("click",()=>showPublicPlayer(profile.id,trainerTramo));
     container.append(card);
@@ -1433,7 +1433,12 @@ async function showPublicPlayer(playerId,currentTramo=0){
 
   renderPublicPlayerTypes(typesResult.data||[],typesResult.error);
   renderPublicIncomingCards(incomingResult.data||[],incomingResult.error);
+  const pokemonSection=document.getElementById("publicPlayerPokemonSection");
+  const pokemonCta=document.querySelector(".public-profile-pokemon-cta");
+  if(pokemonSection)pokemonSection.hidden=true;
+  if(pokemonCta)pokemonCta.classList.remove("is-open");
   await showPublicPokemonSnapshot(playerId);
+  bindPublicPokemonViewer();
   const tramoLabel=currentTramo>=12
     ?"🏆 CAMPEÓN POKÉMON · TRAMO 12 / 12"
     :"TRAMO ACTUAL · "+Math.max(0,Number(currentTramo)||0)+" / 12";
@@ -2378,6 +2383,18 @@ async function importPokemonSaveFile(file){
   }
 }
 
+function bindPublicPokemonViewer(){
+  const button=document.getElementById("publicPlayerPokemonButton");
+  const section=document.getElementById("publicPlayerPokemonSection");
+  if(!button||!section||button.dataset.bound==="true")return;
+  button.dataset.bound="true";
+  button.addEventListener("click",()=>{
+    section.hidden=false;
+    section.classList.add("is-revealed");
+    button.closest(".public-profile-pokemon-cta")?.classList.add("is-open");
+    requestAnimationFrame(()=>section.scrollIntoView({behavior:"smooth",block:"start"}));
+  });
+}
 async function showPublicPokemonSnapshot(playerId){
   const partyContainer=document.getElementById("publicPlayerPokemonParty");
   const boxesContainer=document.getElementById("publicPlayerPokemonBoxes");
