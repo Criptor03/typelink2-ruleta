@@ -3706,14 +3706,14 @@ body{
 .pokemon-card-empty{background:#f0f3f5;border:1px dashed #cbd3da;min-height:168px;display:grid;place-items:center;color:#7f8a94;font-size:9px;letter-spacing:1px}
 .pokemon-empty{padding:22px 8px;text-align:center;color:#7d8993;font-size:10px;line-height:1.7}
 .pokemon-boxes{display:flex;flex-direction:column;gap:13px}
-.pokemon-box{border:1px solid #cbd3da;background:#f4f6f7;padding:11px}
+.pokemon-box{border:1px solid #293844;background:#101922;padding:11px;overflow:hidden}
 .pokemon-box-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.pokemon-box-header strong{font:800 16px 'Barlow Condensed';letter-spacing:1px}
+.pokemon-box-header strong{font:800 16px 'Barlow Condensed';letter-spacing:1px;color:#f2f5f7}
 .pokemon-box-header span{font-size:7px;letter-spacing:1px;color:#7d8993}
 .pokemon-box-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px}
-.pokemon-slot{aspect-ratio:1;background:#e7ebee;border:1px solid #d2d8dd;display:grid;place-items:center;min-width:0;position:relative}
-.pokemon-slot img{width:80%;height:80%;object-fit:contain}
-.pokemon-slot span{font-size:8px;color:#a0a9b1}
+.pokemon-slot{aspect-ratio:1;background:radial-gradient(circle at 50% 45%,#263945 0%,#17222b 62%,#111920 100%);border:1px solid #2c3d49;display:grid;place-items:center;min-width:0;position:relative;transition:.15s}
+.pokemon-slot img{width:88%;height:88%;object-fit:contain;image-rendering:auto;filter:drop-shadow(0 4px 7px rgba(0,0,0,.45))}.pokemon-slot:hover{border-color:#617485;transform:translateY(-1px);background:radial-gradient(circle at 50% 45%,#304551 0%,#18242d 68%,#111920 100%)}
+.pokemon-slot span{font-size:8px;color:#596a76}
 .public-profile-pokemon-section{margin-top:12px}
 .public-pokemon-party{grid-template-columns:repeat(3,minmax(0,1fr));margin-top:10px}
 .public-pokemon-party .pokemon-card-image{height:95px}
