@@ -1,4 +1,5 @@
-/* TypeLink 2 — Pokémon Black / White save parser (read-only)
+/* TypeLink 2 — Pokémon Black 2 / White 2 save parser (read-only)
+ * TypeLink 2 uses Pokémon Black 2 / White 2.
  * Supports raw 512 KiB Gen 5 saves and DeSmuME .dsv files with the 122-byte footer.
  * The parser never modifies the uploaded buffer.
  */
@@ -126,7 +127,11 @@
     if(bytes.length<0x26000)throw new Error("La partida es demasiado pequeña para ser una partida válida de Pokémon Black/White.");
     const gameVersion=bytes[GAME_VERSION_OFFSET];
     const isB2W2=gameVersion===22||gameVersion===23;
-    const gameTitle=gameVersion===20?"Pokémon White":gameVersion===21?"Pokémon Black":gameVersion===22?"Pokémon White 2":gameVersion===23?"Pokémon Black 2":"Pokémon Black / White";
+    if(!isB2W2){
+      const detectedTitle=gameVersion===20?"Pokémon White":gameVersion===21?"Pokémon Black":"otra versión de Pokémon";
+      throw new Error(`TypeLink 2 requiere una partida de Pokémon Negro 2 o Blanco 2. Se detectó: ${detectedTitle}.`);
+    }
+    const gameTitle=gameVersion===22?"Pokémon White 2":"Pokémon Black 2";
     const pcOffset=isB2W2?B2W2_PC_OFFSET:BW_PC_OFFSET;
     const trainer={
       name:utf16(bytes,0x19404,8),
@@ -158,7 +163,7 @@
     }
     return {
       format:isB2W2?"gen5-b2w2":"gen5-bw",
-      parser_version:"typelink-gen5-1.0.0",
+      parser_version:"typelink-b2w2-1.1.0",
       trainer,
       game_title:gameTitle,
       party,
