@@ -2330,7 +2330,7 @@ async function importPokemonSaveFile(file){
   const button=document.getElementById("saveImportButton");
   if(!file||!currentAuthUser||!authClient)return;
   if(file.size<0x80000){
-    status.textContent="El archivo es demasiado pequeño para una partida Black/White válida.";
+    status.textContent="El archivo es demasiado pequeño para una partida Negro 2 / Blanco 2 válida.";
     status.className="save-import-status error";return;
   }
   button.disabled=true;status.textContent="PROCESANDO PARTIDA…";status.className="save-import-status busy";
@@ -2339,7 +2339,7 @@ async function importPokemonSaveFile(file){
     await loadPokemonNamesEs();
     const occupied=Number(parsed.occupied_pc_slots||0);
     const partyCount=Number(parsed.party?.length||0);
-    if(!partyCount&&!occupied)throw new Error("No encontramos Pokémon en el equipo ni en el PC. Comprueba que sea una partida de Pokémon Black/White.");
+    if(!partyCount&&!occupied)throw new Error("No encontramos Pokémon en el equipo ni en el PC. Comprueba que sea una partida de Pokémon Negro 2 / Blanco 2.");
     const checksumBuffer=await crypto.subtle.digest("SHA-256",window.TypeLinkGen5SaveParser.normalizeSave(await file.arrayBuffer()));
     const checksum=Array.from(new Uint8Array(checksumBuffer)).map(v=>v.toString(16).padStart(2,"0")).join("");
     parsed.trainer.filename=file.name;
