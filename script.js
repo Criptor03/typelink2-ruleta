@@ -2218,9 +2218,9 @@ function pokemonSpriteUrl(mon){
 }
 const pokemonDetailCache=new Map();
 const pokemonNatureNames=[
-  "Fuerte","Osada","Dócil","Miedosa","Audaz","Serena","Tímida","Activa","Huraña","Alegre",
-  "Firme","Plácida","Seria","Ingenua","Grosera","Modesta","Afable","Mansa","Tímida","Alocada",
-  "Rara","Calmada","Cauta","Rara","Rara"
+  "Fuerte","Huraña","Audaz","Firme","Pícara","Osada","Dócil","Plácida","Agitada","Floja",
+  "Miedosa","Activa","Seria","Alegre","Ingenua","Modesta","Afable","Mansa","Tímida","Alocada",
+  "Serena","Amable","Grosera","Cauta","Rara"
 ];
 const pokemonStatLabels=["PS","ATQ","DEF","VEL","AT. ESP.","DEF. ESP."];
 
