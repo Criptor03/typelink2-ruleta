@@ -2262,9 +2262,37 @@ async function resolvePokemonDetailNames(mon){
   if(itemData)result.item=localizedName(itemData);
   return result;
 }
-function pokemonDetailStatSet(mon){
-  const stats=mon.current_stats||mon.stats||null;
+function natureStatModifiers(natureId){
+  const table=[
+    [1,2],[2,3],[2,4],[2,5],[3,2],[3,4],[3,5],[4,2],[4,3],[4,5],
+    [5,2],[5,3],[5,4],[5,5],[2,3],[2,4],[2,5],[3,2],[3,4],[3,5],
+    [4,2],[4,3],[4,5],[5,2],[5,3]
+  ];
+  const [up,down]=table[Number(natureId)]||[5,5];
+  const mods=[1,1,1,1,1,1];
+  if(up!==down){mods[up-1]=1.1;mods[down-1]=0.9;}
+  return mods;
+}
+function calculatePokemonStats(mon,baseStats){
+  const level=Number(mon.level);
+  if(!level||!baseStats)return null;
+  const evs=mon.evs||[0,0,0,0,0,0], ivs=mon.ivs||[0,0,0,0,0,0];
+  const mods=natureStatModifiers(mon.nature_id);
+  const raw=baseStats.map((base,i)=>Math.floor(((2*Number(base)+Number(ivs[i]||0)+Math.floor(Number(evs[i]||0)/4))*level)/100));
   return {
+    hp:raw[0]+level+10,
+    attack:Math.floor((raw[1]+5)*mods[1]),
+    defense:Math.floor((raw[2]+5)*mods[2]),
+    speed:Math.floor((raw[3]+5)*mods[3]),
+    special_attack:Math.floor((raw[4]+5)*mods[4]),
+    special_defense:Math.floor((raw[5]+5)*mods[5])
+  };
+}
+function pokemonDetailStatSet(mon,baseStats){
+  const stats=mon.current_stats||mon.stats||null;
+  const complete=stats && [stats.hp,stats.attack,stats.defense,stats.speed,stats.special_attack,stats.special_defense].every(v=>Number(v)>0);
+  if(complete)return stats;
+  return calculatePokemonStats(mon,baseStats)||{
     hp:stats?.hp??mon.max_hp??mon.current_hp??"—",
     attack:stats?.attack??"—",
     defense:stats?.defense??"—",
@@ -2297,7 +2325,15 @@ async function openPokemonDetail(mon){
   if(sprite){sprite.src=pokemonSpriteUrl(mon);sprite.alt=name;}
   const shiny=document.getElementById("pokemonDetailShiny");
   if(shiny)shiny.hidden=!mon.shiny;
-  const stats=pokemonDetailStatSet(mon);
+  let baseStats=null;
+  try{
+    const speciesData=await pokeApiJson("pokemon/"+mon.species_id);
+    baseStats=["hp","attack","defense","speed","special-attack","special-defense"].map(name=>{
+      const entry=speciesData.stats?.find(st=>st.stat?.name===name);
+      return entry?.base_stat||0;
+    });
+  }catch(error){console.warn("No se pudieron cargar las estadísticas base:",error);}
+  const stats=pokemonDetailStatSet(mon,baseStats);
   setText("pokemonStatHp",stats.hp);setText("pokemonStatAttack",stats.attack);setText("pokemonStatDefense",stats.defense);
   setText("pokemonStatSpAtk",stats.spAtk);setText("pokemonStatSpDef",stats.spDef);setText("pokemonStatSpeed",stats.speed);
   setText("pokemonDetailNature",pokemonNatureName(mon.nature_id));
