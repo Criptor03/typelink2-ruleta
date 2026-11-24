@@ -326,8 +326,43 @@
         </section>
 
         <section class="page-view" id="page-pokemon" hidden>
-          <div class="page-heading"><div><div class="eyebrow">05 / REGISTRO DE PARTIDA</div><h1>MI EQUIPO <em>POKÉMON</em></h1><p>Importación en desarrollo.</p></div></div>
-          <div class="sync-preview panel"><div class="sync-icon">✦</div><div class="eyebrow">TYPELINK SYNC</div><h2>Importador de partida</h2><p>Pokémon Blanco y Negro · DeSmuME.</p><div class="coming-soon">EN DESARROLLO · AÚN NO SE PROCESAN ARCHIVOS</div></div>
+          <div class="page-heading"><div><div class="eyebrow">05 / REGISTRO DE PARTIDA</div><h1>TYPELINK <em>SYNC</em></h1><p>Sincroniza tu partida de Pokémon Negro 2 / Blanco 2 para mostrar tu equipo y PC.</p></div></div>
+
+          <div class="save-sync-panel panel">
+            <div class="save-sync-copy">
+              <span class="eyebrow">TYPELINK SYNC · GEN 5</span>
+              <h2>Tu partida Pokémon</h2>
+              <p>La partida se procesa en tu navegador. TypeLink guarda los datos necesarios de tu equipo y PC, no el archivo de guardado completo.</p>
+              <div class="save-sync-rules">
+                <span>NEGRO 2 / BLANCO 2</span>
+                <span>24 CAJAS · 720 ESPACIOS</span>
+                <span>ACTUALIZACIÓN AUTOMÁTICA</span>
+              </div>
+            </div>
+            <div class="save-upload">
+              <input id="saveFileInput" type="file" accept=".sav,.dsv,.main" hidden>
+              <button class="secondary-button" id="saveFileButton" type="button">SELECCIONAR PARTIDA ↗</button>
+              <span class="save-file-name" id="saveFileName">Ningún archivo seleccionado.</span>
+              <button class="secondary-button save-import-button" id="saveImportButton" type="button" disabled>IMPORTAR PARTIDA</button>
+              <span class="save-import-status" id="saveImportStatus">Selecciona tu partida para comenzar.</span>
+            </div>
+          </div>
+
+          <section class="pokemon-team-section panel">
+            <div class="pokemon-section-heading">
+              <div><span class="eyebrow">TU EQUIPO</span><h2>POKÉMON ACTUALES</h2></div>
+              <span class="pokemon-updated-label" id="myPokemonUpdated">SIN SINCRONIZAR</span>
+            </div>
+            <div id="myPokemonParty" class="pokemon-party-grid"><div class="pokemon-empty">Todavía no has sincronizado una partida.</div></div>
+          </section>
+
+          <section class="pokemon-box-section panel">
+            <div class="pokemon-section-heading">
+              <div><span class="eyebrow">ALMACENAMIENTO</span><h2>TU PC POKÉMON</h2></div>
+              <span class="pokemon-updated-label" id="myPokemonBoxCount">0 POKÉMON</span>
+            </div>
+            <div id="myPokemonBoxes" class="pokemon-boxes"><div class="pokemon-empty">Sin datos de PC.</div></div>
+          </section>
         </section>
 
         <section class="page-view" id="page-activity" hidden>
@@ -1024,6 +1059,12 @@
       <div class="public-profile-section public-profile-deck-section">
         <div class="panel-topline"><b>BARAJA PÚBLICA</b><span id="publicPlayerCardCount">0 CARTAS</span></div>
         <div id="publicPlayerCards" class="public-card-list"><div class="deck-empty">Este entrenador todavía no tiene cartas.</div></div>
+      </div>
+      <div class="public-profile-section public-profile-pokemon-section">
+        <div class="panel-topline"><b>EQUIPO POKÉMON</b><span id="publicPlayerPokemonUpdated">SIN SINCRONIZAR</span></div>
+        <div id="publicPlayerPokemonParty" class="pokemon-party-grid public-pokemon-party"><div class="pokemon-empty">Este entrenador todavía no ha sincronizado su partida.</div></div>
+        <div class="public-pokemon-box-heading"><b>PC POKÉMON</b><span id="publicPlayerPokemonBoxCount">0 POKÉMON</span></div>
+        <div id="publicPlayerPokemonBoxes" class="pokemon-boxes public-pokemon-boxes"><div class="pokemon-empty">Sin datos de PC.</div></div>
       </div>
       <div class="public-profile-section public-profile-types-section">
         <div class="panel-topline"><b>LOS 17 TIPOS POKÉMON</b><span id="publicPlayerTypesCount">CARGANDO</span></div>
