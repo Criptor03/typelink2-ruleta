@@ -427,7 +427,10 @@ button[hidden]{display:none!important}
 .admin-trainer-identity h3{font:900 26px 'Barlow Condensed';margin:4px 0;color:#263541;overflow-wrap:anywhere}
 .admin-trainer-identity p{margin:0 0 4px;font-size:9px;color:#73818b}
 .admin-trainer-identity small{font-size:8px;color:#929da5}
+.admin-trainer-danger-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
 .admin-danger-button{flex:none;border:1px solid #c58d91;background:#fff;color:#a23e45;padding:12px 14px;font-size:8px;font-weight:900;letter-spacing:.8px;cursor:pointer;transition:.15s}
+.admin-danger-button-delete{border-color:#8f2834;background:#5b1820;color:#fff}
+.admin-danger-button-delete:hover{background:#8f2834;border-color:#8f2834;color:#fff}
 .admin-danger-button:hover{background:#a23e45;color:#fff;border-color:#a23e45}
 .admin-danger-button:disabled{opacity:.55;cursor:wait}
 .admin-trainer-detail-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
