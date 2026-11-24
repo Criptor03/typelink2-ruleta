@@ -230,7 +230,7 @@ button[hidden]{display:none!important}
 .pokemon-detail-header-main h2{
   margin:2px 0 2px;font:900 32px 'Barlow Condensed';letter-spacing:1px;color:#f4f7f8;
 }
-.pokemon-detail-subline{font-size:9px;color:#9fb0ba;letter-spacing:1px}
+.pokemon-detail-subline{font-size:11px;color:#9fb0ba;letter-spacing:1px}
 .pokemon-detail-header-side{font:900 28px 'Barlow Condensed';color:#d6bb79}
 .pokemon-detail-content{
   display:grid;grid-template-columns:minmax(0,1.45fr) minmax(300px,.75fr);
@@ -270,7 +270,7 @@ button[hidden]{display:none!important}
 .pokemon-detail-stat-row span{color:#f0d18a;font:900 19px 'Barlow Condensed'}
 .pokemon-detail-info{padding:20px 15px}
 .pokemon-detail-info>div{padding:10px 0;border-bottom:1px solid #263b47}
-.pokemon-detail-info span{display:block;color:#7e929e;font-size:7px;letter-spacing:1.2px}
+.pokemon-detail-info span{display:block;color:#7e929e;font-size:9px;letter-spacing:1.1px}
 .pokemon-detail-info strong{display:block;margin-top:3px;color:#f0f4f6;font:800 13px 'Barlow Condensed'}
 .pokemon-detail-moves{background:#0b151c}
 .pokemon-detail-move-list{padding:12px}
@@ -280,11 +280,11 @@ button[hidden]{display:none!important}
 }
 .pokemon-detail-move:last-child{margin-bottom:0}
 .pokemon-detail-move-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.pokemon-detail-move-top strong{font:900 16px 'Barlow Condensed';letter-spacing:.5px}
+.pokemon-detail-move-top strong{font:900 18px 'Barlow Condensed';letter-spacing:.5px}
 .pokemon-detail-move-top span{
-  padding:3px 7px;border:1px solid #536c79;color:#d6bb79;font-size:7px;font-weight:900;letter-spacing:1px;
+  padding:3px 7px;border:1px solid #536c79;color:#d6bb79;font-size:9px;font-weight:900;letter-spacing:1px;
 }
-.pokemon-detail-move-bottom{margin-top:5px;color:#8397a2;font-size:7px;letter-spacing:.6px}
+.pokemon-detail-move-bottom{margin-top:6px;color:#8397a2;font-size:9px;letter-spacing:.5px}
 .pokemon-detail-training{
   display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px;
   background:#0d171e;border-bottom:1px solid #344b58;
@@ -295,10 +295,10 @@ button[hidden]{display:none!important}
   display:flex;justify-content:space-between;gap:7px;padding:7px 8px;
   border:1px solid #273b46;background:#13232c;margin:2px;
 }
-.pokemon-detail-training-row b{font:800 8px 'Barlow Condensed';color:#9fb0ba}
-.pokemon-detail-training-row span{font:900 13px 'Barlow Condensed';color:#f0d18a}
+.pokemon-detail-training-row b{font:800 9px 'Barlow Condensed';color:#9fb0ba}
+.pokemon-detail-training-row span{font:900 15px 'Barlow Condensed';color:#f0d18a}
 .pokemon-detail-loading{padding:28px 14px;text-align:center;color:#8397a2;font-size:8px;letter-spacing:.6px}
-.pokemon-detail-footer{padding:9px 14px;color:#627783;font-size:7px;letter-spacing:1px;text-align:right}
+.pokemon-detail-footer{padding:9px 14px;color:#627783;font-size:8px;letter-spacing:1px;text-align:right}
 .pokemon-detail-open{overflow:hidden}
 
 @media(max-width:900px){.type-tracker-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
