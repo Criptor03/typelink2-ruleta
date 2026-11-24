@@ -2255,13 +2255,9 @@ async function resolvePokemonDetailNames(mon){
     power:move.power,accuracy:move.accuracy,pp:mon.move_pp?.[index]??move.pp,
     ppUps:mon.move_pp_ups?.[index]??0
   }:{id:moveIds[index],name:"Movimiento #"+moveIds[index],type:"",power:null,accuracy:null,pp:mon.move_pp?.[index]??"—",ppUps:mon.move_pp_ups?.[index]??0});
-  if(pokemonData){
-    const abilitySlot=Number(mon.ability_slot||mon.ability_id||0);
-    const abilityRef=pokemonData.abilities?.find(a=>Number(a.slot)===abilitySlot)||pokemonData.abilities?.[0];
-    if(abilityRef?.ability?.url){
-      const abilityData=await pokeApiJson(abilityRef.ability.url.replace("https://pokeapi.co/api/v2/","")).catch(()=>null);
-      result.ability=localizedName(abilityData)||abilityRef.ability.name;
-    }
+  if(Number(mon.ability_id)>0){
+    const abilityData=await pokeApiJson("ability/"+Number(mon.ability_id)).catch(()=>null);
+    result.ability=localizedName(abilityData)||("Habilidad #"+mon.ability_id);
   }
   if(itemData)result.item=localizedName(itemData);
   return result;
@@ -2269,7 +2265,7 @@ async function resolvePokemonDetailNames(mon){
 function pokemonDetailStatSet(mon){
   const stats=mon.current_stats||mon.stats||null;
   return {
-    hp:stats?.hp??mon.current_hp??"—",
+    hp:stats?.hp??mon.max_hp??mon.current_hp??"—",
     attack:stats?.attack??"—",
     defense:stats?.defense??"—",
     spAtk:stats?.special_attack??stats?.sp_atk??"—",
@@ -2336,7 +2332,7 @@ async function openPokemonDetail(mon){
     }catch(error){
       console.warn("No se pudieron cargar datos ampliados del Pokémon:",error);
       movesRoot.innerHTML='<div class="pokemon-detail-loading">Los ataques están guardados, pero no se pudo cargar su catálogo ampliado.</div>';
-      setText("pokemonDetailAbility",mon.ability_slot?"Ranura "+mon.ability_slot:"—");
+      setText("pokemonDetailAbility",mon.ability_id?"Habilidad #"+mon.ability_id:"—");
     }
   }
 }
