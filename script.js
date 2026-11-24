@@ -489,7 +489,7 @@ function renderDeck(){
     : "SIGUIENTE TRAMO · "+nextTramo+" / "+TRAMO_MILESTONES.length);
   setText("tramoNextGoal",finalTramo
     ? "Consagrarse campeón Pokémon"
-    : (nextStage?.goal||"Ruta de Teselia completada."));
+    : (nextStage?.goal||"Ruta de TESELIA completada."));
   setText("tramoCurrentStage",currentStage
     ? "TRAMO ACTUAL: "+tramoActual+" / "+TRAMO_MILESTONES.length+" · "+currentStage.goal
     : "AVENTURA SIN INICIAR · 0 / "+TRAMO_MILESTONES.length);
