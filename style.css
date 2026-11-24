@@ -3676,3 +3676,58 @@ body{
   .admin-trainer-incoming-card{grid-template-columns:58px minmax(0,1fr);}
   .admin-trainer-incoming-art{width:58px;height:80px;}
 }
+
+/* TypeLink Sync — Gen 5 save viewer */
+.save-sync-panel{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(300px,.8fr);gap:22px;padding:24px;margin-bottom:14px;background:#101922;color:#f3f6f8;border-color:#263541}
+.save-sync-copy h2{font:800 30px 'Barlow Condensed';margin:8px 0 8px}
+.save-sync-copy p{max-width:720px;color:#aeb9c2;font-size:10px;line-height:1.8;margin:0}
+.save-sync-rules{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.save-sync-rules span{font-size:8px;letter-spacing:.8px;color:#d6dde2;border:1px solid #35434e;padding:7px 9px;background:#17212b}
+.save-upload{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:9px;border-left:1px solid #31404b;padding-left:22px}
+.save-upload .secondary-button{background:#17212b;color:#fff;border-color:#52616c}
+.save-file-name{font-size:9px;color:#7f909d;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.save-import-button{background:#f4f6f7;color:#111820;padding:12px 16px}
+.save-import-button:disabled{opacity:.4;cursor:not-allowed}
+.save-import-status{font-size:8px;letter-spacing:.5px;color:#7f909d;line-height:1.5}
+.save-import-status.success{color:#79b18b}.save-import-status.error{color:#df7777}.save-import-status.busy{color:#d6b36b}
+.pokemon-team-section,.pokemon-box-section{padding:20px 22px;margin-bottom:14px}
+.pokemon-section-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:15px;margin-bottom:15px}
+.pokemon-section-heading h2{font:800 25px 'Barlow Condensed';margin:5px 0 0}
+.pokemon-updated-label{font-size:8px;letter-spacing:1.2px;color:#7d8b96}
+.pokemon-party-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.pokemon-card{min-width:0;background:#121d27;border:1px solid #293844;padding:10px;position:relative;overflow:hidden;transition:.15s}
+.pokemon-card:hover{transform:translateY(-2px);border-color:#526474}
+.pokemon-card-image{height:105px;display:grid;place-items:center;background:radial-gradient(circle,#253542 0%,#111920 72%);margin-bottom:9px}
+.pokemon-card-image img{width:96px;height:96px;object-fit:contain;image-rendering:auto}
+.pokemon-card-copy{display:flex;flex-direction:column;gap:3px}
+.pokemon-card-name{font:800 17px 'Barlow Condensed';color:#f2f5f7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pokemon-card-meta{font-size:8px;color:#91a0ab;letter-spacing:.8px}
+.pokemon-card-level{position:absolute;right:9px;top:9px;font:800 13px 'Barlow Condensed';color:#fff}
+.pokemon-card-empty{background:#f0f3f5;border:1px dashed #cbd3da;min-height:168px;display:grid;place-items:center;color:#7f8a94;font-size:9px;letter-spacing:1px}
+.pokemon-empty{padding:22px 8px;text-align:center;color:#7d8993;font-size:10px;line-height:1.7}
+.pokemon-boxes{display:flex;flex-direction:column;gap:13px}
+.pokemon-box{border:1px solid #cbd3da;background:#f4f6f7;padding:11px}
+.pokemon-box-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.pokemon-box-header strong{font:800 16px 'Barlow Condensed';letter-spacing:1px}
+.pokemon-box-header span{font-size:7px;letter-spacing:1px;color:#7d8993}
+.pokemon-box-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px}
+.pokemon-slot{aspect-ratio:1;background:#e7ebee;border:1px solid #d2d8dd;display:grid;place-items:center;min-width:0;position:relative}
+.pokemon-slot img{width:80%;height:80%;object-fit:contain}
+.pokemon-slot span{font-size:8px;color:#a0a9b1}
+.public-profile-pokemon-section{margin-top:12px}
+.public-pokemon-party{grid-template-columns:repeat(3,minmax(0,1fr));margin-top:10px}
+.public-pokemon-party .pokemon-card-image{height:95px}
+.public-pokemon-box-heading{display:flex;justify-content:space-between;align-items:center;margin:18px 0 8px;padding-top:14px;border-top:1px solid #dce1e5}
+.public-pokemon-box-heading b{font-size:8px;letter-spacing:1.4px}.public-pokemon-box-heading span{font-size:8px;color:#7d8993}
+.public-pokemon-boxes{max-height:430px;overflow:auto;padding-right:2px}
+@media(max-width:900px){
+ .save-sync-panel{grid-template-columns:1fr}.save-upload{border-left:0;border-top:1px solid #31404b;padding:18px 0 0}
+ .pokemon-party-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .pokemon-box-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+}
+@media(max-width:600px){
+ .pokemon-party-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .public-pokemon-party{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .pokemon-box-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
+ .save-sync-panel,.pokemon-team-section,.pokemon-box-section{padding:16px}
+}
