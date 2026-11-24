@@ -2264,13 +2264,13 @@ async function resolvePokemonDetailNames(mon){
 }
 function natureStatModifiers(natureId){
   const table=[
-    [1,2],[2,3],[2,4],[2,5],[3,2],[3,4],[3,5],[4,2],[4,3],[4,5],
-    [5,2],[5,3],[5,4],[5,5],[2,3],[2,4],[2,5],[3,2],[3,4],[3,5],
-    [4,2],[4,3],[4,5],[5,2],[5,3]
+    [0,0],[1,2],[1,3],[1,4],[1,5],[2,1],[0,0],[2,3],[2,4],[2,5],
+    [3,1],[3,2],[0,0],[3,4],[3,5],[4,1],[4,2],[4,3],[0,0],[4,5],
+    [5,1],[5,2],[5,3],[5,4],[0,0]
   ];
-  const [up,down]=table[Number(natureId)]||[5,5];
+  const [up,down]=table[Number(natureId)]||[0,0];
   const mods=[1,1,1,1,1,1];
-  if(up!==down){mods[up-1]=1.1;mods[down-1]=0.9;}
+  if(up&&down){mods[up]=1.1;mods[down]=0.9;}
   return mods;
 }
 function calculatePokemonStats(mon,baseStats){
