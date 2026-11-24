@@ -2334,12 +2334,13 @@ async function importPokemonSaveFile(file){
   }
   button.disabled=true;status.textContent="PROCESANDO PARTIDA…";status.className="save-import-status busy";
   try{
-    const parsed=window.TypeLinkGen5SaveParser.parseSave(await file.arrayBuffer());
+    const saveBuffer=await file.arrayBuffer();
+    const parsed=window.TypeLinkGen5SaveParser.parseSave(saveBuffer);
     await loadPokemonNamesEs();
     const occupied=Number(parsed.occupied_pc_slots||0);
     const partyCount=Number(parsed.party?.length||0);
     if(!partyCount&&!occupied)throw new Error("No encontramos Pokémon en el equipo ni en el PC. Comprueba que sea una partida de Pokémon Negro 2 / Blanco 2.");
-    const checksumBuffer=await crypto.subtle.digest("SHA-256",window.TypeLinkGen5SaveParser.normalizeSave(await file.arrayBuffer()));
+    const checksumBuffer=await crypto.subtle.digest("SHA-256",window.TypeLinkGen5SaveParser.normalizeSave(saveBuffer));
     const checksum=Array.from(new Uint8Array(checksumBuffer)).map(v=>v.toString(16).padStart(2,"0")).join("");
     parsed.trainer.filename=file.name;
     parsed.trainer.file_size=file.size;
