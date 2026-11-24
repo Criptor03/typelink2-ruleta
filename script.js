@@ -2216,6 +2216,143 @@ function pokemonSpriteUrl(mon){
   const base="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/";
   return base+(mon.shiny?"shiny/":"")+String(mon.species_id)+".png";
 }
+const pokemonDetailCache=new Map();
+const pokemonNatureNames=[
+  "Fuerte","Osada","Dócil","Miedosa","Audaz","Serena","Tímida","Activa","Huraña","Alegre",
+  "Firme","Plácida","Seria","Ingenua","Grosera","Modesta","Afable","Mansa","Tímida","Alocada",
+  "Rara","Calmada","Cauta","Rara","Rara"
+];
+const pokemonStatLabels=["PS","ATQ","DEF","VEL","AT. ESP.","DEF. ESP."];
+
+function pokemonNatureName(id){
+  const index=Number(id);
+  return pokemonNatureNames[index]||("Naturaleza #"+String(index));
+}
+async function pokeApiJson(path){
+  const url="https://pokeapi.co/api/v2/"+path;
+  if(pokemonDetailCache.has(url))return pokemonDetailCache.get(url);
+  const promise=fetch(url,{cache:"force-cache"}).then(response=>{
+    if(!response.ok)throw new Error("No se pudo consultar "+path);
+    return response.json();
+  });
+  pokemonDetailCache.set(url,promise);
+  try{return await promise;}catch(error){pokemonDetailCache.delete(url);throw error;}
+}
+function localizedName(data){
+  const name=data?.names?.find(entry=>entry.language?.name==="es");
+  return name?.name||data?.name||"—";
+}
+async function resolvePokemonDetailNames(mon){
+  const result={moveDetails:[],ability:"—",item:"—"};
+  const moveIds=(mon.moves||[]).filter(id=>Number(id)>0);
+  const [moves, pokemonData, itemData]=await Promise.all([
+    Promise.all(moveIds.map(id=>pokeApiJson("move/"+id).catch(()=>null))),
+    pokeApiJson("pokemon/"+mon.species_id).catch(()=>null),
+    Number(mon.held_item_id)>0?pokeApiJson("item/"+mon.held_item_id).catch(()=>null):Promise.resolve(null)
+  ]);
+  result.moveDetails=moves.map((move,index)=>move?{
+    id:move.id,name:localizedName(move),type:move.type?.name||"",
+    power:move.power,accuracy:move.accuracy,pp:mon.move_pp?.[index]??move.pp,
+    ppUps:mon.move_pp_ups?.[index]??0
+  }:{id:moveIds[index],name:"Movimiento #"+moveIds[index],type:"",power:null,accuracy:null,pp:mon.move_pp?.[index]??"—",ppUps:mon.move_pp_ups?.[index]??0});
+  if(pokemonData){
+    const abilitySlot=Number(mon.ability_slot||mon.ability_id||0);
+    const abilityRef=pokemonData.abilities?.find(a=>Number(a.slot)===abilitySlot)||pokemonData.abilities?.[0];
+    if(abilityRef?.ability?.url){
+      const abilityData=await pokeApiJson(abilityRef.ability.url.replace("https://pokeapi.co/api/v2/","")).catch(()=>null);
+      result.ability=localizedName(abilityData)||abilityRef.ability.name;
+    }
+  }
+  if(itemData)result.item=localizedName(itemData);
+  return result;
+}
+function pokemonDetailStatSet(mon){
+  const stats=mon.current_stats||mon.stats||null;
+  return {
+    hp:stats?.hp??mon.current_hp??"—",
+    attack:stats?.attack??"—",
+    defense:stats?.defense??"—",
+    spAtk:stats?.special_attack??stats?.sp_atk??"—",
+    spDef:stats?.special_defense??stats?.sp_def??"—",
+    speed:stats?.speed??"—"
+  };
+}
+function fillPokemonTrainingGrid(id,values){
+  const root=document.getElementById(id);
+  if(!root)return;
+  root.replaceChildren();
+  (values||[0,0,0,0,0,0]).forEach((value,index)=>{
+    const row=document.createElement("div");
+    row.className="pokemon-detail-training-row";
+    row.innerHTML="<b>"+pokemonStatLabels[index]+"</b><span>"+Number(value||0)+"</span>";
+    root.append(row);
+  });
+}
+async function openPokemonDetail(mon){
+  const modal=document.getElementById("pokemonDetailModal");
+  if(!modal||!mon)return;
+  modal.hidden=false;
+  document.body.classList.add("pokemon-detail-open");
+  const name=mon.nickname&&mon.nickname_is_custom?mon.nickname:pokemonName(mon.species_id);
+  setText("pokemonDetailName",name);
+  setText("pokemonDetailMeta","N.º "+String(mon.species_id).padStart(3,"0")+" · NIVEL "+(mon.level||"—"));
+  setText("pokemonDetailGender",mon.gender_flag===1?"♀":mon.gender_flag===2?"♂":"●");
+  const sprite=document.getElementById("pokemonDetailSprite");
+  if(sprite){sprite.src=pokemonSpriteUrl(mon);sprite.alt=name;}
+  const shiny=document.getElementById("pokemonDetailShiny");
+  if(shiny)shiny.hidden=!mon.shiny;
+  const stats=pokemonDetailStatSet(mon);
+  setText("pokemonStatHp",stats.hp);setText("pokemonStatAttack",stats.attack);setText("pokemonStatDefense",stats.defense);
+  setText("pokemonStatSpAtk",stats.spAtk);setText("pokemonStatSpDef",stats.spDef);setText("pokemonStatSpeed",stats.speed);
+  setText("pokemonDetailNature",pokemonNatureName(mon.nature_id));
+  setText("pokemonDetailAbility","Cargando…");setText("pokemonDetailItem",Number(mon.held_item_id)>0?"Cargando…":"Ninguno");
+  setText("pokemonDetailFriendship",mon.friendship??"—");
+  fillPokemonTrainingGrid("pokemonDetailEvs",mon.evs);
+  fillPokemonTrainingGrid("pokemonDetailIvs",mon.ivs);
+  const movesRoot=document.getElementById("pokemonDetailMoves");
+  if(movesRoot){
+    movesRoot.innerHTML='<div class="pokemon-detail-loading">Cargando datos de ataques…</div>';
+    try{
+      const details=await resolvePokemonDetailNames(mon);
+      if(document.getElementById("pokemonDetailModal")?.hidden)return;
+      movesRoot.replaceChildren();
+      if(!details.moveDetails.length){
+        movesRoot.innerHTML='<div class="pokemon-detail-loading">Sin ataques registrados.</div>';
+      }else{
+        details.moveDetails.forEach(move=>{
+          const row=document.createElement("div");
+          row.className="pokemon-detail-move";
+          const top=document.createElement("div");top.className="pokemon-detail-move-top";
+          const moveName=document.createElement("strong");moveName.textContent=move.name;
+          const type=document.createElement("span");type.textContent=move.type?move.type.toUpperCase():"—";
+          top.append(moveName,type);
+          const bottom=document.createElement("div");bottom.className="pokemon-detail-move-bottom";
+          bottom.textContent="PP "+move.pp+(move.ppUps?" · +"+move.ppUps:"")+(move.power!=null?" · POT "+move.power:"")+(move.accuracy!=null?" · PREC "+move.accuracy:"");
+          row.append(top,bottom);movesRoot.append(row);
+        });
+      }
+      setText("pokemonDetailAbility",details.ability);
+      setText("pokemonDetailItem",details.item);
+    }catch(error){
+      console.warn("No se pudieron cargar datos ampliados del Pokémon:",error);
+      movesRoot.innerHTML='<div class="pokemon-detail-loading">Los ataques están guardados, pero no se pudo cargar su catálogo ampliado.</div>';
+      setText("pokemonDetailAbility",mon.ability_slot?"Ranura "+mon.ability_slot:"—");
+    }
+  }
+}
+function bindPokemonDetailUI(){
+  const modal=document.getElementById("pokemonDetailModal");
+  const close=document.getElementById("closePokemonDetail");
+  if(!modal||modal.dataset.bound==="true")return;
+  modal.dataset.bound="true";
+  close?.addEventListener("click",()=>{modal.hidden=true;document.body.classList.remove("pokemon-detail-open");});
+  modal.addEventListener("click",event=>{
+    if(event.target===modal){modal.hidden=true;document.body.classList.remove("pokemon-detail-open");}
+  });
+  document.addEventListener("keydown",event=>{
+    if(event.key==="Escape"&&!modal.hidden){modal.hidden=true;document.body.classList.remove("pokemon-detail-open");}
+  });
+}
 
 function formatPokemonUpdated(timestamp){
   if(!timestamp)return "SIN SINCRONIZAR";
@@ -2226,7 +2363,12 @@ function formatPokemonUpdated(timestamp){
 
 function renderPokemonCard(mon,{compact=false}={}){
   const article=document.createElement("article");
-  article.className="pokemon-card"+(compact?" pokemon-card-compact":"");
+  article.className="pokemon-card pokemon-card-clickable"+(compact?" pokemon-card-compact":"");
+  article.tabIndex=0;
+  article.setAttribute("role","button");
+  article.setAttribute("aria-label","Ver datos de "+(mon.nickname&&mon.nickname_is_custom?mon.nickname:pokemonName(mon.species_id)));
+  article.addEventListener("click",()=>openPokemonDetail(mon));
+  article.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();openPokemonDetail(mon);}});
   const imageWrap=document.createElement("div");imageWrap.className="pokemon-card-image";
   const img=document.createElement("img");
   img.src=pokemonSpriteUrl(mon);img.alt=pokemonName(mon.species_id);img.loading="lazy";img.decoding="async";
@@ -2328,6 +2470,11 @@ function renderPokemonBoxes(container,boxes){
         };
         slot.append(img);
         slot.title=(mon.nickname&&mon.nickname_is_custom?mon.nickname:pokemonName(mon.species_id))+(mon.shiny?" · Shiny":"");
+        slot.tabIndex=0;
+        slot.setAttribute("role","button");
+        slot.setAttribute("aria-label","Ver datos de "+(mon.nickname&&mon.nickname_is_custom?mon.nickname:pokemonName(mon.species_id)));
+        slot.addEventListener("click",()=>openPokemonDetail(mon));
+        slot.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();openPokemonDetail(mon);}});
       }else{
         const empty=document.createElement("span");
         empty.textContent="—";
@@ -2488,6 +2635,7 @@ async function showPublicPokemonSnapshot(playerId){
 }
 
 function bindPokemonSyncUI(){
+  bindPokemonDetailUI();
   const input=document.getElementById("saveFileInput");
   const choose=document.getElementById("saveFileButton");
   const importButton=document.getElementById("saveImportButton");
