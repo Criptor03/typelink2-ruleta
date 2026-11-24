@@ -23,7 +23,7 @@
   <meta name="twitter:image" content="https://d2ol7oe51mr4n9.cloudfront.net/user_3M1AOCGHYrXVuXMWgDhR1lrk7px/8684321e-c902-4ff7-8a2d-b36c703124a8.png?v=20261123-og">
   <meta name="twitter:image:alt" content="Logo de Pokémon TypeLink 2">
   <title>Pokémon TypeLink 2 — Plataforma</title>
-  <link rel="stylesheet" href="style.css?v=20261124-pokemon-view-v3">
+  <link rel="stylesheet" href="style.css?v=20261124-pokemon-view-v4">
 </head>
 <body>
   <div class="page-shell">
@@ -1083,6 +1083,60 @@
       </div>
     </div>
   </div>
+  <div class="pokemon-detail-modal" id="pokemonDetailModal" hidden>
+    <div class="pokemon-detail-dialog">
+      <button class="modal-close pokemon-detail-close" id="closePokemonDetail" type="button" aria-label="Cerrar">×</button>
+      <div class="pokemon-detail-header">
+        <div class="pokemon-detail-header-main">
+          <span class="eyebrow">DATOS DEL POKÉMON</span>
+          <h2 id="pokemonDetailName">Pokémon</h2>
+          <div class="pokemon-detail-subline" id="pokemonDetailMeta">N.º 000 · NIVEL 00</div>
+        </div>
+        <div class="pokemon-detail-header-side" id="pokemonDetailGender">●</div>
+      </div>
+      <div class="pokemon-detail-content">
+        <section class="pokemon-detail-data">
+          <div class="pokemon-detail-bluebar">DATOS DEL POKÉMON <span>/ CARACTERÍSTICAS</span></div>
+          <div class="pokemon-detail-data-grid">
+            <div class="pokemon-detail-art">
+              <div class="pokemon-detail-art-bg"></div>
+              <img id="pokemonDetailSprite" alt="" />
+              <span id="pokemonDetailShiny" class="pokemon-detail-shiny" hidden>✨ SHINY</span>
+            </div>
+            <div class="pokemon-detail-stats">
+              <div class="pokemon-detail-stat-row"><b>PS</b><span id="pokemonStatHp">—</span></div>
+              <div class="pokemon-detail-stat-row"><b>ATAQUE</b><span id="pokemonStatAttack">—</span></div>
+              <div class="pokemon-detail-stat-row"><b>DEFENSA</b><span id="pokemonStatDefense">—</span></div>
+              <div class="pokemon-detail-stat-row"><b>AT. ESP.</b><span id="pokemonStatSpAtk">—</span></div>
+              <div class="pokemon-detail-stat-row"><b>DEF. ESP.</b><span id="pokemonStatSpDef">—</span></div>
+              <div class="pokemon-detail-stat-row"><b>VELOCIDAD</b><span id="pokemonStatSpeed">—</span></div>
+            </div>
+            <div class="pokemon-detail-info">
+              <div><span>NATURALEZA</span><strong id="pokemonDetailNature">—</strong></div>
+              <div><span>HABILIDAD</span><strong id="pokemonDetailAbility">—</strong></div>
+              <div><span>OBJETO</span><strong id="pokemonDetailItem">—</strong></div>
+              <div><span>AMISTAD</span><strong id="pokemonDetailFriendship">—</strong></div>
+            </div>
+          </div>
+        </section>
+        <aside class="pokemon-detail-moves">
+          <div class="pokemon-detail-bluebar">ATAQUES</div>
+          <div id="pokemonDetailMoves" class="pokemon-detail-move-list"></div>
+        </aside>
+      </div>
+      <div class="pokemon-detail-training">
+        <div class="pokemon-detail-training-panel">
+          <div class="pokemon-detail-bluebar">EVS · ESFUERZO</div>
+          <div id="pokemonDetailEvs" class="pokemon-detail-training-grid"></div>
+        </div>
+        <div class="pokemon-detail-training-panel">
+          <div class="pokemon-detail-bluebar">IVS · INDIVIDUALES</div>
+          <div id="pokemonDetailIvs" class="pokemon-detail-training-grid"></div>
+        </div>
+      </div>
+      <div class="pokemon-detail-footer" id="pokemonDetailFooter">TYPELINK SYNC · DATOS EXTRAÍDOS DE LA PARTIDA</div>
+    </div>
+  </div>
   <div class="spin-reward-modal" id="spinRewardModal" hidden>
     <div class="spin-reward-dialog panel" role="dialog" aria-modal="true" aria-labelledby="spinRewardTitle">
       <div class="spin-reward-eyebrow">POKÉMON TYPELINK 2 · RESULTADO DE RULETA</div>
@@ -1200,6 +1254,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0"></script>
   <script src="supabase-config.js"></script>
   <script src="src/gen5-save-parser.js?v=20261124-b2w2-sync-v2"></script>
-<script src="script.js?v=20261124-save-sync-v5"></script>
+<script src="script.js?v=20261124-save-sync-v6"></script>
 </body>
 </html>
