@@ -62,6 +62,7 @@ let inventoryChannel = null;
 let profilesChannel = null;
 let activityChannel = null;
 let notificationChannel = null;
+let pokemonChannel = null;
 let notificationCache = [];
 let currentTramo = 0;
 let tramoSpinsRemaining = 0;
@@ -1427,6 +1428,7 @@ async function showPublicPlayer(playerId,currentTramo=0){
 
   renderPublicPlayerTypes(typesResult.data||[],typesResult.error);
   renderPublicIncomingCards(incomingResult.data||[],incomingResult.error);
+  await showPublicPokemonSnapshot(playerId);
   const tramoLabel=currentTramo>=12
     ?"🏆 CAMPEÓN POKÉMON · TRAMO 12 / 12"
     :"TRAMO ACTUAL · "+Math.max(0,Number(currentTramo)||0)+" / 12";
@@ -2179,12 +2181,256 @@ async function saveProfile(){
   }
 }
 
+
+let pokemonNamesEsCache=null;
+let myPokemonSnapshot=null;
+
+async function loadPokemonNamesEs(){
+  if(pokemonNamesEsCache)return pokemonNamesEsCache;
+  try{
+    const response=await fetch("assets/pokemon-names-es.json",{cache:"force-cache"});
+    if(!response.ok)throw new Error("No se pudo cargar el catálogo de nombres Pokémon.");
+    pokemonNamesEsCache=await response.json();
+  }catch(error){
+    console.warn("No se pudo cargar el catálogo de nombres Pokémon:",error);
+    pokemonNamesEsCache=[];
+  }
+  return pokemonNamesEsCache;
+}
+
+function pokemonName(speciesId){
+  return pokemonNamesEsCache?.[Number(speciesId)-1]||("Pokémon #"+String(speciesId).padStart(3,"0"));
+}
+
+function pokemonSpriteUrl(mon){
+  const base="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/";
+  return base+(mon.shiny?"shiny/":"")+String(mon.species_id)+".png";
+}
+
+function formatPokemonUpdated(timestamp){
+  if(!timestamp)return "SIN SINCRONIZAR";
+  const date=new Date(timestamp);
+  if(Number.isNaN(date.getTime()))return "SIN SINCRONIZAR";
+  return "ACTUALIZADO · "+new Intl.DateTimeFormat("es-CO",{dateStyle:"short",timeStyle:"short"}).format(date);
+}
+
+function renderPokemonCard(mon,{compact=false}={}){
+  const article=document.createElement("article");
+  article.className="pokemon-card"+(compact?" pokemon-card-compact":"");
+  const imageWrap=document.createElement("div");imageWrap.className="pokemon-card-image";
+  const img=document.createElement("img");
+  img.src=pokemonSpriteUrl(mon);img.alt=pokemonName(mon.species_id);img.loading="lazy";img.decoding="async";
+  img.onerror=()=>{img.hidden=true;imageWrap.classList.add("is-missing");};
+  imageWrap.append(img);
+  const copy=document.createElement("div");copy.className="pokemon-card-copy";
+  const name=document.createElement("strong");name.className="pokemon-card-name";
+  name.textContent=mon.nickname&&mon.nickname_is_custom?mon.nickname:pokemonName(mon.species_id);
+  const meta=document.createElement("span");meta.className="pokemon-card-meta";
+  meta.textContent=(mon.shiny?"✨ SHINY · ":"")+"N.º "+String(mon.species_id).padStart(3,"0");
+  if(mon.level)meta.textContent+=" · NIVEL "+mon.level;
+  copy.append(name,meta);
+  article.append(imageWrap,copy);
+  if(mon.level){
+    const level=document.createElement("span");level.className="pokemon-card-level";level.textContent="Lv "+mon.level;article.append(level);
+  }
+  return article;
+}
+
+function renderPokemonParty(container,party,emptyText="Sin Pokémon en el equipo."){
+  if(!container)return;
+  container.replaceChildren();
+  const mons=Array.isArray(party)?party.filter(Boolean):[];
+  if(!mons.length){
+    const empty=document.createElement("div");empty.className="pokemon-empty";empty.textContent=emptyText;container.append(empty);return;
+  }
+  mons.forEach(mon=>container.append(renderPokemonCard(mon)));
+}
+
+function renderPokemonBoxes(container,boxes){
+  if(!container)return;
+  container.replaceChildren();
+  const list=Array.isArray(boxes)?boxes:[];
+  if(!list.length){
+    const empty=document.createElement("div");empty.className="pokemon-empty";empty.textContent="No hay datos de PC disponibles.";container.append(empty);return;
+  }
+  list.forEach(box=>{
+    const details=document.createElement("details");details.className="pokemon-box";details.open=Number(box.number)===1;
+    const summary=document.createElement("summary");summary.className="pokemon-box-header";
+    const title=document.createElement("strong");title.textContent="CAJA "+box.number;
+    const occupied=(box.slots||[]).filter(Boolean).length;
+    const count=document.createElement("span");count.textContent=occupied+" POKÉMON";
+    summary.append(title,count);
+    const grid=document.createElement("div");grid.className="pokemon-box-grid";
+    for(let i=0;i<30;i++){
+      const slot=document.createElement("div");slot.className="pokemon-slot";
+      const mon=box.slots?.[i];
+      if(mon){
+        const img=document.createElement("img");img.src=pokemonSpriteUrl(mon);img.alt=pokemonName(mon.species_id);img.loading="lazy";img.decoding="async";
+        img.onerror=()=>{img.hidden=true;slot.textContent="N.º "+String(mon.species_id).padStart(3,"0");};
+        slot.append(img);
+        slot.title=(mon.nickname&&mon.nickname_is_custom?mon.nickname:pokemonName(mon.species_id))+(mon.shiny?" · Shiny":"");
+      }else{
+        slot.innerHTML="<span>—</span>";
+      }
+      grid.append(slot);
+    }
+    details.append(summary,grid);container.append(details);
+  });
+}
+
+async function loadMyPokemonSnapshot(){
+  const party=document.getElementById("myPokemonParty");
+  const boxes=document.getElementById("myPokemonBoxes");
+  if(!party||!boxes)return;
+  if(!currentAuthUser||!authClient){
+    myPokemonSnapshot=null;
+    renderPokemonParty(party,[], "Inicia sesión para sincronizar tu partida.");
+    renderPokemonBoxes(boxes,[]);
+    setText("myPokemonUpdated","SIN SESIÓN");
+    setText("myPokemonBoxCount","0 POKÉMON");
+    return;
+  }
+  const {data,error}=await authClient.from("player_save_snapshots")
+    .select("player_id,game_title,save_format,trainer_data,party,boxes,parser_version,save_checksum,synced_at,updated_at")
+    .eq("player_id",currentAuthUser.id).maybeSingle();
+  if(error){
+    console.error("No se pudo cargar tu partida sincronizada:",error.message);
+    setText("saveImportStatus","No se pudo consultar tu partida sincronizada.");
+    setText("saveImportStatus","No se pudo consultar tu partida sincronizada.");
+    return;
+  }
+  myPokemonSnapshot=data||null;
+  if(!data){
+    renderPokemonParty(party,[],"Todavía no has sincronizado una partida.");
+    renderPokemonBoxes(boxes,[]);
+    setText("myPokemonUpdated","SIN SINCRONIZAR");
+    setText("myPokemonBoxCount","0 POKÉMON");
+    return;
+  }
+  await loadPokemonNamesEs();
+  renderPokemonParty(party,data.party,"Tu equipo está vacío.");
+  renderPokemonBoxes(boxes,data.boxes);
+  const occupied=Number(data.boxes?.reduce((sum,box)=>sum+(box.slots||[]).filter(Boolean).length,0)||0);
+  setText("myPokemonUpdated",formatPokemonUpdated(data.synced_at||data.updated_at));
+  setText("myPokemonBoxCount",occupied+" POKÉMON");
+}
+
+function saveFormatFromFile(file){
+  const ext=(file?.name||"").toLowerCase().split(".").pop();
+  return ext==="dsv"?"dsv":ext==="main"?"main":"sav";
+}
+
+async function importPokemonSaveFile(file){
+  const status=document.getElementById("saveImportStatus");
+  const button=document.getElementById("saveImportButton");
+  if(!file||!currentAuthUser||!authClient)return;
+  if(file.size<0x80000){
+    status.textContent="El archivo es demasiado pequeño para una partida Black/White válida.";
+    status.className="save-import-status error";return;
+  }
+  button.disabled=true;status.textContent="PROCESANDO PARTIDA…";status.className="save-import-status busy";
+  try{
+    const parsed=window.TypeLinkGen5SaveParser.parseSave(await file.arrayBuffer());
+    await loadPokemonNamesEs();
+    const occupied=Number(parsed.occupied_pc_slots||0);
+    const partyCount=Number(parsed.party?.length||0);
+    if(!partyCount&&!occupied)throw new Error("No encontramos Pokémon en el equipo ni en el PC. Comprueba que sea una partida de Pokémon Black/White.");
+    const checksumBuffer=await crypto.subtle.digest("SHA-256",window.TypeLinkGen5SaveParser.normalizeSave(await file.arrayBuffer()));
+    const checksum=Array.from(new Uint8Array(checksumBuffer)).map(v=>v.toString(16).padStart(2,"0")).join("");
+    parsed.trainer.filename=file.name;
+    parsed.trainer.file_size=file.size;
+    parsed.trainer.source_format=saveFormatFromFile(file);
+    const payload={
+      player_id:currentAuthUser.id,
+      game_title:"Pokémon Black / White",
+      save_format:saveFormatFromFile(file),
+      trainer_data:parsed.trainer,
+      party:parsed.party,
+      boxes:parsed.boxes,
+      bag:{},
+      save_checksum:checksum,
+      parser_version:parsed.parser_version,
+      synced_at:new Date().toISOString(),
+      updated_at:new Date().toISOString()
+    };
+    const {error}=await authClient.from("player_save_snapshots").upsert(payload,{onConflict:"player_id"});
+    if(error)throw error;
+    myPokemonSnapshot=payload;
+    renderPokemonParty(document.getElementById("myPokemonParty"),payload.party);
+    renderPokemonBoxes(document.getElementById("myPokemonBoxes"),payload.boxes);
+    setText("myPokemonUpdated",formatPokemonUpdated(payload.synced_at));
+    setText("myPokemonBoxCount",occupied+" POKÉMON");
+    status.textContent="PARTIDA IMPORTADA · "+partyCount+" EN EQUIPO · "+occupied+" EN PC";
+    status.className="save-import-status success";
+    notify("¡Partida sincronizada correctamente!");
+    await loadPlayers();
+  }catch(error){
+    console.error("No se pudo importar la partida:",error);
+    status.textContent="No se pudo importar: "+(error.message||"archivo no válido.");
+    status.className="save-import-status error";
+  }finally{
+    button.disabled=false;
+  }
+}
+
+async function showPublicPokemonSnapshot(playerId){
+  const partyContainer=document.getElementById("publicPlayerPokemonParty");
+  const boxesContainer=document.getElementById("publicPlayerPokemonBoxes");
+  if(!partyContainer||!boxesContainer)return;
+  const {data,error}=await authClient.from("player_save_snapshots")
+    .select("game_title,save_format,party,boxes,synced_at,updated_at")
+    .eq("player_id",playerId).maybeSingle();
+  if(error){
+    console.error("No se pudo cargar el equipo Pokémon del entrenador:",error.message);
+    renderPokemonParty(partyContainer,[],"No se pudo consultar su partida.");
+    renderPokemonBoxes(boxesContainer,[]);
+    setText("publicPlayerPokemonUpdated","NO DISPONIBLE");
+    setText("publicPlayerPokemonBoxCount","0 POKÉMON");
+    return;
+  }
+  if(!data){
+    renderPokemonParty(partyContainer,[],"Este entrenador todavía no ha sincronizado su partida.");
+    renderPokemonBoxes(boxesContainer,[]);
+    setText("publicPlayerPokemonUpdated","SIN SINCRONIZAR");
+    setText("publicPlayerPokemonBoxCount","0 POKÉMON");
+    return;
+  }
+  await loadPokemonNamesEs();
+  renderPokemonParty(partyContainer,data.party,"Su equipo está vacío.");
+  renderPokemonBoxes(boxesContainer,data.boxes);
+  const occupied=Number(data.boxes?.reduce((sum,box)=>sum+(box.slots||[]).filter(Boolean).length,0)||0);
+  setText("publicPlayerPokemonUpdated",formatPokemonUpdated(data.synced_at||data.updated_at));
+  setText("publicPlayerPokemonBoxCount",occupied+" POKÉMON");
+}
+
+function bindPokemonSyncUI(){
+  const input=document.getElementById("saveFileInput");
+  const choose=document.getElementById("saveFileButton");
+  const importButton=document.getElementById("saveImportButton");
+  const fileName=document.getElementById("saveFileName");
+  if(!input||!choose||!importButton||choose.dataset.bound==="true")return;
+  choose.dataset.bound="true";
+  choose.addEventListener("click",()=>input.click());
+  input.addEventListener("change",()=>{
+    const file=input.files?.[0]||null;
+    fileName.textContent=file?file.name:"Ningún archivo seleccionado.";
+    importButton.disabled=!file;
+    const status=document.getElementById("saveImportStatus");
+    if(status){status.textContent=file?"Listo para importar: "+file.name:"Selecciona tu partida para comenzar.";status.className="save-import-status";}
+  });
+  importButton.addEventListener("click",()=>{
+    const file=input.files?.[0]||null;
+    if(file)void importPokemonSaveFile(file);
+  });
+}
+
 function setupRealtime(){
   if(!authClient||!currentAuthUser)return;
   if(inventoryChannel)authClient.removeChannel(inventoryChannel);
   if(profilesChannel)authClient.removeChannel(profilesChannel);
   if(activityChannel)authClient.removeChannel(activityChannel);
   if(notificationChannel)authClient.removeChannel(notificationChannel);
+  if(pokemonChannel)authClient.removeChannel(pokemonChannel);
   if(typeLeagueChannel)authClient.removeChannel(typeLeagueChannel);
   inventoryChannel=authClient.channel("typelink-player-cards-"+currentAuthUser.id)
     .on("postgres_changes",{event:"*",schema:"public",table:"player_cards",filter:"owner_id=eq."+currentAuthUser.id},()=>{
@@ -2214,6 +2460,15 @@ function setupRealtime(){
     .on("postgres_changes",{event:"*",schema:"public",table:"player_effects",filter:"owner_id=eq."+currentAuthUser.id},()=>loadProfileMechanics())
     .on("postgres_changes",{event:"*",schema:"public",table:"player_type_status",filter:"owner_id=eq."+currentAuthUser.id},()=>loadProfileMechanics())
     .on("postgres_changes",{event:"*",schema:"public",table:"player_roulette_unlocks",filter:"owner_id=eq."+currentAuthUser.id},()=>loadRouletteAccess())
+    .subscribe();
+  pokemonChannel=authClient.channel("typelink-pokemon-snapshots")
+    .on("postgres_changes",{event:"*",schema:"public",table:"player_save_snapshots"},payload=>{
+      const playerId=payload.new?.player_id||payload.old?.player_id;
+      if(playerId===currentAuthUser.id)void loadMyPokemonSnapshot();
+      const profileModal=document.getElementById("publicProfileModal");
+      if(profileModal&&!profileModal.hidden&&profileModal.dataset.playerId===playerId)void showPublicPokemonSnapshot(playerId);
+      loadPlayers();
+    })
     .subscribe();
   notificationChannel=authClient.channel("typelink-private-notifications-"+currentAuthUser.id)
     .on("postgres_changes",{event:"*",schema:"public",table:"notifications",filter:"recipient_id=eq."+currentAuthUser.id},()=>loadNotifications())
@@ -3863,7 +4118,8 @@ async function activateUserSession(user){
     if(profilesChannel&&authClient)authClient.removeChannel(profilesChannel);
     if(activityChannel&&authClient)authClient.removeChannel(activityChannel);
     if(notificationChannel&&authClient)authClient.removeChannel(notificationChannel);
-    inventoryChannel=null;profilesChannel=null;activityChannel=null;notificationChannel=null;
+    if(pokemonChannel&&authClient)authClient.removeChannel(pokemonChannel);
+    inventoryChannel=null;profilesChannel=null;activityChannel=null;notificationChannel=null;pokemonChannel=null;
     if(typeLeagueChannel&&authClient)authClient.removeChannel(typeLeagueChannel);
     typeLeagueChannel=null;
     typeLeagueVisible=false;typeLeagueProfiles=[];typeLeagueMatches=[];
@@ -3892,7 +4148,7 @@ async function activateUserSession(user){
   }
   cloudDeck=[];cloudRoute=[];cloudSpecial=[];cloudInventory=[];
   renderAuthState(user);renderDeck();
-  await Promise.all([loadAdminAccess(),loadMyProfile(),loadCloudInventory(),loadPlayers(),loadActivityFeed(),loadNotifications(),loadPublicNormalCards(),loadRouletteAccess()]);
+  await Promise.all([loadAdminAccess(),loadMyProfile(),loadCloudInventory(),loadPlayers(),loadActivityFeed(),loadNotifications(),loadPublicNormalCards(),loadRouletteAccess(),loadMyPokemonSnapshot()]);
   renderAdminAccess();
   await loadTypeLeagueVisibility();
   setupRealtime();
@@ -4783,6 +5039,7 @@ function setPage(page){
   if(page==="notifications")loadNotifications();
   if(page==="deck"&&cloudMode)loadCloudInventory();
   if(page==="profile"&&currentAuthUser)loadMyProfile();
+  if(page==="pokemon"&&currentAuthUser)loadMyPokemonSnapshot();
   if(page==="typeleague"&&currentAuthUser)void loadTypeLeagueData();
   if(page==="admin"&&isAdmin){renderAdminAccess();showAdminOverview();}
   window.scrollTo({top:0,behavior:"smooth"});
@@ -5039,6 +5296,7 @@ document.getElementById("tramoConfirmModal").addEventListener("click",event=>{
   if(event.target.id==="tramoConfirmModal")closeTramoConfirmation();
 });
 document.getElementById("saveProfileButton").addEventListener("click",saveProfile);
+bindPokemonSyncUI();
 document.getElementById("closePublicProfile").addEventListener("click",closePublicPlayer);
 document.getElementById("closeCardAction").addEventListener("click",closeCardAction);
 document.getElementById("cancelCardAction").addEventListener("click",closeCardAction);
