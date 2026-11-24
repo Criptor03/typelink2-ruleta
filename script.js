@@ -2301,7 +2301,6 @@ async function loadMyPokemonSnapshot(){
   if(error){
     console.error("No se pudo cargar tu partida sincronizada:",error.message);
     setText("saveImportStatus","No se pudo consultar tu partida sincronizada.");
-    setText("saveImportStatus","No se pudo consultar tu partida sincronizada.");
     return;
   }
   myPokemonSnapshot=data||null;
@@ -2347,7 +2346,7 @@ async function importPokemonSaveFile(file){
     parsed.trainer.source_format=saveFormatFromFile(file);
     const payload={
       player_id:currentAuthUser.id,
-      game_title:"Pokémon Black / White",
+      game_title:parsed.game_title,
       save_format:saveFormatFromFile(file),
       trainer_data:parsed.trainer,
       party:parsed.party,
