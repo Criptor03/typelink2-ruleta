@@ -2760,6 +2760,63 @@ async function removeAdminTrainerCard(item,card){
   }
 }
 
+async function deleteAdminTrainer(){
+  if(!isAdmin||!authClient||!adminSelectedTrainerId){
+    notify("No hay un entrenador seleccionado.");
+    return;
+  }
+
+  const trainerName=adminSelectedTrainerName||"este entrenador";
+  const warning=
+    "VAS A ELIMINAR PERMANENTEMENTE A «"+trainerName+"».\n\n"+
+    "Se eliminarán su cuenta, inventario, progreso, efectos, desbloqueos, guardado y partidas de TypeLeague. "+
+    "El historial general de actividad se conservará cuando sea posible.\n\n"+
+    "ESTA ACCIÓN NO SE PUEDE DESHACER.\n\n"+
+    "¿Deseas continuar?";
+  if(!window.confirm(warning))return;
+
+  const confirmation=window.prompt(
+    "Para confirmar la eliminación de «"+trainerName+"», escribe exactamente ELIMINAR."
+  );
+  if(confirmation!=="ELIMINAR"){
+    notify("Eliminación cancelada. No se modificó el entrenador.");
+    return;
+  }
+
+  const button=document.getElementById("adminDeleteTrainerButton");
+  if(button){
+    button.disabled=true;
+    button.textContent="ELIMINANDO...";
+  }
+
+  try{
+    const {data,error}=await authClient.rpc("admin_delete_trainer",{
+      p_player_id:adminSelectedTrainerId
+    });
+    if(error)throw error;
+    const result=Array.isArray(data)?data[0]:data;
+    if(!result?.success)throw new Error("El servidor no confirmó la eliminación.");
+
+    notify("Se eliminó definitivamente a "+(result.trainer_name||trainerName)+".");
+    adminSelectedTrainerId=null;
+    adminSelectedTrainerName="";
+    adminTrainerDetail=null;
+
+    await loadAdminTrainers();
+    await loadActivityFeed();
+    await loadPlayers();
+    showAdminTrainerList();
+  }catch(error){
+    console.error("No se pudo eliminar el entrenador:",error);
+    notify("No se pudo eliminar el entrenador: "+(error.message||"error desconocido"));
+  }finally{
+    if(button){
+      button.disabled=false;
+      button.textContent="ELIMINAR ENTRENADOR";
+    }
+  }
+}
+
 async function clearAdminTrainerCards(){
   if(!isAdmin||!authClient||!adminSelectedTrainerId){notify("No hay un entrenador seleccionado.");return;}
   const warning="Vas a borrar TODAS las cartas de "+adminSelectedTrainerName+".\n\n"+
@@ -4891,6 +4948,7 @@ document.getElementById("adminTrainersBack").addEventListener("click",showAdminO
 document.getElementById("adminTrainerDetailBack").addEventListener("click",showAdminTrainerList);
 document.getElementById("adminTrainersSearch").addEventListener("input",renderAdminTrainers);
 document.getElementById("adminClearTrainerCardsButton").addEventListener("click",clearAdminTrainerCards);
+document.getElementById("adminDeleteTrainerButton").addEventListener("click",deleteAdminTrainer);
 document.getElementById("adminTrainerSaveTramo").addEventListener("click",saveAdminTrainerTramo);
 document.getElementById("adminTrainerGrantCard").addEventListener("click",grantAdminTrainerCard);
 document.getElementById("adminCreateCard").addEventListener("click",()=>openAdminCardEditor(null));
