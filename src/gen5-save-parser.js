@@ -7,8 +7,10 @@
 
   const PK5_SIZE=136;
   const PARTY_SIZE=220;
-  const PC_OFFSET=0x24400;
+  const BW_PC_OFFSET=0x24400;
+  const B2W2_PC_OFFSET=0x400;
   const PARTY_OFFSET=0x18E08;
+  const GAME_VERSION_OFFSET=0x1941F;
   const PARTY_COUNT=6;
   const BOX_COUNT=24;
   const BOX_SLOTS=30;
@@ -70,7 +72,10 @@
     if(!stored||stored.length<PK5_SIZE||isEmpty(stored))return null;
     const d=decryptPk5(stored);
     const species=u16(d,8);
-    if(!species)return null;
+    const checksum=u16(stored,6);
+    let calc=0;
+    for(let o=8;o<PK5_SIZE;o+=2)calc=(calc+u16(d,o))&0xffff;
+    if(!species||species>649||checksum!==calc)return null;
     const pid=u32(d,0);
     const ivs=u32(d,0x38);
     const pokemon={
@@ -119,9 +124,14 @@
   function parseSave(input){
     const bytes=normalizeSave(input);
     if(bytes.length<0x26000)throw new Error("La partida es demasiado pequeña para ser una partida válida de Pokémon Black/White.");
+    const gameVersion=bytes[GAME_VERSION_OFFSET];
+    const isB2W2=gameVersion===22||gameVersion===23;
+    const gameTitle=gameVersion===20?"Pokémon White":gameVersion===21?"Pokémon Black":gameVersion===22?"Pokémon White 2":gameVersion===23?"Pokémon Black 2":"Pokémon Black / White";
+    const pcOffset=isB2W2?B2W2_PC_OFFSET:BW_PC_OFFSET;
     const trainer={
       name:utf16(bytes,0x19404,8),
-      game_version:bytes[0x1941f],
+      game_version:gameVersion,
+      game_title:gameTitle,
       playtime_hours:u16(bytes,0x19424),
       playtime_minutes:bytes[0x19426],
       playtime_seconds:bytes[0x19427],
@@ -137,8 +147,9 @@
     const boxes=[];
     for(let box=0;box<BOX_COUNT;box++){
       const slots=[];
+      const boxBase=pcOffset+box*0x1000;
       for(let slot=0;slot<BOX_SLOTS;slot++){
-        const off=PC_OFFSET+(box*BOX_SLOTS+slot)*PK5_SIZE;
+        const off=boxBase+slot*PK5_SIZE;
         const raw=bytes.slice(off,off+PK5_SIZE);
         const mon=parsePokemon(raw,false);
         slots.push(mon?{...mon,slot:slot+1}:null);
@@ -146,9 +157,10 @@
       boxes.push({number:box+1,slots});
     }
     return {
-      format:"gen5-bw",
+      format:isB2W2?"gen5-b2w2":"gen5-bw",
       parser_version:"typelink-gen5-1.0.0",
       trainer,
+      game_title:gameTitle,
       party,
       boxes,
       box_count:BOX_COUNT,
