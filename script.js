@@ -2452,7 +2452,7 @@ function bindPublicPokemonViewer(){
     button.closest(".public-profile-pokemon-cta")?.classList.add("is-open");
     requestAnimationFrame(()=>{
       const cta=button.closest(".public-profile-pokemon-cta");
-      const top=cta ? cta.getBoundingClientRect().bottom + window.scrollY - 18 : window.scrollY;
+      const top=cta ? cta.getBoundingClientRect().top + window.scrollY - 18 : window.scrollY;
       window.scrollTo({top,behavior:"smooth"});
     });
   });
