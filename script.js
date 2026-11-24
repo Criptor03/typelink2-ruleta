@@ -2261,33 +2261,91 @@ function renderPokemonBoxes(container,boxes){
   container.replaceChildren();
   const list=Array.isArray(boxes)?boxes:[];
   if(!list.length){
-    const empty=document.createElement("div");empty.className="pokemon-empty";empty.textContent="No hay datos de PC disponibles.";container.append(empty);return;
+    const empty=document.createElement("div");
+    empty.className="pokemon-empty";
+    empty.textContent="No hay datos de PC disponibles.";
+    container.append(empty);
+    return;
   }
-  list.forEach(box=>{
-    const details=document.createElement("details");details.className="pokemon-box";details.open=Number(box.number)===1;
-    const summary=document.createElement("summary");summary.className="pokemon-box-header";
-    const title=document.createElement("strong");title.textContent="CAJA "+box.number;
-    const occupied=(box.slots||[]).filter(Boolean).length;
-    const count=document.createElement("span");count.textContent=occupied+" POKÉMON";
-    summary.append(title,count);
-    const grid=document.createElement("div");grid.className="pokemon-box-grid";
+
+  const viewer=document.createElement("div");
+  viewer.className="pokemon-box-viewer";
+
+  const nav=document.createElement("div");
+  nav.className="pokemon-box-nav";
+
+  const previous=document.createElement("button");
+  previous.type="button";
+  previous.className="pokemon-box-nav-button";
+  previous.innerHTML="<span>‹</span><b>ANTERIOR</b>";
+
+  const identity=document.createElement("div");
+  identity.className="pokemon-box-identity";
+  const title=document.createElement("strong");
+  const count=document.createElement("span");
+  identity.append(title,count);
+
+  const next=document.createElement("button");
+  next.type="button";
+  next.className="pokemon-box-nav-button";
+  next.innerHTML="<b>SIGUIENTE</b><span>›</span>";
+
+  nav.append(previous,identity,next);
+
+  const grid=document.createElement("div");
+  grid.className="pokemon-box-grid pokemon-box-grid-viewer";
+
+  viewer.append(nav,grid);
+  container.append(viewer);
+
+  let currentIndex=0;
+
+  function draw(){
+    const box=list[currentIndex]||{number:currentIndex+1,slots:[]};
+    const slots=Array.isArray(box.slots)?box.slots:[];
+    const occupied=slots.filter(Boolean).length;
+    title.textContent="CAJA "+box.number;
+    count.textContent=occupied+" POKÉMON · "+(currentIndex+1)+" / "+list.length;
+    previous.disabled=currentIndex===0;
+    next.disabled=currentIndex===list.length-1;
+    previous.setAttribute("aria-label","Ver caja anterior");
+    next.setAttribute("aria-label","Ver caja siguiente");
+    grid.replaceChildren();
+
     for(let i=0;i<30;i++){
-      const slot=document.createElement("div");slot.className="pokemon-slot";
-      const mon=box.slots?.[i];
+      const slot=document.createElement("div");
+      slot.className="pokemon-slot";
+      const mon=slots[i];
       if(mon){
-        const img=document.createElement("img");img.src=pokemonSpriteUrl(mon);img.alt=pokemonName(mon.species_id);img.loading="lazy";img.decoding="async";
-        img.onerror=()=>{img.hidden=true;slot.textContent="N.º "+String(mon.species_id).padStart(3,"0");};
+        const img=document.createElement("img");
+        img.src=pokemonSpriteUrl(mon);
+        img.alt=pokemonName(mon.species_id);
+        img.loading="lazy";
+        img.decoding="async";
+        img.onerror=()=>{
+          img.hidden=true;
+          slot.textContent="N.º "+String(mon.species_id).padStart(3,"0");
+        };
         slot.append(img);
         slot.title=(mon.nickname&&mon.nickname_is_custom?mon.nickname:pokemonName(mon.species_id))+(mon.shiny?" · Shiny":"");
       }else{
-        slot.innerHTML="<span>—</span>";
+        const empty=document.createElement("span");
+        empty.textContent="—";
+        slot.append(empty);
       }
       grid.append(slot);
     }
-    details.append(summary,grid);container.append(details);
-  });
-}
+  }
 
+  previous.addEventListener("click",()=>{
+    if(currentIndex>0){currentIndex--;draw();}
+  });
+  next.addEventListener("click",()=>{
+    if(currentIndex<list.length-1){currentIndex++;draw();}
+  });
+
+  draw();
+}
 async function loadMyPokemonSnapshot(){
   const party=document.getElementById("myPokemonParty");
   const boxes=document.getElementById("myPokemonBoxes");
