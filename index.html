@@ -548,7 +548,10 @@
                     <small id="adminTrainerUpdated">—</small>
                   </div>
                 </div>
-                <button class="admin-danger-button" type="button" id="adminClearTrainerCardsButton">VACIAR TODAS SUS CARTAS</button>
+                <div class="admin-trainer-danger-actions">
+                  <button class="admin-danger-button" type="button" id="adminClearTrainerCardsButton">VACIAR TODAS SUS CARTAS</button>
+                  <button class="admin-danger-button admin-danger-button-delete" type="button" id="adminDeleteTrainerButton">ELIMINAR ENTRENADOR</button>
+                </div>
               </div>
 
               <div class="admin-trainer-detail-stats">
@@ -1149,6 +1152,6 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0"></script>
   <script src="supabase-config.js"></script>
-  <script src="script.js?v=20261123-roulette-audio-v1"></script>
+  <script src="script.js?v=20261124-admin-delete-trainer-v1"></script>
 </body>
 </html>
