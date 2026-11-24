@@ -1329,12 +1329,13 @@ async function loadPlayers(){
     console.error("No se pudieron cargar los jugadores:",error.message);
     container.replaceChildren();const message=document.createElement("div");message.className="empty-feature panel";message.textContent="No se pudo cargar la lista.";container.append(message);return;
   }
-  const [cardsResult,progressResult]=await Promise.all([
+  const [cardsResult,progressResult,snapshotResult]=await Promise.all([
     authClient.from("player_cards")
       .select("owner_id,status,remaining_uses")
       .eq("status","available")
       .gt("remaining_uses",0),
-    authClient.rpc("get_public_trainer_progress")
+    authClient.rpc("get_public_trainer_progress"),
+    authClient.from("player_save_snapshots").select("player_id,synced_at")
   ]);
   // Count every usable card copy together: normal, tramo and fiesta.
   // Spent copies remain in the database/history but never inflate the public count.
@@ -1349,6 +1350,9 @@ async function loadPlayers(){
   (progressResult.data||[]).forEach(row=>{
     currentTramos[row.trainer_id]=Math.max(0,Number(row.current_tramo)||0);
   });
+  const pokemonSyncByPlayer=Object.create(null);
+  (snapshotResult.data||[]).forEach(row=>{pokemonSyncByPlayer[row.player_id]=row.synced_at||null;});
+  if(snapshotResult.error)console.warn("No se pudieron cargar los estados de sincronización Pokémon:",snapshotResult.error.message);
 
   container.replaceChildren();
   setText("playersCount",(profiles||[]).length+" ENTRENADORES");
@@ -1379,7 +1383,8 @@ async function loadPlayers(){
     const availableCount=Number(cardCounts[profile.id]||0);
     totalCards.textContent=availableCount+" "+(availableCount===1?"CARTA":"CARTAS");
     stats.append(totalCards);
-    const action=document.createElement("span");action.className="player-view-button";action.textContent="VER PERFIL ↗";
+    const action=document.createElement("span");action.className="player-view-button";
+    action.textContent=pokemonSyncByPlayer[profile.id]?"VER EQUIPO POKÉMON ↗":"VER PERFIL ↗";
     card.append(avatar,info,stats,action);
     card.addEventListener("click",()=>showPublicPlayer(profile.id,trainerTramo));
     container.append(card);
