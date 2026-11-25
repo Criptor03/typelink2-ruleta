@@ -3061,13 +3061,13 @@ button:disabled{cursor:not-allowed}
 }
 .tramo-roadmap-copy strong{
   color:#aebdc5;
-  font-size:7px;
+  font-size:11px;
   line-height:1.35;
   font-weight:800;
 }
 .tramo-roadmap-copy small{
   color:#6f838f;
-  font-size:5.5px;
+  font-size:7px;
   font-weight:900;
   letter-spacing:.7px;
 }
