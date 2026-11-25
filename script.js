@@ -4689,12 +4689,36 @@ function renderTramoRoadmap(){
   if(!list)return;
   list.replaceChildren();
   const tramoActual=Math.min(TRAMO_MILESTONES.length,Math.max(0,Number(currentTramo)||0));
-  TRAMO_MILESTONES.forEach(stage=>{
+  const routeSprites=[
+    "https://play.pokemonshowdown.com/sprites/trainers/pokeball.png",
+    "https://play.pokemonshowdown.com/sprites/trainers/cheren.png",
+    "https://play.pokemonshowdown.com/sprites/trainers/roxie.png",
+    "https://play.pokemonshowdown.com/sprites/trainers/burgh.png",
+    "https://play.pokemonshowdown.com/sprites/trainers/elesa.png",
+    "https://play.pokemonshowdown.com/sprites/trainers/clay.png",
+    "https://play.pokemonshowdown.com/sprites/trainers/skyla.png",
+    "https://play.pokemonshowdown.com/sprites/trainers/drayden.png",
+    "https://play.pokemonshowdown.com/sprites/trainers/marlon.png",
+    "https://play.pokemonshowdown.com/sprites/trainers/ghetsis.png",
+    "https://play.pokemonshowdown.com/sprites/trainers/iris.png"
+  ];
+  TRAMO_MILESTONES.slice(0,11).forEach((stage,index)=>{
     const item=document.createElement("li");
     const completed=stage.tramo<tramoActual;
     const active=tramoActual>0&&stage.tramo===tramoActual;
     const next=stage.tramo===tramoActual+1;
     item.className="tramo-roadmap-item"+(completed?" is-complete":active?" is-active":next?" is-next":"");
+    const connector=document.createElement("span");
+    connector.className="tramo-roadmap-connector";
+    if(index<10)connector.setAttribute("aria-hidden","true");
+    const art=document.createElement("span");
+    art.className="tramo-roadmap-art";
+    const img=document.createElement("img");
+    img.src=routeSprites[index];
+    img.alt="";
+    img.loading="lazy";
+    img.onerror=()=>{img.style.display="none";art.textContent=index===0?"●":"★";};
+    art.append(img);
     const number=document.createElement("span");
     number.className="tramo-roadmap-number";
     number.textContent=String(stage.tramo).padStart(2,"0");
@@ -4705,7 +4729,7 @@ function renderTramoRoadmap(){
     const state=document.createElement("small");
     state.textContent=completed?"COMPLETADO":active?"EN CURSO":next?"SIGUIENTE":"PENDIENTE";
     copy.append(title,state);
-    item.append(number,copy);
+    item.append(connector,art,number,copy);
     list.append(item);
   });
 }
