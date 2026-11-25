@@ -148,17 +148,29 @@
               <small id="tramoProgressCount" class="tramo-progress-count">AVENTURA SIN INICIAR · 0 / 11</small>
             </div>
             <button id="tramoButton" class="secondary-button">INICIAR TRAMO 1</button>
-            <section class="tramo-roadmap tramo-roadmap-feature" aria-labelledby="tramoRoadmapTitle">
-              <div class="tramo-roadmap-header">
-                <div>
+            <details class="tramo-roadmap tramo-roadmap-feature">
+              <summary class="tramo-roadmap-summary">
+                <div class="tramo-roadmap-summary-copy">
                   <span class="eyebrow">TU RUTA POR TESELIA</span>
-                  <h3 id="tramoRoadmapTitle">11 HITOS DE LA AVENTURA</h3>
-                  <p>Gimnasios, desafíos y la Liga Pokémon. Completa cada hito para seguir avanzando.</p>
+                  <strong>CONSULTAR LOS 11 HITOS DE LA AVENTURA</strong>
+                  <small>Gimnasios, desafíos y la Liga Pokémon.</small>
                 </div>
-                <div class="tramo-roadmap-badge"><strong>11</strong><span>HITOS</span></div>
+                <div class="tramo-roadmap-summary-right">
+                  <span class="tramo-roadmap-badge"><strong>11</strong><span>HITOS</span></span>
+                  <span class="tramo-roadmap-chevron" aria-hidden="true">⌄</span>
+                </div>
+              </summary>
+              <div class="tramo-roadmap-content">
+                <div class="tramo-roadmap-header">
+                  <div>
+                    <span class="eyebrow">TU RUTA POR TESELIA</span>
+                    <h3 id="tramoRoadmapTitle">11 HITOS DE LA AVENTURA</h3>
+                    <p>Completa cada hito para seguir avanzando por Teselia.</p>
+                  </div>
+                </div>
+                <ol id="tramoRoadmapList" class="tramo-roadmap-list"></ol>
               </div>
-              <ol id="tramoRoadmapList" class="tramo-roadmap-list"></ol>
-            </section>
+            </details>
           </section>
           <section class="game-grid">
             <div class="wheel-panel panel">
