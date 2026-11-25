@@ -615,6 +615,11 @@ function updateProfileCharacterLive(){
   img.src=pose.src;
   img.alt=getProfileCharacter()==="female"?"Entrenadora Rosa en el mundo de Pokémon Negro 2 y Blanco 2":"Entrenador Nate en el mundo de Pokémon Negro 2 y Blanco 2";
   if(label)label.textContent=pose.label;
+  const sidebarImg=document.getElementById("profileSidebarCharacter");
+  if(sidebarImg){
+    sidebarImg.src=pose.src;
+    sidebarImg.alt="";
+  }
 }
 function bindProfileCharacterPicker(){
   const options=document.querySelectorAll(".profile-character-option");
