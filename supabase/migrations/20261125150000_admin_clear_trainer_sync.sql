@@ -44,4 +44,5 @@ as $function$
   select app_private.admin_clear_trainer_sync_core(p_player_id);
 $function$;
 
+revoke execute on function public.admin_clear_trainer_sync(uuid) from public, anon;
 grant execute on function public.admin_clear_trainer_sync(uuid) to authenticated;
