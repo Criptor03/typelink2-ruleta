@@ -52,6 +52,113 @@
 /* Connected trainer identity, public directory and cloud inventory */
 .profile-open-link{margin-top:13px}
 .profile-placeholder,.profile-avatar-large,.player-directory-avatar{background-color:#17212b;background-size:cover;background-position:center;color:#fff}
+.profile-character-picker{
+  position:absolute;
+  top:20px;
+  right:28px;
+  width:330px;
+  padding:0;
+  z-index:2;
+}
+.profile-editor{position:relative}
+.profile-character-heading{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:8px;
+}
+.profile-character-heading small{
+  font-size:8px;
+  color:#74818c;
+  letter-spacing:.5px;
+}
+.profile-character-options{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.profile-character-option{
+  min-height:112px;
+  position:relative;
+  border:1px solid #334653;
+  background:linear-gradient(145deg,#101b24,#162631);
+  color:#c8d2da;
+  padding:8px 8px 7px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  flex-direction:column;
+  transition:.18s ease;
+  overflow:hidden;
+}
+.profile-character-option:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,transparent 40%,#081018aa 100%);
+  pointer-events:none;
+}
+.profile-character-option:hover{
+  border-color:#718895;
+  transform:translateY(-2px);
+  box-shadow:0 8px 20px #0005;
+}
+.profile-character-option[aria-pressed="true"]{
+  border-color:#d44d55;
+  box-shadow:0 0 0 1px #d44d55,0 0 18px #d44d5530;
+}
+.profile-character-sprite{
+  position:absolute;
+  inset:0 0 24px;
+  display:grid;
+  place-items:center;
+  z-index:1;
+}
+.profile-character-sprite img{
+  width:96px;
+  height:96px;
+  object-fit:contain;
+  image-rendering:auto;
+  filter:drop-shadow(0 4px 6px #0009);
+  transition:transform .18s ease;
+}
+.profile-character-option:hover .profile-character-sprite img{
+  transform:scale(1.06) translateY(-2px);
+}
+.profile-character-name,
+.profile-character-status{
+  position:relative;
+  z-index:2;
+}
+.profile-character-name{
+  font:800 12px 'Barlow Condensed';
+  letter-spacing:1px;
+  color:#f0f3f5;
+}
+.profile-character-status{
+  margin-top:2px;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:1px;
+  color:#8496a2;
+}
+.profile-character-option[aria-pressed="true"] .profile-character-status{
+  color:#e56a70;
+}
+@media(max-width:900px){
+  .profile-character-picker{
+    position:relative;
+    top:auto;
+    right:auto;
+    width:100%;
+    margin:0 0 18px;
+  }
+  .profile-editor{
+    display:block;
+  }
+}
 .profile-editor{padding:25px 27px;margin-bottom:16px}
 .profile-identity{display:flex;align-items:center;gap:19px;padding-bottom:22px;border-bottom:1px solid #d9dfe4}
 .profile-avatar-large{width:86px;height:86px;flex:none;border:2px solid #f4f6f7;outline:1px solid #7b8791;display:grid;place-items:center;font:900 29px 'Barlow Condensed'}
