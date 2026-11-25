@@ -2854,91 +2854,210 @@ button:disabled{cursor:not-allowed}
 }
 .tramo-roadmap{
   grid-column:1/-1;
+  margin-top:4px;
+  padding:17px 0 0;
   border-top:1px solid #344651;
-  padding-top:12px;
 }
-.tramo-roadmap summary{
+.tramo-roadmap-feature{
+  position:relative;
+}
+.tramo-roadmap-header{
   display:flex;
-  justify-content:space-between;
   align-items:center;
-  gap:12px;
-  cursor:pointer;
-  list-style:none;
-  color:#c1cdd5;
-  font-size:8px;
+  justify-content:space-between;
+  gap:18px;
+  margin-bottom:14px;
+}
+.tramo-roadmap-header h3{
+  margin:4px 0 4px;
+  color:#f0f5f7;
+  font:800 24px 'Barlow Condensed';
+  letter-spacing:.2px;
+}
+.tramo-roadmap-header p{
+  margin:0;
+  color:#8fa3af;
+  font-size:9px;
+  line-height:1.6;
+}
+.tramo-roadmap-badge{
+  flex:none;
+  min-width:58px;
+  padding:8px 10px;
+  text-align:center;
+  border:1px solid #47606e;
+  background:#172833;
+}
+.tramo-roadmap-badge strong{
+  display:block;
+  color:#e6eef2;
+  font:900 23px 'Barlow Condensed';
+  line-height:1;
+}
+.tramo-roadmap-badge span{
+  display:block;
+  margin-top:3px;
+  color:#8298a5;
+  font-size:6px;
   font-weight:900;
   letter-spacing:1px;
 }
-.tramo-roadmap summary::-webkit-details-marker{display:none}
-.tramo-roadmap summary span:last-child{
-  color:#8095a2;
-  font-size:7px;
-}
-.tramo-roadmap[open] summary{margin-bottom:12px}
 .tramo-roadmap-list{
   display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:7px;
+  grid-template-columns:repeat(11,minmax(86px,1fr));
+  gap:0;
   margin:0;
-  padding:0;
+  padding:4px 0 2px;
   list-style:none;
+  overflow-x:auto;
+  scrollbar-width:thin;
 }
 .tramo-roadmap-item{
+  position:relative;
   display:flex;
+  flex-direction:column;
   align-items:center;
-  gap:9px;
-  min-width:0;
-  padding:8px 9px;
-  border:1px solid #2c3e49;
-  border-radius:4px;
-  background:#16232d;
+  min-width:86px;
+  min-height:112px;
+  padding:7px 5px 8px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  text-align:center;
 }
-.tramo-roadmap-number{
+.tramo-roadmap-item::before{
+  content:"";
+  position:absolute;
+  top:33px;
+  left:50%;
+  width:100%;
+  height:1px;
+  background:#30444f;
+  z-index:0;
+}
+.tramo-roadmap-item:first-child::before{left:50%;width:50%}
+.tramo-roadmap-item:last-child::before{width:50%}
+.tramo-roadmap-connector{display:none}
+.tramo-roadmap-art{
+  position:relative;
+  z-index:2;
   display:grid;
   place-items:center;
-  width:25px;
-  height:25px;
-  flex:none;
-  background:#263641;
-  color:#b8c6ce;
-  font:800 12px 'Barlow Condensed';
+  width:54px;
+  height:54px;
+  margin-bottom:5px;
+  border:1px solid #354b57;
+  border-radius:50%;
+  background:radial-gradient(circle,#243b48 0%,#111c25 72%);
+  box-shadow:0 0 0 4px #101922;
 }
-.tramo-roadmap-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+.tramo-roadmap-art img{
+  width:48px;
+  height:48px;
+  object-fit:contain;
+  image-rendering:auto;
+  filter:drop-shadow(0 3px 4px #0009);
+}
+.tramo-roadmap-number{
+  position:absolute;
+  top:0;
+  right:calc(50% - 38px);
+  z-index:3;
+  display:grid;
+  place-items:center;
+  width:20px;
+  height:20px;
+  border:1px solid #506673;
+  border-radius:50%;
+  background:#172630;
+  color:#b9c8d0;
+  font:900 9px 'Barlow Condensed';
+}
+.tramo-roadmap-copy{
+  position:relative;
+  z-index:2;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  width:100%;
+  min-width:0;
+  padding:0 2px;
+}
 .tramo-roadmap-copy strong{
-  color:#c7d2d9;
-  font-size:8px;
-  line-height:1.45;
-  font-weight:700;
+  color:#aebdc5;
+  font-size:7px;
+  line-height:1.35;
+  font-weight:800;
 }
 .tramo-roadmap-copy small{
-  color:#81949f;
-  font-size:6px;
+  color:#6f838f;
+  font-size:5.5px;
   font-weight:900;
-  letter-spacing:.9px;
+  letter-spacing:.7px;
 }
-.tramo-roadmap-item.is-complete{
-  border-color:#385c4b;
-  background:#14271f;
+.tramo-roadmap-item.is-complete .tramo-roadmap-art{
+  border-color:#4c8b6a;
+  background:radial-gradient(circle,#214434 0%,#13251d 72%);
 }
 .tramo-roadmap-item.is-complete .tramo-roadmap-number{
+  border-color:#5e9d7b;
   background:#315b46;
-  color:#d9eee1;
+  color:#e1f0e6;
 }
+.tramo-roadmap-item.is-complete .tramo-roadmap-copy strong{color:#d0e6d9}
 .tramo-roadmap-item.is-complete .tramo-roadmap-copy small{color:#83c69a}
-.tramo-roadmap-item.is-active,.tramo-roadmap-item.is-next{
-  border-color:#718b9b;
-  background:#1e303d;
+.tramo-roadmap-item.is-active .tramo-roadmap-art,
+.tramo-roadmap-item.is-next .tramo-roadmap-art{
+  width:62px;
+  height:62px;
+  margin-top:-4px;
+  border-color:#c4dce8;
+  background:radial-gradient(circle,#304e60 0%,#152630 72%);
+  box-shadow:0 0 0 4px #101922,0 0 20px #73b9dc55;
+}
+.tramo-roadmap-item.is-active .tramo-roadmap-art img,
+.tramo-roadmap-item.is-next .tramo-roadmap-art img{
+  width:56px;
+  height:56px;
 }
 .tramo-roadmap-item.is-active .tramo-roadmap-number,
 .tramo-roadmap-item.is-next .tramo-roadmap-number{
-  background:#dce7ed;
-  color:#18242d;
+  background:#e6eff3;
+  border-color:#e6eff3;
+  color:#16242d;
 }
 .tramo-roadmap-item.is-active .tramo-roadmap-copy strong,
-.tramo-roadmap-item.is-next .tramo-roadmap-copy strong{color:#f2f6f8}
-.tramo-roadmap-item.is-active .tramo-roadmap-copy small{color:#c7d9e4}
+.tramo-roadmap-item.is-next .tramo-roadmap-copy strong{color:#f3f7f9}
+.tramo-roadmap-item.is-active .tramo-roadmap-copy small{color:#b9d9e8}
 .tramo-roadmap-item.is-next .tramo-roadmap-copy small{color:#9fc1d3}
-
+.tramo-roadmap-item.is-active::after{
+  content:"";
+  position:absolute;
+  top:32px;
+  left:50%;
+  width:100%;
+  height:3px;
+  background:#b8d9e7;
+  opacity:.7;
+  z-index:1;
+}
+.tramo-roadmap-item.is-active .tramo-roadmap-art,
+.tramo-roadmap-item.is-next .tramo-roadmap-art{animation:tramoRoutePulse 2.4s ease-in-out infinite}
+@keyframes tramoRoutePulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.04)}
+}
+@media(max-width:1000px){
+  .tramo-roadmap-list{
+    grid-template-columns:repeat(11,86px);
+  }
+}
+@media(max-width:700px){
+  .tramo-roadmap-header{align-items:flex-start}
+  .tramo-roadmap-header h3{font-size:21px}
+  .tramo-roadmap-header p{font-size:8px}
+  .tramo-roadmap-list{padding-bottom:8px}
+}
 .tramo-confirm-modal[hidden]{display:none!important}
 .tramo-confirm-modal{
   position:fixed;
