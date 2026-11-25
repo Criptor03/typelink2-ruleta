@@ -3349,6 +3349,36 @@ async function removeAdminTrainerCard(item,card){
   }
 }
 
+async function clearAdminTrainerSync(){
+  if(!isAdmin||!authClient||!adminSelectedTrainerId){
+    notify("No hay un entrenador seleccionado.");
+    return;
+  }
+  const trainerName=adminSelectedTrainerName||"este entrenador";
+  if(!window.confirm(
+    "¿Quitar TypeLink Sync de «"+trainerName+"»?\n\n"+
+    "Se eliminará su partida sincronizada, equipo y PC guardados en TypeLink Sync. "+
+    "No se borrará su cuenta, progreso, cartas ni otros datos del evento.\n\n"+
+    "Podrá volver a importar su partida después."
+  ))return;
+  const button=document.getElementById("adminClearTrainerSyncButton");
+  if(button){button.disabled=true;button.textContent="QUITANDO...";}
+  try{
+    const {data,error}=await authClient.rpc("admin_clear_trainer_sync",{p_player_id:adminSelectedTrainerId});
+    if(error)throw error;
+    const result=Array.isArray(data)?data[0]:data;
+    if(!result?.success)throw new Error("El servidor no confirmó la eliminación de TypeLink Sync.");
+    notify("TypeLink Sync de "+(result.trainer_name||trainerName)+" ha sido eliminado.");
+    await openAdminTrainerDetail(adminSelectedTrainerId);
+    await loadPlayers();
+  }catch(error){
+    console.error("No se pudo quitar TypeLink Sync:",error);
+    notify("No se pudo quitar TypeLink Sync: "+(error.message||"error desconocido"));
+  }finally{
+    if(button){button.disabled=false;button.textContent="QUITAR TYPELINK SYNC";}
+  }
+}
+
 async function deleteAdminTrainer(){
   if(!isAdmin||!authClient||!adminSelectedTrainerId){
     notify("No hay un entrenador seleccionado.");
@@ -5539,6 +5569,7 @@ document.getElementById("adminTrainersBack").addEventListener("click",showAdminO
 document.getElementById("adminTrainerDetailBack").addEventListener("click",showAdminTrainerList);
 document.getElementById("adminTrainersSearch").addEventListener("input",renderAdminTrainers);
 document.getElementById("adminClearTrainerCardsButton").addEventListener("click",clearAdminTrainerCards);
+document.getElementById("adminClearTrainerSyncButton").addEventListener("click",clearAdminTrainerSync);
 document.getElementById("adminDeleteTrainerButton").addEventListener("click",deleteAdminTrainer);
 document.getElementById("adminTrainerSaveTramo").addEventListener("click",saveAdminTrainerTramo);
 document.getElementById("adminTrainerGrantCard").addEventListener("click",grantAdminTrainerCard);
