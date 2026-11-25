@@ -580,11 +580,13 @@ const PROFILE_CHARACTER_POSES={
   male:[
     {src:"https://archives.bulbagarden.net/media/upload/4/4b/Nate_OD.png",label:"EN RUTA"},
     {src:"https://archives.bulbagarden.net/media/upload/c/ce/Nate_OR_Run.png",label:"CORRIENDO"},
-    {src:"https://archives.bulbagarden.net/media/upload/f/f4/B2W2_Surf_M.png",label:"SURFEANDO"}
+    {src:"https://archives.bulbagarden.net/media/upload/6/6e/Spr_B2W2_Nate_2.png",label:"EN AVENTURA"},
+    {src:"https://archives.bulbagarden.net/media/upload/4/42/B2W2_Surf_M.png",label:"SURFEANDO"}
   ],
   female:[
     {src:"https://archives.bulbagarden.net/media/upload/6/62/Rosa_OD.png",label:"EN RUTA"},
     {src:"https://archives.bulbagarden.net/media/upload/e/e6/Rosa_OR_Run.png",label:"CORRIENDO"},
+    {src:"https://archives.bulbagarden.net/media/upload/e/e3/Spr_B2W2_Rosa_2.png",label:"EN AVENTURA"},
     {src:"https://archives.bulbagarden.net/media/upload/4/42/B2W2_Surf_F.png",label:"SURFEANDO"}
   ]
 };
