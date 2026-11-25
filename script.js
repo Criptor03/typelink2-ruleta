@@ -576,6 +576,19 @@ function notify(message){
 }
 
 const PROFILE_CHARACTER_KEY="typelink2-profile-character";
+const PROFILE_CHARACTER_POSES={
+  male:[
+    {src:"https://archives.bulbagarden.net/media/upload/4/4b/Nate_OD.png",label:"EN RUTA"},
+    {src:"https://archives.bulbagarden.net/media/upload/c/ce/Nate_OR_Run.png",label:"CORRIENDO"},
+    {src:"https://archives.bulbagarden.net/media/upload/f/f4/B2W2_Surf_M.png",label:"SURFEANDO"}
+  ],
+  female:[
+    {src:"https://archives.bulbagarden.net/media/upload/6/62/Rosa_OD.png",label:"EN RUTA"},
+    {src:"https://archives.bulbagarden.net/media/upload/e/e6/Rosa_OR_Run.png",label:"CORRIENDO"},
+    {src:"https://archives.bulbagarden.net/media/upload/4/42/B2W2_Surf_F.png",label:"SURFEANDO"}
+  ]
+};
+let profileCharacterPoseTimer=null;
 function getProfileCharacter(){
   try{
     const value=localStorage.getItem(PROFILE_CHARACTER_KEY);
@@ -591,11 +604,24 @@ function setProfileCharacter(character){
     const status=option.querySelector(".profile-character-status");
     if(status)status.textContent=selected?"SELECCIONADO":"ELEGIR";
   });
+  updateProfileCharacterLive();
+}
+function updateProfileCharacterLive(){
+  const img=document.getElementById("profileCharacterLiveSprite");
+  const label=document.getElementById("profileCharacterLiveAction");
+  if(!img)return;
+  const poses=PROFILE_CHARACTER_POSES[getProfileCharacter()]||PROFILE_CHARACTER_POSES.male;
+  const pose=poses[Math.floor(Math.random()*poses.length)];
+  img.src=pose.src;
+  img.alt=getProfileCharacter()==="female"?"Entrenadora Rosa en el mundo de Pokémon Negro 2 y Blanco 2":"Entrenador Nate en el mundo de Pokémon Negro 2 y Blanco 2";
+  if(label)label.textContent=pose.label;
 }
 function bindProfileCharacterPicker(){
   const options=document.querySelectorAll(".profile-character-option");
   if(!options.length)return;
   setProfileCharacter(getProfileCharacter());
+  if(profileCharacterPoseTimer)clearInterval(profileCharacterPoseTimer);
+  profileCharacterPoseTimer=setInterval(updateProfileCharacterLive,8000);
   options.forEach(option=>{
     option.addEventListener("click",()=>{
       setProfileCharacter(option.dataset.character);
