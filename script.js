@@ -4690,7 +4690,7 @@ function renderTramoRoadmap(){
   list.replaceChildren();
   const tramoActual=Math.min(TRAMO_MILESTONES.length,Math.max(0,Number(currentTramo)||0));
   const routeSprites=[
-    "https://play.pokemonshowdown.com/sprites/trainers/youngster-gen5.png",
+    "https://play.pokemonshowdown.com/sprites/trainers/youngster.png",
     "https://play.pokemonshowdown.com/sprites/trainers/cheren.png",
     "https://play.pokemonshowdown.com/sprites/trainers/roxie.png",
     "https://play.pokemonshowdown.com/sprites/trainers/burgh.png",
