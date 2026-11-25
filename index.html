@@ -23,7 +23,7 @@
   <meta name="twitter:image" content="https://d2ol7oe51mr4n9.cloudfront.net/user_3M1AOCGHYrXVuXMWgDhR1lrk7px/8684321e-c902-4ff7-8a2d-b36c703124a8.png?v=20261123-og">
   <meta name="twitter:image:alt" content="Logo de Pokémon TypeLink 2">
   <title>Pokémon TypeLink 2 — Plataforma</title>
-  <link rel="stylesheet" href="style.css?v=20261125-nav-items-v3">
+  <link rel="stylesheet" href="style.css?v=20261125-profile-characters-v1">
 </head>
 <body>
   <div class="page-shell">
@@ -41,7 +41,7 @@
         <button class="nav-link" id="typeLeagueNavLink" data-page="typeleague" hidden><span class="nav-icon nav-item-sprite"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/gen5/amulet-coin.png" alt="" /></span><span>TypeLeague</span></button>
         <button class="nav-link" data-page="profile"><span class="nav-icon nav-item-sprite"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/gen5/data-card.png" alt="" /></span><span>Mi perfil</span></button>
         <button class="nav-link" data-page="deck"><span class="nav-icon nav-item-sprite"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/gen5/berry-pouch.png" alt="" /></span><span>Mi baraja</span><span class="nav-count" id="navDeckCount">0/5</span></button>
-        <button class="nav-link" data-page="pokemon"><span class="nav-icon nav-item-sprite"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="" /></span><span>Mi equipo Pokémon</span></button>
+        <button class="nav-link" data-page="pokemon"><span class="nav-icon nav-item-sprite"><img src="https://play.pokemonshowdown.com/sprites/itemicons/itemfinder.png" alt="" /></span><span>Mi equipo Pokémon</span></button>
         <button class="nav-link" data-page="notifications"><span class="nav-icon nav-item-sprite"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/gen5/air-mail.png" alt="" /></span><span>Notificaciones</span><span class="nav-count notification-count" id="navNotificationCount" hidden>0</span></button>
       </nav>
 
@@ -297,6 +297,24 @@
             <div class="profile-identity">
               <div class="profile-avatar-large" id="profileAvatarLarge">TL</div>
               <div><span class="eyebrow">CUENTA CONECTADA</span><h2 id="profileDiscordName">Entrenador</h2><p id="profileDiscordHandle">Discord · Sin conectar</p><span class="profile-verified" id="profileVerified">● IDENTIDAD VERIFICADA POR DISCORD</span></div>
+            </div>
+            <div class="profile-character-picker" aria-label="Selecciona tu personaje de Pokémon Negro 2 y Blanco 2">
+              <div class="profile-character-heading">
+                <span class="eyebrow">PERSONAJE DE LA AVENTURA</span>
+                <small>Elige tu entrenador</small>
+              </div>
+              <div class="profile-character-options">
+                <button type="button" class="profile-character-option" data-character="male" aria-pressed="false">
+                  <span class="profile-character-sprite"><img src="https://play.pokemonshowdown.com/sprites/trainers/nate.png" alt="Entrenador masculino de Pokémon Negro 2 / Blanco 2"></span>
+                  <span class="profile-character-name">MASCULINO</span>
+                  <span class="profile-character-status">ELEGIR</span>
+                </button>
+                <button type="button" class="profile-character-option" data-character="female" aria-pressed="false">
+                  <span class="profile-character-sprite"><img src="https://play.pokemonshowdown.com/sprites/trainers/rosa.png" alt="Entrenadora femenina de Pokémon Negro 2 / Blanco 2"></span>
+                  <span class="profile-character-name">FEMENINO</span>
+                  <span class="profile-character-status">ELEGIR</span>
+                </button>
+              </div>
             </div>
             <div class="profile-form">
               <label for="profileDisplayName">Nombre público de entrenador</label>
