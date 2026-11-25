@@ -575,6 +575,36 @@ function notify(message){
   clearTimeout(notify.timer);notify.timer=setTimeout(()=>toast.classList.remove("show"),3000);
 }
 
+const PROFILE_CHARACTER_KEY="typelink2-profile-character";
+function getProfileCharacter(){
+  try{
+    const value=localStorage.getItem(PROFILE_CHARACTER_KEY);
+    return value==="female"||value==="male"?value:"male";
+  }catch{return "male"}
+}
+function setProfileCharacter(character){
+  if(character!=="male"&&character!=="female")return;
+  try{localStorage.setItem(PROFILE_CHARACTER_KEY,character);}catch{}
+  document.querySelectorAll(".profile-character-option").forEach(option=>{
+    const selected=option.dataset.character===character;
+    option.setAttribute("aria-pressed",String(selected));
+    const status=option.querySelector(".profile-character-status");
+    if(status)status.textContent=selected?"SELECCIONADO":"ELEGIR";
+  });
+}
+function bindProfileCharacterPicker(){
+  const options=document.querySelectorAll(".profile-character-option");
+  if(!options.length)return;
+  setProfileCharacter(getProfileCharacter());
+  options.forEach(option=>{
+    option.addEventListener("click",()=>{
+      setProfileCharacter(option.dataset.character);
+      notify(option.dataset.character==="female"
+        ?"Personaje femenino seleccionado."
+        :"Personaje masculino seleccionado.");
+    });
+  });
+}
 function renderProfile(profile){
   currentProfile=profile||null;
   const metadata=currentAuthUser?.user_metadata||{};
@@ -5685,6 +5715,7 @@ document.getElementById("tramoConfirmModal").addEventListener("click",event=>{
   if(event.target.id==="tramoConfirmModal")closeTramoConfirmation();
 });
 document.getElementById("saveProfileButton").addEventListener("click",saveProfile);
+bindProfileCharacterPicker();
 bindPokemonSyncUI();
 document.getElementById("closePublicProfile").addEventListener("click",closePublicPlayer);
 document.getElementById("closeCardAction").addEventListener("click",closeCardAction);
