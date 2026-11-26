@@ -576,18 +576,40 @@ function notify(message){
 }
 
 const PROFILE_CHARACTER_KEY="typelink2-profile-character";
+
+/*
+ * Galería de sprites de los protagonistas de B2/W2.
+ * Los sprites de Bulbagarden se cargan sin Referer para evitar que
+ * GitHub Pages reciba una respuesta bloqueada por hotlink protection.
+ * Si una fuente externa falla, el estado cae automáticamente al sprite
+ * de combate de PokéShowdown en lugar de dejar el icono de imagen rota.
+ */
 const PROFILE_CHARACTER_POSES={
   male:[
-    {src:"https://archives.bulbagarden.net/media/upload/4/4b/Nate_OD.png",label:"EN RUTA"},
-    {src:"https://archives.bulbagarden.net/media/upload/c/ce/Nate_OR_Run.png",label:"CORRIENDO"},
-    {src:"https://archives.bulbagarden.net/media/upload/f/f4/B2W2_Surf_M.png",label:"SURFEANDO"}
+    {src:"https://archives.bulbagarden.net/media/upload/4/4b/Nate_OD.png",label:"EN RUTA",fit:"pixel"},
+    {src:"https://archives.bulbagarden.net/media/upload/c/ce/Nate_OR_Run.png",label:"CORRIENDO",fit:"pixel"},
+    {src:"https://archives.bulbagarden.net/media/upload/f/f4/B2W2_Surf_M.png",label:"SURFEANDO",fit:"pixel"},
+    {src:"https://archives.bulbagarden.net/media/upload/5/5d/B2W2_Nate_Back.png",label:"ESPALDA",fit:"tall"},
+    {src:"https://archives.bulbagarden.net/media/upload/a/a0/Nate_Xtransceiver.png",label:"XTRANSCEIVER",fit:"tall"},
+    {src:"https://archives.bulbagarden.net/media/upload/0/02/B2W2_Nate_Pok%C3%A9star_Hero.png",label:"POKÉSTAR",fit:"portrait"},
+    {src:"https://play.pokemonshowdown.com/sprites/trainers/nate.png",label:"COMBATE",fit:"battle"}
   ],
   female:[
-    {src:"https://archives.bulbagarden.net/media/upload/6/62/Rosa_OD.png",label:"EN RUTA"},
-    {src:"https://archives.bulbagarden.net/media/upload/e/e6/Rosa_OR_Run.png",label:"CORRIENDO"},
-    {src:"https://archives.bulbagarden.net/media/upload/4/42/B2W2_Surf_F.png",label:"SURFEANDO"}
+    {src:"https://archives.bulbagarden.net/media/upload/6/62/Rosa_OD.png",label:"EN RUTA",fit:"pixel"},
+    {src:"https://archives.bulbagarden.net/media/upload/e/e6/Rosa_OR_Run.png",label:"CORRIENDO",fit:"pixel"},
+    {src:"https://archives.bulbagarden.net/media/upload/4/42/B2W2_Surf_F.png",label:"SURFEANDO",fit:"pixel"},
+    {src:"https://archives.bulbagarden.net/media/upload/b/b6/B2W2_Rosa_Back.png",label:"ESPALDA",fit:"tall"},
+    {src:"https://archives.bulbagarden.net/media/upload/6/67/Rosa_Xtransceiver.png",label:"XTRANSCEIVER",fit:"tall"},
+    {src:"https://archives.bulbagarden.net/media/upload/f/f4/B2W2_Rosa_Pok%C3%A9star_Heroine.png",label:"POKÉSTAR",fit:"portrait"},
+    {src:"https://play.pokemonshowdown.com/sprites/trainers/rosa.png",label:"COMBATE",fit:"battle"}
   ]
 };
+
+function getProfileCharacterFallback(character){
+  return character==="female"
+    ?"https://play.pokemonshowdown.com/sprites/trainers/rosa.png"
+    :"https://play.pokemonshowdown.com/sprites/trainers/nate.png";
+}
 let profileCharacterPoseTimer=null;
 function getProfileCharacter(){
   try{
@@ -606,18 +628,32 @@ function setProfileCharacter(character){
   });
   updateProfileCharacterLive();
 }
+function applyProfileCharacterSprite(img,pose,character){
+  if(!img)return;
+  img.dataset.poseFit=pose.fit||"pixel";
+  img.onerror=()=>{
+    if(img.dataset.fallbackApplied==="1")return;
+    img.dataset.fallbackApplied="1";
+    img.dataset.poseFit="battle";
+    img.src=getProfileCharacterFallback(character);
+  };
+  img.referrerPolicy="no-referrer";
+  img.dataset.fallbackApplied="0";
+  img.src=pose.src;
+}
 function updateProfileCharacterLive(){
   const img=document.getElementById("profileCharacterLiveSprite");
   const label=document.getElementById("profileCharacterLiveAction");
   if(!img)return;
-  const poses=PROFILE_CHARACTER_POSES[getProfileCharacter()]||PROFILE_CHARACTER_POSES.male;
+  const character=getProfileCharacter();
+  const poses=PROFILE_CHARACTER_POSES[character]||PROFILE_CHARACTER_POSES.male;
   const pose=poses[Math.floor(Math.random()*poses.length)];
-  img.src=pose.src;
-  img.alt=getProfileCharacter()==="female"?"Entrenadora Rosa en el mundo de Pokémon Negro 2 y Blanco 2":"Entrenador Nate en el mundo de Pokémon Negro 2 y Blanco 2";
+  applyProfileCharacterSprite(img,pose,character);
+  img.alt=character==="female"?"Entrenadora Rosa en el mundo de Pokémon Negro 2 y Blanco 2":"Entrenador Nate en el mundo de Pokémon Negro 2 y Blanco 2";
   if(label)label.textContent=pose.label;
   const sidebarImg=document.getElementById("profileSidebarCharacter");
   if(sidebarImg){
-    sidebarImg.src=pose.src;
+    applyProfileCharacterSprite(sidebarImg,{src:pose.src,fit:"pixel"},character);
     sidebarImg.alt="";
   }
 }
