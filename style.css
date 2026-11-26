@@ -4424,3 +4424,31 @@ body{
   font-size:7.5px;
 }
 
+
+
+/* Session identity: name on top, status underneath */
+.user-chip > span:nth-child(2){
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:3px !important;
+  min-width:118px !important;
+  line-height:1 !important;
+  text-align:center !important;
+}
+.user-chip > span:nth-child(2) b,
+.user-chip > span:nth-child(2) small{
+  display:block !important;
+  width:100% !important;
+  margin:0 !important;
+  white-space:nowrap !important;
+  text-align:center !important;
+}
+.user-chip > span:nth-child(2) b{
+  line-height:1.15 !important;
+}
+.user-chip > span:nth-child(2) small{
+  line-height:1.1 !important;
+}
+
