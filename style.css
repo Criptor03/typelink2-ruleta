@@ -177,6 +177,25 @@
   transform:scale(1.65);
   transform-origin:center bottom;
   filter:drop-shadow(0 3px 4px #000b);
+  transition:width .2s ease,height .2s ease,transform .2s ease;
+}
+.profile-character-live-stage img[data-pose-fit="tall"]{
+  width:56px;
+  height:68px;
+  image-rendering:auto;
+  transform:scale(1);
+}
+.profile-character-live-stage img[data-pose-fit="portrait"]{
+  width:62px;
+  height:72px;
+  image-rendering:auto;
+  transform:scale(.95);
+}
+.profile-character-live-stage img[data-pose-fit="battle"]{
+  width:58px;
+  height:68px;
+  image-rendering:auto;
+  transform:scale(1);
 }
 .profile-character-live span{
   margin-bottom:7px;
