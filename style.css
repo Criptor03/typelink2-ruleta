@@ -4382,3 +4382,45 @@ body{
   box-shadow:0 5px 18px #0002;
 }
 
+
+
+/* TypeLink 2 — session identity scale/alignment refinement */
+.user-chip{
+  min-height:44px;
+  padding:5px 7px 5px 12px;
+  gap:12px;
+  align-items:center;
+}
+.user-avatar{
+  width:36px;
+  height:36px;
+  border-radius:6px;
+}
+.user-chip span:last-child{
+  min-width:118px;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  gap:3px;
+}
+.user-chip b{
+  font-size:10px;
+  line-height:1.15;
+  letter-spacing:1px;
+}
+.user-chip small{
+  font-size:8px;
+  line-height:1.1;
+  letter-spacing:.7px;
+}
+.logout-button{
+  height:30px;
+  padding:0 11px;
+  font-size:7px;
+}
+.connection-status{
+  height:31px;
+  padding:0 12px;
+  font-size:7.5px;
+}
+
