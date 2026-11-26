@@ -628,13 +628,14 @@ function setProfileCharacter(character){
   });
   updateProfileCharacterLive();
 }
-function applyProfileCharacterSprite(img,pose,character){
+function applyProfileCharacterSprite(img,pose,character,labelElement=null){
   if(!img)return;
   img.dataset.poseFit=pose.fit||"pixel";
   img.onerror=()=>{
     if(img.dataset.fallbackApplied==="1")return;
     img.dataset.fallbackApplied="1";
     img.dataset.poseFit="battle";
+    if(labelElement)labelElement.textContent="COMBATE";
     img.src=getProfileCharacterFallback(character);
   };
   img.referrerPolicy="no-referrer";
@@ -648,7 +649,7 @@ function updateProfileCharacterLive(){
   const character=getProfileCharacter();
   const poses=PROFILE_CHARACTER_POSES[character]||PROFILE_CHARACTER_POSES.male;
   const pose=poses[Math.floor(Math.random()*poses.length)];
-  applyProfileCharacterSprite(img,pose,character);
+  applyProfileCharacterSprite(img,pose,character,label);
   img.alt=character==="female"?"Entrenadora Rosa en el mundo de Pokémon Negro 2 y Blanco 2":"Entrenador Nate en el mundo de Pokémon Negro 2 y Blanco 2";
   if(label)label.textContent=pose.label;
   const sidebarImg=document.getElementById("profileSidebarCharacter");
