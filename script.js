@@ -88,6 +88,10 @@ let cardsPerTramo = 2;
 let normalSpinsPerTramo = 3;
 let playerTypeStatus = Object.create(null);
 let incomingCardEffects = [];
+let cardCooldownAvailableAt = null;
+let cardCooldownTimerHandle = null;
+let cardCooldownFetchInFlight = false;
+let cardActionCooldownBlocked = false;
 const pendingTypeUpdates = new Set();
 const cardArtImages = {};
 let adminCatalogItems = [];
@@ -205,7 +209,89 @@ CARDS.forEach(card=>{
 function setText(id,value){
   const el=document.getElementById(id);
   if(el)el.textContent=value==null?"":String(value);
+}\nfunction formatCardCooldown(seconds){
+  const total=Math.max(0,Math.ceil(Number(seconds)||0));
+  const minutes=Math.floor(total/60);
+  const secs=total%60;
+  return String(minutes).padStart(2,"0")+":"+String(secs).padStart(2,"0");
 }
+
+function updateCardCooldownUI(){
+  const remaining=cardCooldownAvailableAt
+    ? Math.max(0,Math.ceil((cardCooldownAvailableAt-Date.now())/1000))
+    : 0;
+  const active=remaining>0;
+
+  const wall=document.getElementById("activityCooldown");
+  const wallLabel=document.getElementById("activityCooldownLabel");
+  const wallTimer=document.getElementById("activityCooldownTimer");
+  const wallHint=document.getElementById("activityCooldownHint");
+  if(wall){
+    wall.classList.toggle("is-active",active);
+    if(wallLabel)wallLabel.textContent=active?"COOLDOWN DE CARTAS":"CARTAS DISPONIBLES";
+    if(wallTimer)wallTimer.textContent=active?formatCardCooldown(remaining):"LISTO";
+    if(wallHint)wallHint.textContent=active
+      ?"Nadie puede utilizar una carta hasta que termine el contador."
+      :"Puedes utilizar una carta.";
+  }
+
+  const modal=document.getElementById("cardActionCooldown");
+  const modalLabel=document.getElementById("cardActionCooldownLabel");
+  const modalHint=document.getElementById("cardActionCooldownHint");
+  const modalTimer=document.getElementById("cardActionCooldownTimer");
+  if(modal){
+    const show=active&&pendingCardAction?.mode==="use";
+    modal.hidden=!show;
+    if(modalLabel)modalLabel.textContent=active?"CARTAS BLOQUEADAS":"CARTAS DISPONIBLES";
+    if(modalHint)modalHint.textContent=active
+      ?"Podrás utilizar una carta cuando termine el contador."
+      :"Puedes utilizar esta carta.";
+    if(modalTimer)modalTimer.textContent=active?formatCardCooldown(remaining):"LISTO";
+
+    const confirmButton=document.getElementById("confirmCardAction");
+    if(show&&confirmButton){
+      confirmButton.disabled=true;
+      cardActionCooldownBlocked=true;
+      confirmButton.textContent="ESPERA "+formatCardCooldown(remaining);
+    }else if(!active&&confirmButton&&cardActionCooldownBlocked){
+      cardActionCooldownBlocked=false;
+      confirmButton.disabled=false;
+      confirmButton.textContent="CONFIRMAR";
+    }
+  }
+
+  if(!active&&cardCooldownTimerHandle){
+    window.clearInterval(cardCooldownTimerHandle);
+    cardCooldownTimerHandle=null;
+  }
+  return remaining;
+}
+
+function startCardCooldownTicker(){
+  if(cardCooldownTimerHandle)window.clearInterval(cardCooldownTimerHandle);
+  cardCooldownTimerHandle=window.setInterval(updateCardCooldownUI,1000);
+  updateCardCooldownUI();
+}
+
+async function loadCardCooldown(){
+  if(!authClient||!currentAuthUser)return 0;
+  if(cardCooldownFetchInFlight)return updateCardCooldownUI();
+  cardCooldownFetchInFlight=true;
+  try{
+    const {data,error}=await authClient.rpc("get_card_cooldown");
+    if(error)throw error;
+    const availableAt=data?.available_at?new Date(data.available_at).getTime():null;
+    cardCooldownAvailableAt=Number.isFinite(availableAt)?availableAt:null;
+    startCardCooldownTicker();
+  }catch(error){
+    console.warn("No se pudo consultar el cooldown global de cartas:",error.message||error);
+  }finally{
+    cardCooldownFetchInFlight=false;
+  }
+  return updateCardCooldownUI();
+}
+
+
 function loadDeck(){
   try{
     const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
@@ -1760,6 +1846,13 @@ async function refreshCardActionTargetProfile(profile){
 
 async function openCardAction(instanceId,mode){
   if(!currentAuthUser||!authClient){notify("Inicia sesión con Discord para gestionar tus cartas.");return;}
+  if(mode==="use"){
+    const remainingCooldown=await loadCardCooldown();
+    if(remainingCooldown>0){
+      notify("Las cartas están en cooldown. Falta "+formatCardCooldown(remainingCooldown)+".");
+      updateCardCooldownUI();
+    }
+  }
   const card=cloudInventory.find(item=>item.instance_id===instanceId);
   if(!card||card.status!=="available"||card.remaining_uses<=0){notify("Esta carta ya no tiene usos disponibles.");return;}
 
@@ -2200,6 +2293,15 @@ async function sendCardActivityToDiscord({card,targetId,customMessage,mode,data}
 
 async function confirmCardAction(){
   if(!pendingCardAction||!authClient||!currentAuthUser)return;
+  if(pendingCardAction.mode==="use"){
+    const remainingCooldown=await loadCardCooldown();
+    if(remainingCooldown>0){
+      const feedback=document.getElementById("cardActionFeedback");
+      if(feedback)feedback.textContent="Las cartas están en cooldown global. Falta "+formatCardCooldown(remainingCooldown)+".";
+      updateCardCooldownUI();
+      return;
+    }
+  }
   const {instanceId,mode,card}=pendingCardAction;
   const button=document.getElementById("confirmCardAction");
   const targetSelect=document.getElementById("cardActionTarget");
@@ -2270,7 +2372,10 @@ async function confirmCardAction(){
     }
     closeCardAction();
     await loadCloudInventory();
-    if(mode==="use")await loadRouletteAccess();
+    if(mode==="use"){
+      await loadRouletteAccess();
+      await loadCardCooldown();
+    }
     await loadActivityFeed();
 
     if(mode==="evolve"){
@@ -2929,6 +3034,7 @@ function setupRealtime(){
   activityChannel=authClient.channel("typelink-community-activity")
     .on("postgres_changes",{event:"INSERT",schema:"public",table:"card_activity"},payload=>{
       loadActivityFeed();
+      if(payload.new?.activity_type==="play")void loadCardCooldown();
       loadPlayers();
       const entry=payload.new||{};
       const profileModal=document.getElementById("publicProfileModal");
@@ -4652,6 +4758,9 @@ async function activateUserSession(user){
     evolutionRulesBySource=Object.create(null);cardEffectsById=Object.create(null);
     demoDeck=loadDeck();demoRouteState=loadRouteState();
     renderAuthState(null);renderDeck();loadPlayers();loadActivityFeed();renderTypeTracker();renderIncomingEffects([]);renderAdminAccess();
+    cardCooldownAvailableAt=null;
+    if(cardCooldownTimerHandle){window.clearInterval(cardCooldownTimerHandle);cardCooldownTimerHandle=null;}
+    updateCardCooldownUI();
     if(!document.getElementById("page-admin").hidden)setPage("home");
     return;
   }
@@ -4665,6 +4774,7 @@ async function activateUserSession(user){
   cloudDeck=[];cloudRoute=[];cloudSpecial=[];cloudInventory=[];
   renderAuthState(user);renderDeck();
   await Promise.all([loadAdminAccess(),loadMyProfile(),loadCloudInventory(),loadPlayers(),loadActivityFeed(),loadNotifications(),loadPublicNormalCards(),loadRouletteAccess(),loadMyPokemonSnapshot()]);
+  await loadCardCooldown();
   renderAdminAccess();
   await loadTypeLeagueVisibility();
   setupRealtime();
@@ -5575,7 +5685,10 @@ function setPage(page){
   document.getElementById("mobileScrim").classList.remove("show");
   if(page==="roulette")drawWheel();
   if(page==="players")loadPlayers();
-  if(page==="activity")loadActivityFeed();
+  if(page==="activity"){
+    loadActivityFeed();
+    void loadCardCooldown();
+  }
   if(page==="notifications")loadNotifications();
   if(page==="deck"&&cloudMode)loadCloudInventory();
   if(page==="profile"&&currentAuthUser)loadMyProfile();
