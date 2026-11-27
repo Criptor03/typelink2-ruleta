@@ -2246,6 +2246,7 @@ async function openCardAction(instanceId,mode){
     }
   }
   modal.hidden=false;
+  updateCardCooldownUI();
 }
 
 function closeCardAction(){
@@ -2254,6 +2255,7 @@ function closeCardAction(){
   cardActionTargetPreviewRequest++;
   setCardActionTargetProfile(null);
   pendingCardAction=null;
+  cardActionCooldownBlocked=false;
   const button=document.getElementById("confirmCardAction");
   if(button){button.disabled=false;button.textContent="CONFIRMAR";}
   const messageInput=document.getElementById("cardActionMessage");
