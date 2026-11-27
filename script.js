@@ -769,39 +769,86 @@ function effectLabel(effect){
   const name=String(effect.effect_key||"efecto").replace(/_/g," ");
   return value==null?name:(name+" · "+value);
 }
-function renderIncomingEffects(groups){
+function renderIncomingEffects(groups,receivedCards=[]){
   const container=document.getElementById("incomingEffectsList");
   if(!container)return;
   container.replaceChildren();
-  setText("incomingEffectsCount",groups.length+" ACTIVAS");
+  const activeGroups=Array.isArray(groups)?groups:[];
+  const cards=Array.isArray(receivedCards)?receivedCards:[];
+  setText("incomingEffectsCount",(cards.length||activeGroups.length)+" RECIBIDAS");
   if(!currentAuthUser){
-    const empty=document.createElement("div");empty.className="profile-module-empty";empty.textContent="Inicia sesión para ver tus efectos.";container.append(empty);return;
+    const empty=document.createElement("div");empty.className="profile-module-empty";empty.textContent="Inicia sesión para consultar tus cartas recibidas.";container.append(empty);return;
   }
-  if(!groups.length){
-    const empty=document.createElement("div");empty.className="profile-module-empty";empty.textContent="Sin efectos activos.";container.append(empty);return;
+  if(!cards.length&&!activeGroups.length){
+    const empty=document.createElement("div");empty.className="profile-module-empty";empty.textContent="Todavía no te han lanzado cartas en este tramo.";container.append(empty);return;
   }
-  groups.forEach(group=>{
+
+  const activeBySource=new Map();
+  activeGroups.forEach(group=>{
+    if(group.sourceId)activeBySource.set(group.sourceId,group);
+  });
+
+  cards.forEach(cardData=>{
     const card=document.createElement("article");card.className="incoming-effect-card";
-    const imagePath=group.card?.image_path;
+    const imagePath=cardData.image_path;
     if(imagePath){
-      const image=document.createElement("img");image.className="incoming-effect-image";image.src=imagePath;image.alt=group.card.name||"Carta";card.append(image);
+      const image=document.createElement("img");image.className="incoming-effect-image";image.src=imagePath;image.alt=cardData.card_name||"Carta recibida";
+      image.loading="lazy";image.decoding="async";
+      image.onerror=()=>{image.hidden=true;};
+      card.append(image);
     }else{
       const image=document.createElement("div");image.className="incoming-effect-image fallback";image.textContent="✦";card.append(image);
     }
     const body=document.createElement("div");body.className="incoming-effect-body";
     const title=document.createElement("div");title.className="incoming-effect-title";
-    const name=document.createElement("strong");name.textContent=group.card?.name||"Carta TypeLink";
-    const rarity=document.createElement("span");rarity.className="incoming-effect-rarity";rarity.textContent=group.card?.rarity||"CARTA";
+    const name=document.createElement("strong");name.textContent=cardData.card_name||"Carta TypeLink";
+    const rarity=document.createElement("span");rarity.className="incoming-effect-rarity";rarity.textContent=String(cardData.rarity||"CARTA").toUpperCase();
     title.append(name,rarity);
-    const caster=document.createElement("p");caster.className="incoming-effect-caster";caster.textContent="De "+(group.casterName||"otro entrenador");
+    const caster=document.createElement("p");caster.className="incoming-effect-caster";caster.textContent="Lanzada por "+(cardData.sender_name||"otro entrenador");
     const tags=document.createElement("div");tags.className="incoming-effect-tags";
-    const effects=[...new Set(group.effects.map(effectLabel))];
-    const durations=[...new Set(group.effects.map(durationLabel))];
-    [...effects,...durations].forEach(text=>{
-      const tag=document.createElement("span");tag.className="incoming-effect-tag";tag.textContent=text;tags.append(tag);
-    });
-    body.append(title,caster,tags);card.append(body);container.append(card);
+    if(cardData.created_at){
+      const date=new Date(cardData.created_at);
+      if(!Number.isNaN(date.getTime())){
+        const tag=document.createElement("span");tag.className="incoming-effect-tag";
+        tag.textContent=new Intl.DateTimeFormat("es-CO",{dateStyle:"short",timeStyle:"short"}).format(date);tags.append(tag);
+      }
+    }
+    const active=activeBySource.get(cardData.card_instance_id||cardData.source_card_instance_id);
+    if(active){
+      [...new Set(active.effects.map(effectLabel)),...new Set(active.effects.map(durationLabel))].forEach(text=>{
+        const tag=document.createElement("span");tag.className="incoming-effect-tag";tag.textContent=text;tags.append(tag);
+      });
+    }else{
+      const tag=document.createElement("span");tag.className="incoming-effect-tag";tag.textContent="RECIBIDA";tags.append(tag);
+    }
+    if(cardData.custom_message){
+      const note=document.createElement("p");note.className="incoming-effect-caster";note.textContent="“"+cardData.custom_message+"”";body.append(title,caster,tags,note);
+    }else{
+      body.append(title,caster,tags);
+    }
+    card.append(body);container.append(card);
   });
+
+  // Si por alguna razón el RPC de historial no devuelve la carta, mantenemos
+  // visibles los efectos activos para no perder información.
+  if(!cards.length){
+    activeGroups.forEach(group=>{
+      const card=document.createElement("article");card.className="incoming-effect-card";
+      const imagePath=group.card?.image_path;
+      if(imagePath){
+        const image=document.createElement("img");image.className="incoming-effect-image";image.src=imagePath;image.alt=group.card.name||"Carta";card.append(image);
+      }else{
+        const image=document.createElement("div");image.className="incoming-effect-image fallback";image.textContent="✦";card.append(image);
+      }
+      const body=document.createElement("div");body.className="incoming-effect-body";
+      const title=document.createElement("div");title.className="incoming-effect-title";
+      const name=document.createElement("strong");name.textContent=group.card?.name||"Carta TypeLink";
+      const rarity=document.createElement("span");rarity.className="incoming-effect-rarity";rarity.textContent=group.card?.rarity||"CARTA";
+      title.append(name,rarity);
+      const caster=document.createElement("p");caster.className="incoming-effect-caster";caster.textContent="Lanzada por "+(group.casterName||"otro entrenador");
+      body.append(title,caster);card.append(body);container.append(card);
+    });
+  }
 }
 async function togglePokemonType(typeSlug){
   if(!authClient||!currentAuthUser||pendingTypeUpdates.has(typeSlug))return;
@@ -825,14 +872,15 @@ async function togglePokemonType(typeSlug){
 async function loadProfileMechanics(){
   if(!authClient||!currentAuthUser){
     playerTypeStatus=Object.create(null);incomingCardEffects=[];
-    renderTypeTracker();renderIncomingEffects([]);return;
+    renderTypeTracker();renderIncomingEffects([],[]);return;
   }
-  const [typesResult,effectsResult]=await Promise.all([
+  const [typesResult,effectsResult,incomingCardsResult]=await Promise.all([
     authClient.from("player_type_status").select("type_slug,is_enabled")
       .eq("owner_id",currentAuthUser.id),
     authClient.from("player_effects").select("id,owner_id,applied_by,source_card_instance_id,effect_key,effect_value,parameters,duration_type,duration_value,duration_unit,expires_at,expires_after_tramo,remaining_uses,status,created_at")
       .eq("owner_id",currentAuthUser.id).eq("status","active")
-      .order("created_at",{ascending:false})
+      .order("created_at",{ascending:false}),
+    authClient.rpc("get_trainer_incoming_cards",{p_trainer_id:currentAuthUser.id})
   ]);
   if(typesResult.error){
     console.error("No se pudieron cargar los tipos Pokémon:",typesResult.error.message);
@@ -889,7 +937,10 @@ async function loadProfileMechanics(){
     grouped.get(key).effects.push(effect);
   });
   incomingCardEffects=[...grouped.values()];
-  renderIncomingEffects(incomingCardEffects);
+  if(incomingCardsResult.error){
+    console.warn("No se pudieron cargar las cartas recibidas:",incomingCardsResult.error.message);
+  }
+  renderIncomingEffects(incomingCardEffects,incomingCardsResult.error?[]:(incomingCardsResult.data||[]));
 }
 async function loadMyProfile(){
   if(!authClient||!currentAuthUser){
