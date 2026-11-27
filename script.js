@@ -283,7 +283,7 @@ function drawWheel(){
     ctx.moveTo(center,center);
     ctx.arc(center,center,radius,start,end);
     ctx.closePath();
-    ctx.fillStyle=i%2===0?"#e5e9ec":"#283541";
+    const wheelColors=["#e4e9ed","#334551","#263640"];\n    ctx.fillStyle=wheelColors[i%wheelColors.length];
     ctx.fill();
     ctx.strokeStyle="#8f9aa3";
     ctx.lineWidth=3;
