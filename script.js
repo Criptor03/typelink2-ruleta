@@ -1988,12 +1988,12 @@ async function openCardAction(instanceId,mode){
         cards.forEach(item=>{
           const option=document.createElement("option");
           option.value=item.activity_id;
-          option.textContent=(item.card_name||"Carta TypeLink")+" · "+(item.rarity||"CARTA")+" · de "+(item.sender_name||"otro entrenador");
+          option.textContent=(item.card_name||"Carta TypeLink")+" · "+(item.rarity||"CARTA")+" · de "+(item.sender_name||"otro entrenador")+(item.has_active_effect?" · EFECTO ACTIVO":"");
           manipulationSelect.append(option);
         });
         if(!cards.length){
           confirmButton.disabled=true;
-          feedback.textContent="No tienes ninguna carta con un efecto activo que puedas devolver.";
+          feedback.textContent="No tienes ninguna carta recibida que puedas cancelar.";
         }
       }catch(error){
         console.error("No se pudieron cargar las cartas reversibles:",error);
