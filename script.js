@@ -2209,7 +2209,7 @@ async function confirmCardAction(){
   let manipulationCardId=null;
   const protectionEffect=(cardEffectsById[card.card_id]||[]).find(effect=>effect.effect_key==="protection_normal"||effect.effect_key==="protection_ultimate");
   const manipulationEffect=(cardEffectsById[card.card_id]||[]).find(effect=>[
-    "copy_opponent_card","copy_incoming_card","steal_opponent_card","transform_card"
+    "copy_opponent_card","copy_incoming_card","steal_opponent_card","reverse_effect","transform_card"
   ].includes(effect.effect_key));
   if(mode==="use"&&protectionEffect){
     targetId=document.getElementById("cardActionProtectionSelect")?.value||null;
