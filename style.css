@@ -4454,25 +4454,25 @@ body{
 
 
 
-/* Global card cooldown */
+/* Global card cooldown — línea visual TypeLink 2 */
 #page-activity .activity-intro{
   display:grid;
-  grid-template-columns:minmax(0,1fr) auto auto;
+  grid-template-columns:minmax(0,1fr) minmax(250px,310px) auto;
   align-items:center;
-  gap:24px;
+  gap:28px;
 }
 #page-activity .activity-intro-copy{min-width:0}
 #page-activity .activity-cooldown{
-  min-width:245px;
+  min-width:0;
   display:grid;
-  grid-template-columns:auto auto;
+  grid-template-columns:1fr auto;
   grid-template-rows:auto auto;
-  column-gap:12px;
+  column-gap:18px;
   align-items:center;
-  padding:10px 15px;
-  border:1px solid #3b4f5c;
-  border-radius:6px;
-  background:linear-gradient(135deg,#172631,#111b24);
+  padding:12px 16px;
+  border:1px solid #30434f;
+  border-radius:5px;
+  background:#14212b;
   box-shadow:inset 0 1px #ffffff08;
 }
 #page-activity .activity-cooldown-label{
@@ -4480,34 +4480,37 @@ body{
   color:#8ea5b4;
   font-size:7px;
   font-weight:900;
-  letter-spacing:1.5px;
+  letter-spacing:1.4px;
+  line-height:1.1;
 }
 #page-activity .activity-cooldown-timer{
   grid-column:2;
   grid-row:1 / span 2;
   color:#dfe9ee;
-  font:800 23px 'Barlow Condensed';
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:18px;
+  font-weight:800;
   letter-spacing:1px;
+  line-height:1;
   text-align:right;
-  min-width:67px;
+  min-width:58px;
 }
 #page-activity .activity-cooldown small{
   grid-column:1;
-  color:#718693;
+  color:#6f8491;
   font-size:7px;
-  line-height:1.4;
-  margin-top:3px;
+  line-height:1.35;
+  margin-top:4px;
 }
 #page-activity .activity-cooldown.is-active{
-  border-color:#66525a;
-  background:linear-gradient(135deg,#241f27,#151c24);
+  border-color:#4b4148;
+  background:#171f26;
 }
 #page-activity .activity-cooldown.is-active .activity-cooldown-label{
-  color:#e2a4ab;
+  color:#d9a2aa;
 }
 #page-activity .activity-cooldown.is-active .activity-cooldown-timer{
-  color:#f0c0c5;
-  text-shadow:0 0 14px #e47f8b22;
+  color:#e8b8be;
 }
 .card-action-cooldown{
   display:flex;
@@ -4515,29 +4518,31 @@ body{
   gap:11px;
   margin:10px 0 12px;
   padding:11px 13px;
-  border:1px solid #67515a;
+  border:1px solid #4b4148;
   border-radius:5px;
-  background:linear-gradient(135deg,#241f27,#151c24);
+  background:#171f26;
   color:#e6edf1;
 }
 .card-action-cooldown[hidden]{display:none!important}
 .card-action-cooldown>span{
   width:27px;height:27px;display:grid;place-items:center;
-  border:1px solid #765d65;border-radius:50%;
-  color:#e3a0a8;font-size:13px;
+  border:1px solid #68545a;border-radius:50%;
+  color:#d9a2aa;font-size:13px;
 }
 .card-action-cooldown>div{
   min-width:0;display:flex;flex-direction:column;gap:2px;flex:1;
 }
 .card-action-cooldown strong{
-  color:#e3a0a8;font-size:7px;font-weight:900;letter-spacing:1.2px;
+  color:#d9a2aa;font-size:7px;font-weight:900;letter-spacing:1.2px;
 }
 .card-action-cooldown small{
-  color:#8d9ca6;font-size:8px;line-height:1.45;
+  color:#8798a2;font-size:8px;line-height:1.45;
 }
 .card-action-cooldown>b{
-  color:#f0c0c5;
-  font:800 20px 'Barlow Condensed';
+  color:#e8b8be;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:18px;
+  font-weight:800;
   letter-spacing:.8px;
   white-space:nowrap;
 }
@@ -4545,14 +4550,13 @@ body{
   opacity:.48;
   cursor:not-allowed;
 }
-@media(max-width:820px){
+@media(max-width:900px){
   #page-activity .activity-intro{
     grid-template-columns:minmax(0,1fr) auto;
   }
   #page-activity .activity-cooldown{
     grid-column:1 / -1;
     grid-row:2;
-    width:100%;
   }
 }
 @media(max-width:560px){
