@@ -280,8 +280,28 @@ async function loadCardCooldown(){
   try{
     const {data,error}=await authClient.rpc("get_card_cooldown");
     if(error)throw error;
-    const availableAt=data?.available_at?new Date(data.available_at).getTime():null;
-    cardCooldownAvailableAt=Number.isFinite(availableAt)?availableAt:null;
+
+    // Supabase devuelve jsonb como objeto, pero normalizamos también
+    // respuestas serializadas para que el contador nunca dependa del formato.
+    let cooldown=data;
+    if(typeof cooldown==="string"){
+      try{cooldown=JSON.parse(cooldown);}catch{}
+    }
+    if(Array.isArray(cooldown))cooldown=cooldown[0]||null;
+
+    const remainingSeconds=Math.max(0,Number(cooldown?.remaining_seconds)||0);
+    const availableAt=cooldown?.available_at
+      ?new Date(cooldown.available_at).getTime()
+      :null;
+
+    // El servidor es la fuente de verdad. Preferimos remaining_seconds
+    // porque ya viene calculado con el reloj de PostgreSQL.
+    cardCooldownAvailableAt=remainingSeconds>0
+      ?Date.now()+remainingSeconds*1000
+      :Number.isFinite(availableAt)&&availableAt>Date.now()
+        ?availableAt
+        :null;
+
     startCardCooldownTicker();
   }catch(error){
     console.warn("No se pudo consultar el cooldown global de cartas:",error.message||error);
