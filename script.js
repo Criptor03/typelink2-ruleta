@@ -232,7 +232,7 @@ function updateCardCooldownUI(){
     if(wallLabel)wallLabel.textContent=active?"COOLDOWN DE CARTAS":"CARTAS DISPONIBLES";
     if(wallTimer)wallTimer.textContent=active?formatCardCooldown(remaining):"LISTO";
     if(wallHint)wallHint.textContent=active
-      ?"Nadie puede utilizar una carta hasta que termine el contador."
+      ?"Tú no puedes utilizar otra carta hasta que termine el contador."
       :"Puedes utilizar una carta.";
   }
 
@@ -305,7 +305,7 @@ async function loadCardCooldown(){
 
     startCardCooldownTicker();
   }catch(error){
-    console.warn("No se pudo consultar el cooldown global de cartas:",error.message||error);
+    console.warn("No se pudo consultar tu cooldown de cartas:",error.message||error);
   }finally{
     cardCooldownFetchInFlight=false;
   }
