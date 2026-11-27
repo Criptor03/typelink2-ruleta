@@ -209,7 +209,8 @@ CARDS.forEach(card=>{
 function setText(id,value){
   const el=document.getElementById(id);
   if(el)el.textContent=value==null?"":String(value);
-}\nfunction formatCardCooldown(seconds){
+}
+function formatCardCooldown(seconds){
   const total=Math.max(0,Math.ceil(Number(seconds)||0));
   const minutes=Math.floor(total/60);
   const secs=total%60;
