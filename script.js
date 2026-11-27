@@ -283,7 +283,9 @@ function drawWheel(){
     ctx.moveTo(center,center);
     ctx.arc(center,center,radius,start,end);
     ctx.closePath();
-    const wheelColors=["#e4e9ed","#334551","#263640"];
+    // Patrón fijo de 3 tonos: azul grisáceo → gris muy claro → azul oscuro.
+    // Se usa en las tres ruletas para mantener una identidad visual coherente.
+    const wheelColors=["#526875","#e7ecef","#263640"];
     ctx.fillStyle=wheelColors[i%wheelColors.length];
     ctx.fill();
     ctx.strokeStyle="#60737f";
