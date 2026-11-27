@@ -283,10 +283,11 @@ function drawWheel(){
     ctx.moveTo(center,center);
     ctx.arc(center,center,radius,start,end);
     ctx.closePath();
-    const wheelColors=["#e4e9ed","#334551","#263640"];\n    ctx.fillStyle=wheelColors[i%wheelColors.length];
+    const wheelColors=["#e4e9ed","#334551","#263640"];
+    ctx.fillStyle=wheelColors[i%wheelColors.length];
     ctx.fill();
-    ctx.strokeStyle="#8f9aa3";
-    ctx.lineWidth=3;
+    ctx.strokeStyle="#60737f";
+    ctx.lineWidth=2;
     ctx.stroke();
 
     // The card stays inside its own slice. Narrower slices automatically get
