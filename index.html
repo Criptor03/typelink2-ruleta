@@ -410,7 +410,15 @@
 
         <section class="page-view" id="page-activity" hidden>
           <div class="page-heading"><div><div class="eyebrow">06 / COMUNIDAD</div><h1>CHAT DE <em>CARTAS</em></h1><p>Cartas lanzadas entre entrenadores.</p></div></div>
-          <div class="activity-intro panel"><div><span class="eyebrow">EN DIRECTO</span><h2>La comunidad</h2><p>Toca una carta para ampliarla.</p></div><span class="activity-live-tag"><i></i> EN DIRECTO</span></div>
+          <div class="activity-intro panel">
+            <div class="activity-intro-copy"><span class="eyebrow">EN DIRECTO</span><h2>La comunidad</h2><p>Toca una carta para ampliarla.</p></div>
+            <div class="activity-cooldown" id="activityCooldown" aria-live="polite">
+              <span class="activity-cooldown-label" id="activityCooldownLabel">CARTAS DISPONIBLES</span>
+              <strong class="activity-cooldown-timer" id="activityCooldownTimer">LISTO</strong>
+              <small id="activityCooldownHint">Puedes utilizar una carta.</small>
+            </div>
+            <span class="activity-live-tag"><i></i> EN DIRECTO</span>
+          </div>
           <div id="activityFeed" class="activity-feed"><div class="activity-empty panel">Inicia sesión para ver el chat.</div></div>
         </section>
 
@@ -1245,6 +1253,11 @@
         </div>
       </div>
       <p class="card-action-description" id="cardActionDescription">Confirma esta acción para continuar.</p>
+      <div class="card-action-cooldown" id="cardActionCooldown" hidden aria-live="polite">
+        <span>⏱</span>
+        <div><strong id="cardActionCooldownLabel">COOLDOWN DE CARTAS</strong><small id="cardActionCooldownHint">Podrás utilizar una carta cuando termine el contador.</small></div>
+        <b id="cardActionCooldownTimer">15:00</b>
+      </div>
       <div class="card-action-target" id="cardActionTargetWrap" hidden>
         <label for="cardActionTarget">ENTRENADOR OBJETIVO</label>
         <select id="cardActionTarget"><option value="">Selecciona un entrenador</option></select>
