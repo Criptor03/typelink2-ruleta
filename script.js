@@ -227,12 +227,25 @@ function updateCardCooldownUI(){
   const wallLabel=document.getElementById("activityCooldownLabel");
   const wallTimer=document.getElementById("activityCooldownTimer");
   const wallHint=document.getElementById("activityCooldownHint");
+  const deckCooldown=document.getElementById("deckCooldown");
+  const deckCooldownLabel=document.getElementById("deckCooldownLabel");
+  const deckCooldownTimer=document.getElementById("deckCooldownTimer");
+  const deckCooldownHint=document.getElementById("deckCooldownHint");
   if(wall){
     wall.classList.toggle("is-active",active);
     if(wallLabel)wallLabel.textContent=active?"COOLDOWN DE CARTAS":"CARTAS DISPONIBLES";
     if(wallTimer)wallTimer.textContent=active?formatCardCooldown(remaining):"LISTO";
     if(wallHint)wallHint.textContent=active
       ?"Tú no puedes utilizar otra carta hasta que termine el contador."
+      :"Puedes utilizar una carta.";
+  }
+
+  if(deckCooldown){
+    deckCooldown.classList.toggle("is-active",active);
+    if(deckCooldownLabel)deckCooldownLabel.textContent=active?"COOLDOWN DE CARTAS":"CARTAS DISPONIBLES";
+    if(deckCooldownTimer)deckCooldownTimer.textContent=active?formatCardCooldown(remaining):"LISTO";
+    if(deckCooldownHint)deckCooldownHint.textContent=active
+      ?"No puedes utilizar otra carta hasta que termine el contador."
       :"Puedes utilizar una carta.";
   }
 
@@ -2320,7 +2333,7 @@ async function confirmCardAction(){
     const remainingCooldown=await loadCardCooldown();
     if(remainingCooldown>0){
       const feedback=document.getElementById("cardActionFeedback");
-      if(feedback)feedback.textContent="Las cartas están en cooldown global. Falta "+formatCardCooldown(remainingCooldown)+".";
+      if(feedback)feedback.textContent="Tu cooldown de cartas sigue activo. Falta "+formatCardCooldown(remainingCooldown)+".";
       updateCardCooldownUI();
       return;
     }
