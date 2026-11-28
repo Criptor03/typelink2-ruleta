@@ -4943,3 +4943,41 @@ body{
     max-width:125px;
   }
 }
+
+
+/* Modal de asignación de coaches */
+.coach-assignment-modal[hidden]{display:none!important}
+.coach-assignment-modal{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:24px}
+.coach-assignment-backdrop{position:absolute;inset:0;background:rgba(3,8,13,.78);backdrop-filter:blur(5px)}
+.coach-assignment-dialog{position:relative;width:min(720px,100%);max-height:min(760px,90vh);overflow:auto;background:#101b24;border:1px solid #40515e;box-shadow:0 24px 80px rgba(0,0,0,.55);padding:28px}
+.coach-assignment-dialog h2{margin:8px 0 6px;font-size:clamp(28px,4vw,42px);letter-spacing:-.03em}
+.coach-assignment-dialog>p{margin:0 0 20px;color:#9eacb7;line-height:1.5}
+.coach-assignment-close{position:absolute;top:16px;right:18px;border:0;background:transparent;color:#b9c4cc;font-size:30px;line-height:1;cursor:pointer}
+.coach-assignment-close:hover{color:#fff}
+.coach-assignment-list{display:grid;gap:8px;max-height:460px;overflow:auto;padding-right:4px}
+.coach-assignment-row{display:grid;grid-template-columns:22px 42px minmax(0,1fr) auto;align-items:center;gap:12px;padding:11px 13px;background:#16242e;border:1px solid #314451;cursor:pointer;transition:border-color .15s,background .15s}
+.coach-assignment-row:hover{background:#1b2b36;border-color:#536875}
+.coach-assignment-row input{width:16px;height:16px;accent-color:#e85b67}
+.coach-assignment-avatar{width:42px;height:42px;border-radius:50%;overflow:hidden;border:1px solid #536875;background:#0b1218;display:grid;place-items:center;font-size:11px;font-weight:800}
+.coach-assignment-avatar img{width:100%;height:100%;object-fit:cover}
+.coach-assignment-copy{min-width:0;display:flex;flex-direction:column;gap:3px}
+.coach-assignment-copy strong{font-size:14px;color:#f1f5f7}
+.coach-assignment-copy small{font-size:10px;letter-spacing:.08em;color:#7f909b;text-transform:uppercase}
+.coach-assignment-copy small.is-reassigned{color:#d8a45c}
+.coach-assignment-check{opacity:.25;color:#8fd19e;font-weight:900}
+.coach-assignment-row input:checked~.coach-assignment-check{opacity:1}
+.coach-assignment-empty{padding:24px;border:1px dashed #40515e;color:#8f9ca5;text-align:center}
+.coach-assignment-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:18px;border-top:1px solid #30414d}
+.coach-assignment-actions button{min-height:40px;padding:0 18px;border:1px solid #465a67;background:#172631;color:#d9e2e8;font-weight:800;letter-spacing:.08em;cursor:pointer}
+.coach-assignment-actions .admin-primary-button{background:#dfe6eb;color:#101820;border-color:#dfe6eb}
+.coach-assignment-actions button:disabled{opacity:.5;cursor:not-allowed}
+.admin-coach-edit-button{margin-top:6px;border:1px solid #465a67;background:#172631;color:#b9c7d0;padding:5px 9px;font-size:9px;font-weight:800;letter-spacing:.08em;cursor:pointer}
+.admin-coach-edit-button:hover{border-color:#d9e2e8;color:#fff}
+@media(max-width:640px){
+  .coach-assignment-modal{padding:12px}
+  .coach-assignment-dialog{padding:22px 16px}
+  .coach-assignment-row{grid-template-columns:22px 38px minmax(0,1fr) auto}
+  .coach-assignment-avatar{width:38px;height:38px}
+  .coach-assignment-actions{flex-direction:column}
+  .coach-assignment-actions button{width:100%}
+}
