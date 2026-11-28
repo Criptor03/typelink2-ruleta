@@ -1348,5 +1348,19 @@
   <script src="supabase-config.js"></script>
   <script src="src/gen5-save-parser.js?v=20261124-b2w2-sync-v2"></script>
 <script src="script.js?v=20261128-coaches-v1"></script>
+  <div class="coach-assignment-modal" id="coachAssignmentModal" hidden>
+    <div class="coach-assignment-backdrop" data-close-coach-modal></div>
+    <section class="coach-assignment-dialog" role="dialog" aria-modal="true" aria-labelledby="coachAssignmentModalTitle">
+      <button class="coach-assignment-close" type="button" id="coachAssignmentClose" aria-label="Cerrar">×</button>
+      <span class="eyebrow">ADMINISTRACIÓN / ASIGNACIÓN</span>
+      <h2 id="coachAssignmentModalTitle">Coach de:</h2>
+      <p id="coachAssignmentModalSubtitle">Selecciona los jugadores que quieres asignarle.</p>
+      <div class="coach-assignment-list" id="coachAssignmentPlayers"></div>
+      <div class="coach-assignment-actions">
+        <button class="admin-secondary-button" type="button" id="coachAssignmentCancel">CANCELAR</button>
+        <button class="admin-primary-button" type="button" id="coachAssignmentSave">GUARDAR ASIGNACIONES</button>
+      </div>
+    </section>
+  </div>
 </body>
 </html>
