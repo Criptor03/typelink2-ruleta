@@ -4715,3 +4715,32 @@ body{
     min-width:0;
   }
 }
+
+/* Event roles — participant management alignment fix */
+.admin-trainer-role-control{
+  grid-column:2;
+  min-width:0;
+  justify-content:flex-start;
+  flex-wrap:wrap;
+  margin-top:2px;
+}
+.admin-trainer-role-control .admin-role-select{
+  min-width:140px;
+}
+.admin-trainer-open{
+  grid-column:2!important;
+  justify-self:start;
+}
+@media(max-width:560px){
+  .admin-trainer-role-control{
+    width:100%;
+    justify-content:flex-start;
+  }
+  .admin-trainer-role-control .admin-role-select{
+    min-width:0;
+    width:100%;
+  }
+  .admin-trainer-open{
+    width:auto;
+  }
+}
