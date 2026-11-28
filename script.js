@@ -3339,6 +3339,13 @@ function openCoachAssignmentModal(coach){
     });
   }
 
+  const closeButton=document.getElementById("coachAssignmentClose");
+  const cancelButton=document.getElementById("coachAssignmentCancel");
+  const backdrop=modal.querySelector("[data-close-coach-modal]");
+  if(closeButton)closeButton.onclick=closeCoachAssignmentModal;
+  if(cancelButton)cancelButton.onclick=closeCoachAssignmentModal;
+  if(backdrop)backdrop.onclick=closeCoachAssignmentModal;
+
   saveButton.onclick=async()=>{
     saveButton.disabled=true;
     const checkboxes=[...list.querySelectorAll('input[type="checkbox"]')];
