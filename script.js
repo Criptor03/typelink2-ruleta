@@ -797,6 +797,62 @@ function bindProfileCharacterPicker(){
     });
   });
 }
+async function loadCoachAssignments(){
+  const panel=document.getElementById("coachProfilePanel");
+  const container=document.getElementById("coachProfilePlayers");
+  if(!panel||!container)return;
+  const isCoach=eventRole==="coach"&&Boolean(currentAuthUser);
+  panel.hidden=!isCoach;
+  if(!isCoach)return;
+  container.replaceChildren();
+  const loading=document.createElement("div");
+  loading.className="profile-module-empty";
+  loading.textContent="Cargando jugadores asignados...";
+  container.append(loading);
+  try{
+    const {data,error}=await authClient.from("profiles")
+      .select("id,display_name,avatar_url,created_at,event_role")
+      .eq("coach_id",currentAuthUser.id)
+      .eq("event_role","player")
+      .order("display_name",{ascending:true});
+    if(error)throw error;
+    const players=Array.isArray(data)?data:[];
+    setText("coachProfileCount",players.length+" "+(players.length===1?"JUGADOR":"JUGADORES"));
+    container.replaceChildren();
+    if(!players.length){
+      const empty=document.createElement("div");
+      empty.className="profile-module-empty";
+      empty.textContent="Todavía no tienes jugadores asignados.";
+      container.append(empty);
+      return;
+    }
+    players.forEach(player=>{
+      const item=document.createElement("article");
+      item.className="coach-profile-player";
+      const avatar=document.createElement("div");
+      avatar.className="coach-profile-player-avatar";
+      applyAvatar(avatar,player.avatar_url,initials(player.display_name||"Jugador"));
+      const copy=document.createElement("div");
+      const name=document.createElement("strong");
+      name.textContent=player.display_name||"Jugador";
+      const meta=document.createElement("small");
+      meta.textContent="JUGADOR · "+(player.created_at?"DESDE "+formatDate(player.created_at):"TYPELINK 2");
+      copy.append(name,meta);
+      item.append(avatar,copy);
+      item.addEventListener("click",()=>showPublicPlayer(player.id,0));
+      item.setAttribute("role","button");
+      item.setAttribute("tabindex","0");
+      container.append(item);
+    });
+  }catch(error){
+    console.error("No se pudieron cargar los jugadores del coach:",error);
+    container.replaceChildren();
+    const message=document.createElement("div");
+    message.className="profile-module-empty";
+    message.textContent="No se pudo cargar tu equipo de jugadores.";
+    container.append(message);
+  }
+}
 function renderProfile(profile){
   currentProfile=profile||null;
   eventRole=profile?.event_role||"player";
@@ -1082,6 +1138,7 @@ async function loadMyProfile(){
   }
   renderProfile(data);
   await loadProfileMechanics();
+  await loadCoachAssignments();
 }
 
 function renderAuthState(user){
@@ -1598,13 +1655,23 @@ async function loadPlayers(){
   }
   const loading=document.createElement("div");loading.className="players-loading";loading.textContent="Cargando participantes...";container.append(loading);
   const {data:profiles,error}=await authClient.from("profiles")
-    .select("id,display_name,avatar_url,discord_id,created_at,event_role")
+    .select("id,display_name,avatar_url,discord_id,created_at,event_role,coach_id")
     .eq("event_role","player")
     .order("created_at",{ascending:true});
   if(error){
     console.error("No se pudieron cargar los jugadores:",error.message);
     container.replaceChildren();const message=document.createElement("div");message.className="empty-feature panel";message.textContent="No se pudo cargar la lista.";container.append(message);return;
   }
+  const coachIds=[...new Set((profiles||[]).map(profile=>profile.coach_id).filter(Boolean))];
+  let coachMap=Object.create(null);
+  if(coachIds.length){
+    const coachResult=await authClient.from("profiles").select("id,display_name,avatar_url,event_role").in("id",coachIds);
+    if(coachResult.error)console.warn("No se pudieron cargar los coaches de los jugadores:",coachResult.error.message);
+    (coachResult.data||[]).forEach(coach=>{
+      if(coach.event_role==="coach")coachMap[coach.id]=coach;
+    });
+  }
+
   const [cardsResult,progressResult,snapshotResult]=await Promise.all([
     authClient.from("player_cards")
       .select("owner_id,status,remaining_uses")
@@ -1659,6 +1726,23 @@ async function loadPlayers(){
     const availableCount=Number(cardCounts[profile.id]||0);
     totalCards.textContent=availableCount+" "+(availableCount===1?"CARTA":"CARTAS");
     stats.append(totalCards);
+    if(profile.coach_id&&coachMap[profile.coach_id]){
+      const coach=coachMap[profile.coach_id];
+      const coachBadge=document.createElement("div");
+      coachBadge.className="player-directory-coach";
+      coachBadge.title="Coach de "+(displayName||"este jugador");
+      const coachAvatar=document.createElement("div");
+      coachAvatar.className="player-directory-coach-avatar";
+      applyAvatar(coachAvatar,coach.avatar_url,initials(coach.display_name||"Coach"));
+      const coachCopy=document.createElement("div");
+      const coachLabel=document.createElement("small");
+      coachLabel.textContent="COACH";
+      const coachName=document.createElement("strong");
+      coachName.textContent=coach.display_name||"Coach";
+      coachCopy.append(coachLabel,coachName);
+      coachBadge.append(coachAvatar,coachCopy);
+      card.append(coachBadge);
+    }
     const action=document.createElement("span");action.className="player-view-button";
     action.textContent="VER PERFIL ↗";
     card.append(avatar,info,stats,action);
@@ -1671,11 +1755,27 @@ async function showPublicPlayer(playerId,currentTramo=0){
   const modal=document.getElementById("publicProfileModal");
   modal.dataset.playerId=playerId;
   const {data:profile,error}=await authClient.from("profiles")
-    .select("id,display_name,avatar_url,discord_id,created_at,event_role").eq("id",playerId).single();
+    .select("id,display_name,avatar_url,discord_id,created_at,event_role,coach_id").eq("id",playerId).single();
   if(error||!profile){notify("No pudimos abrir este perfil.");return;}
   setText("publicPlayerName",profile.display_name||"Entrenador");
   setText("publicPlayerJoined","Entrenador desde "+formatDate(profile.created_at));
   applyAvatar(document.getElementById("publicPlayerAvatar"),profile.avatar_url,(profile.display_name||"TL").slice(0,2).toUpperCase());
+
+  const coachBadge=document.getElementById("publicPlayerCoachBadge");
+  const coachAvatar=document.getElementById("publicPlayerCoachAvatar");
+  const coachName=document.getElementById("publicPlayerCoachName");
+  if(coachBadge)coachBadge.hidden=true;
+  if(profile.event_role==="player"&&profile.coach_id){
+    const {data:coach,error:coachError}=await authClient.from("profiles")
+      .select("id,display_name,avatar_url,event_role")
+      .eq("id",profile.coach_id).eq("event_role","coach").maybeSingle();
+    if(coachError)console.warn("No se pudo cargar el coach del jugador:",coachError.message);
+    if(coach&&coachBadge){
+      coachBadge.hidden=false;
+      if(coachName)coachName.textContent=coach.display_name||"Coach";
+      if(coachAvatar)applyAvatar(coachAvatar,coach.avatar_url,initials(coach.display_name||"Coach"));
+    }
+  }
 
   const [cardsResult,typesResult,incomingResult]=await Promise.all([
     authClient.from("player_cards")
@@ -3178,7 +3278,30 @@ function eventRoleDescription(role){
   if(role==="spectator")return "Solo visualización";
   return "Participante";
 }
-async function saveAdminTrainerRole(profileId,select){
+async async function saveAdminPlayerCoach(playerId,select){
+  if(!isAdmin||!authClient||!playerId||!select)return;
+  const previous=select.dataset.savedCoach||"";
+  select.disabled=true;
+  try{
+    const {data,error}=await authClient.rpc("admin_set_player_coach",{
+      p_player_id:playerId,
+      p_coach_id:select.value||null
+    });
+    if(error)throw error;
+    const saved=Array.isArray(data)?data[0]:data;
+    select.dataset.savedCoach=saved?.coach_id||"";
+    notify(saved?.coach_name
+      ?"Coach asignado: "+saved.coach_name+"."
+      :"Coach retirado de "+(saved?.player_name||"el jugador")+".");
+    await loadAdminTrainers();
+  }catch(error){
+    select.value=previous;
+    notify("No se pudo actualizar el coach: "+(error.message||"error desconocido."));
+  }finally{
+    select.disabled=false;
+  }
+}
+function saveAdminTrainerRole(profileId,select){
   if(!isAdmin||!profileId||!select)return;
   const previous=select.dataset.savedRole||"player";
   select.disabled=true;
@@ -3239,6 +3362,44 @@ function renderAdminTrainers(){
     roleSelect.title=eventRoleDescription(roleSelect.value);
     roleSelect.addEventListener("change",()=>saveAdminTrainerRole(trainer.id,roleSelect));
     roleWrap.append(roleBadge,roleSelect);
+
+    if(trainer.event_role==="player"){
+      const coachSelect=document.createElement("select");
+      coachSelect.className="admin-coach-select";
+      coachSelect.setAttribute("aria-label","Coach de "+(trainer.display_name||"jugador"));
+      const none=document.createElement("option");
+      none.value="";none.textContent="Sin coach";
+      coachSelect.append(none);
+      adminTrainerItems.filter(item=>item.event_role==="coach").forEach(coach=>{
+        const option=document.createElement("option");
+        option.value=coach.id;
+        option.textContent=coach.display_name||"Coach";
+        coachSelect.append(option);
+      });
+      coachSelect.value=trainer.coach_id||"";
+      coachSelect.dataset.savedCoach=coachSelect.value;
+      coachSelect.title=coachSelect.value
+        ?"Coach: "+(trainer.coach_name||"")
+        :"Sin coach asignado";
+      coachSelect.addEventListener("change",()=>saveAdminPlayerCoach(trainer.id,coachSelect));
+      const coachLabel=document.createElement("span");
+      coachLabel.className="admin-coach-label";
+      coachLabel.textContent="COACH DE";
+      roleWrap.append(coachLabel,coachSelect);
+    }else if(trainer.event_role==="coach"){
+      const coached=Array.isArray(trainer.coached_players)?trainer.coached_players:[];
+      const coachPlayers=document.createElement("div");
+      coachPlayers.className="admin-coach-assigned";
+      const label=document.createElement("span");
+      label.textContent="COACH DE";
+      const names=document.createElement("strong");
+      names.textContent=coached.length
+        ?coached.map(player=>player.display_name||"Jugador").join(" · ")
+        :"NINGÚN JUGADOR";
+      coachPlayers.append(label,names);
+      roleWrap.append(coachPlayers);
+    }
+
     const button=document.createElement("button");button.type="button";button.className="player-view-button admin-trainer-open";button.textContent="VER ENTRENADOR ↗";
     button.addEventListener("click",()=>openAdminTrainerDetail(trainer.id));
     article.append(avatar,identity,meta,roleWrap,button);grid.append(article);
