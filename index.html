@@ -23,7 +23,7 @@
   <meta name="twitter:image" content="https://d2ol7oe51mr4n9.cloudfront.net/user_3M1AOCGHYrXVuXMWgDhR1lrk7px/8684321e-c902-4ff7-8a2d-b36c703124a8.png?v=20261123-og">
   <meta name="twitter:image:alt" content="Logo de Pokémon TypeLink 2">
   <title>Pokémon TypeLink 2 — Plataforma</title>
-  <link rel="stylesheet" href="style.css?v=20261128-event-roles-v2">
+  <link rel="stylesheet" href="style.css?v=20261128-coaches-v1">
 </head>
 <body>
   <div class="page-shell">
@@ -335,6 +335,15 @@
               <div><strong id="profileJoinedDate">—</strong><small>ENTRENADOR DESDE</small></div>
             </div>
           </div>
+          <section class="profile-module panel coach-profile-panel" id="coachProfilePanel" hidden>
+            <div class="profile-module-heading">
+              <div><span class="eyebrow">EQUIPO DE APOYO</span><h2>Coach de:</h2><p>Jugadores a los que acompañas durante TypeLink 2.</p></div>
+              <span class="type-count" id="coachProfileCount">0 JUGADORES</span>
+            </div>
+            <div id="coachProfilePlayers" class="coach-profile-players">
+              <div class="profile-module-empty">Todavía no tienes jugadores asignados.</div>
+            </div>
+          </section>
           <div class="profile-module panel type-tracker-panel">
             <div class="profile-module-heading">
               <div><span class="eyebrow">CONTROL DE TIPOS</span><h2>Mis 17 tipos Pokémon</h2><p>Activa o bloquea tipos.</p></div>
@@ -628,8 +637,8 @@
               </div>
               <div class="admin-role-legend panel">
                 <div><strong>JUGADOR</strong><span>Ruleta, perfil, baraja, TypeLink Sync y funciones de participante.</span></div>
-                <div><strong>COACH</strong><span>Acceso de apoyo y consulta; sin ruleta ni funciones de jugador.</span></div>
-                <div><strong>ESPECTADOR</strong><span>Solo visualización; no aparece en Jugadores ni puede usar funciones del evento.</span></div>
+                <div><strong>COACH</strong><span>Acceso de apoyo y consulta; aquí puedes asignarle sus jugadores.</span></div>
+                <div><strong>ESPECTADOR</strong><span>Solo visualización; puede consultar a los jugadores, pero no usar funciones del evento.</span></div>
               </div>
               <div class="admin-trainers-grid" id="adminTrainersGrid">
                 <div class="admin-catalog-loading">Cargando entrenadores...</div>
@@ -1121,7 +1130,20 @@
   <div class="public-profile-modal" id="publicProfileModal" hidden>
     <div class="public-profile-dialog panel">
       <button class="modal-close" id="closePublicProfile" type="button" aria-label="Cerrar">×</button>
-      <div class="public-profile-heading"><div class="profile-avatar-large" id="publicPlayerAvatar">TL</div><div><span class="eyebrow">PERFIL DE ENTRENADOR</span><h2 id="publicPlayerName">Entrenador</h2><p id="publicPlayerJoined">Participante TypeLink 2</p><small id="publicPlayerTramo" class="public-player-tramo">TRAMO ACTUAL · 0 / 12</small></div></div>
+      <div class="public-profile-heading">
+        <div class="profile-avatar-large" id="publicPlayerAvatar">TL</div>
+        <div>
+          <span class="eyebrow">PERFIL DE ENTRENADOR</span>
+          <h2 id="publicPlayerName">Entrenador</h2>
+          <p id="publicPlayerJoined">Participante TypeLink 2</p>
+          <small id="publicPlayerTramo" class="public-player-tramo">TRAMO ACTUAL · 0 / 12</small>
+        </div>
+        <div class="public-player-coach-badge" id="publicPlayerCoachBadge" hidden>
+          <span class="eyebrow">COACH</span>
+          <div class="public-player-coach-avatar" id="publicPlayerCoachAvatar">TL</div>
+          <strong id="publicPlayerCoachName">—</strong>
+        </div>
+      </div>
       <div class="public-profile-section public-profile-deck-section">
         <div class="panel-topline"><b>BARAJA PÚBLICA</b><span id="publicPlayerCardCount">0 CARTAS</span></div>
         <div id="publicPlayerCards" class="public-card-list"><div class="deck-empty">Este entrenador todavía no tiene cartas.</div></div>
@@ -1325,6 +1347,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0"></script>
   <script src="supabase-config.js"></script>
   <script src="src/gen5-save-parser.js?v=20261124-b2w2-sync-v2"></script>
-<script src="script.js?v=20261128-event-roles-v2"></script>
+<script src="script.js?v=20261128-coaches-v1"></script>
 </body>
 </html>
