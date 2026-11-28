@@ -3278,7 +3278,96 @@ function eventRoleDescription(role){
   if(role==="spectator")return "Solo visualización";
   return "Participante";
 }
-async async function saveAdminPlayerCoach(playerId,select){
+function closeCoachAssignmentModal(){
+  const modal=document.getElementById("coachAssignmentModal");
+  if(modal)modal.hidden=true;
+}
+
+function openCoachAssignmentModal(coach){
+  if(!coach||coach.event_role!=="coach")return;
+  const modal=document.getElementById("coachAssignmentModal");
+  const title=document.getElementById("coachAssignmentModalTitle");
+  const subtitle=document.getElementById("coachAssignmentModalSubtitle");
+  const list=document.getElementById("coachAssignmentPlayers");
+  const saveButton=document.getElementById("coachAssignmentSave");
+  if(!modal||!title||!subtitle||!list||!saveButton)return;
+
+  title.textContent="Coach de: "+(coach.display_name||"Coach");
+  subtitle.textContent="Selecciona los jugadores que quieres asignarle. Cada jugador puede tener un solo coach.";
+  list.replaceChildren();
+
+  const players=adminTrainerItems
+    .filter(item=>item.event_role==="player")
+    .sort((a,b)=>String(a.display_name||"").localeCompare(String(b.display_name||"")));
+
+  if(!players.length){
+    const empty=document.createElement("div");
+    empty.className="coach-assignment-empty";
+    empty.textContent="Todavía no hay jugadores registrados para asignar.";
+    list.append(empty);
+  }else{
+    players.forEach(player=>{
+      const row=document.createElement("label");
+      row.className="coach-assignment-row";
+      const checkbox=document.createElement("input");
+      checkbox.type="checkbox";
+      checkbox.value=player.id;
+      checkbox.checked=player.coach_id===coach.id;
+      checkbox.dataset.original=checkbox.checked?"1":"0";
+      const avatar=document.createElement("div");
+      avatar.className="coach-assignment-avatar";
+      applyAvatar(avatar,player.avatar_url,initials(player.display_name||"Jugador"));
+      const copy=document.createElement("div");
+      copy.className="coach-assignment-copy";
+      const name=document.createElement("strong");
+      name.textContent=player.display_name||"Jugador";
+      const current=document.createElement("small");
+      if(player.coach_id&&player.coach_id!==coach.id){
+        current.textContent="Coach actual: "+(player.coach_name||"otro coach")+" · Se reasignará a este coach";
+        current.className="is-reassigned";
+      }else if(player.coach_id===coach.id){
+        current.textContent="Ya asignado a este coach";
+      }else{
+        current.textContent="Sin coach asignado";
+      }
+      copy.append(name,current);
+      const state=document.createElement("span");
+      state.className="coach-assignment-check";
+      state.textContent="✓";
+      row.append(checkbox,avatar,copy,state);
+      list.append(row);
+    });
+  }
+
+  saveButton.onclick=async()=>{
+    saveButton.disabled=true;
+    const checkboxes=[...list.querySelectorAll('input[type="checkbox"]')];
+    try{
+      for(const checkbox of checkboxes){
+        const original=checkbox.dataset.original==="1";
+        const selected=checkbox.checked;
+        if(original===selected)continue;
+        const {error}=await authClient.rpc("admin_set_player_coach",{
+          p_player_id:checkbox.value,
+          p_coach_id:selected?coach.id:null
+        });
+        if(error)throw error;
+      }
+      closeCoachAssignmentModal();
+      notify("Asignaciones de "+(coach.display_name||"el coach")+" actualizadas.");
+      await loadAdminTrainers();
+    }catch(error){
+      console.error("No se pudieron actualizar las asignaciones del coach:",error);
+      notify("No se pudieron guardar todas las asignaciones: "+(error.message||"error desconocido."));
+    }finally{
+      saveButton.disabled=false;
+    }
+  };
+
+  modal.hidden=false;
+}
+
+async function saveAdminPlayerCoach(playerId,select){
   if(!isAdmin||!authClient||!playerId||!select)return;
   const previous=select.dataset.savedCoach||"";
   select.disabled=true;
@@ -3301,7 +3390,7 @@ async async function saveAdminPlayerCoach(playerId,select){
     select.disabled=false;
   }
 }
-function saveAdminTrainerRole(profileId,select){
+async function saveAdminTrainerRole(profileId,select){
   if(!isAdmin||!profileId||!select)return;
   const previous=select.dataset.savedRole||"player";
   select.disabled=true;
@@ -3315,6 +3404,10 @@ function saveAdminTrainerRole(profileId,select){
     select.dataset.savedRole=saved?.event_role||select.value;
     notify("Rol actualizado: "+eventRoleLabel(select.dataset.savedRole)+".");
     await loadAdminTrainers();
+    if((saved?.event_role||select.value)==="coach"){
+      const freshCoach=adminTrainerItems.find(item=>item.id===profileId)||{id:profileId,event_role:"coach",display_name:"Coach"};
+      openCoachAssignmentModal(freshCoach);
+    }
   }catch(error){
     select.value=previous;
     notify("No se pudo cambiar el rol: "+(error.message||"error desconocido."));
@@ -3397,6 +3490,12 @@ function renderAdminTrainers(){
         ?coached.map(player=>player.display_name||"Jugador").join(" · ")
         :"NINGÚN JUGADOR";
       coachPlayers.append(label,names);
+      const editButton=document.createElement("button");
+      editButton.type="button";
+      editButton.className="admin-coach-edit-button";
+      editButton.textContent="EDITAR";
+      editButton.addEventListener("click",()=>openCoachAssignmentModal(trainer));
+      coachPlayers.append(editButton);
       roleWrap.append(coachPlayers);
     }
 
