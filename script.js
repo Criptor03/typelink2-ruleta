@@ -5911,7 +5911,7 @@ function canAccessPage(page){
   if(!currentAuthUser)return page==="home";
   if(isAdmin)return true;
   if(eventRole==="player")return true;
-  if(eventRole==="coach")return ["home","players","activity","typeleague"].includes(page);
+  if(eventRole==="coach")return ["home","players","activity","profile","typeleague"].includes(page);
   if(eventRole==="spectator")return ["home","players","activity","typeleague"].includes(page);
   return page==="home";
 }
@@ -5921,7 +5921,7 @@ function renderRoleNavigation(){
     eventRole==="player"
       ? ["home","roulette","players","activity","profile","deck","pokemon","notifications","typeleague","admin"]
       : eventRole==="coach"
-        ? ["home","players","activity","typeleague"]
+        ? ["home","players","activity","profile","typeleague"]
         : ["home","players","activity","typeleague"]
   );
   document.querySelectorAll(".main-nav [data-page]").forEach(button=>{
