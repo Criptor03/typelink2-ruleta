@@ -612,9 +612,9 @@
             <div class="admin-catalog-heading">
               <div>
                 <button class="inline-link" type="button" id="adminTrainersBack">← TODAS LAS HERRAMIENTAS</button>
-                <div class="eyebrow">ADMINISTRACIÓN / PARTICIPANTES</div>
-                <h2>GESTIÓN DE <em>ENTRENADORES</em></h2>
-                <p>Progreso e inventario de cada jugador.</p>
+                <div class="eyebrow">ADMINISTRACIÓN / ROLES DEL EVENTO</div>
+                <h2>GESTIÓN DE <em>PARTICIPANTES</em></h2>
+                <p>Asigna qué puede hacer cada cuenta dentro de TypeLink 2.</p>
               </div>
             </div>
 
@@ -624,7 +624,12 @@
                 <div class="panel"><span class="eyebrow">CARTAS DISPONIBLES</span><strong id="adminTrainersCardsTotal">0</strong></div>
               </div>
               <div class="admin-catalog-toolbar panel">
-                <input id="adminTrainersSearch" type="search" placeholder="Buscar entrenador por nombre..." aria-label="Buscar entrenadores">
+                <input id="adminTrainersSearch" type="search" placeholder="Buscar participante por nombre..." aria-label="Buscar participantes">
+              </div>
+              <div class="admin-role-legend panel">
+                <div><strong>JUGADOR</strong><span>Ruleta, perfil, baraja, TypeLink Sync y funciones de participante.</span></div>
+                <div><strong>COACH</strong><span>Acceso de apoyo y consulta; sin ruleta ni funciones de jugador.</span></div>
+                <div><strong>ESPECTADOR</strong><span>Solo visualización; no aparece en Jugadores ni puede usar funciones del evento.</span></div>
               </div>
               <div class="admin-trainers-grid" id="adminTrainersGrid">
                 <div class="admin-catalog-loading">Cargando entrenadores...</div>
