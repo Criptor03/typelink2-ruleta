@@ -1598,7 +1598,8 @@ async function loadPlayers(){
   }
   const loading=document.createElement("div");loading.className="players-loading";loading.textContent="Cargando participantes...";container.append(loading);
   const {data:profiles,error}=await authClient.from("profiles")
-    .select("id,display_name,avatar_url,discord_id,created_at")
+    .select("id,display_name,avatar_url,discord_id,created_at,event_role")
+    .eq("event_role","player")
     .order("created_at",{ascending:true});
   if(error){
     console.error("No se pudieron cargar los jugadores:",error.message);
@@ -1630,9 +1631,9 @@ async function loadPlayers(){
   if(snapshotResult.error)console.warn("No se pudieron cargar los estados de sincronización Pokémon:",snapshotResult.error.message);
 
   container.replaceChildren();
-  setText("playersCount",(profiles||[]).length+" ENTRENADORES");
+  setText("playersCount",(profiles||[]).length+" JUGADORES");
   if(!profiles||!profiles.length){
-    const empty=document.createElement("div");empty.className="empty-feature panel";empty.textContent="Sin participantes todavía.";container.append(empty);return;
+    const empty=document.createElement("div");empty.className="empty-feature panel";empty.textContent="No hay jugadores registrados todavía.";container.append(empty);return;
   }
   profiles.forEach(profile=>{
     const displayName=profile.display_name||"Entrenador";
