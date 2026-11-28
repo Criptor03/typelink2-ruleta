@@ -55,6 +55,7 @@ const TAU = Math.PI * 2;
 let authClient = null;
 let currentAuthUser = null;
 let currentProfile = null;
+let eventRole = "player";
 let isAdmin = false;
 let adminAccessChecked = false;
 let activeSessionUserId = null;
@@ -798,6 +799,8 @@ function bindProfileCharacterPicker(){
 }
 function renderProfile(profile){
   currentProfile=profile||null;
+  eventRole=profile?.event_role||"player";
+  renderRoleNavigation();
   const metadata=currentAuthUser?.user_metadata||{};
   const displayName=profile?.display_name||metadata.global_name||metadata.name||metadata.user_name||"Entrenador";
   const avatarUrl=profile?.avatar_url||metadata.avatar_url||metadata.picture||"";
@@ -1070,7 +1073,7 @@ async function loadMyProfile(){
     renderProfile(null);renderTypeTracker();renderIncomingEffects([]);return;
   }
   const {data,error}=await authClient.from("profiles")
-    .select("id,display_name,avatar_url,discord_id,created_at")
+    .select("id,display_name,avatar_url,discord_id,created_at,event_role")
     .eq("id",currentAuthUser.id).single();
   if(error){
     console.error("No se pudo cargar el perfil:",error.message);
@@ -1667,7 +1670,7 @@ async function showPublicPlayer(playerId,currentTramo=0){
   const modal=document.getElementById("publicProfileModal");
   modal.dataset.playerId=playerId;
   const {data:profile,error}=await authClient.from("profiles")
-    .select("id,display_name,avatar_url,discord_id,created_at").eq("id",playerId).single();
+    .select("id,display_name,avatar_url,discord_id,created_at,event_role").eq("id",playerId).single();
   if(error||!profile){notify("No pudimos abrir este perfil.");return;}
   setText("publicPlayerName",profile.display_name||"Entrenador");
   setText("publicPlayerJoined","Entrenador desde "+formatDate(profile.created_at));
@@ -3166,6 +3169,35 @@ function showAdminTrainerList(){
   if(list)list.hidden=false;
   if(detail)detail.hidden=true;
 }
+function eventRoleLabel(role){
+  return role==="coach"?"COACH":role==="spectator"?"ESPECTADOR":"JUGADOR";
+}
+function eventRoleDescription(role){
+  if(role==="coach")return "Consulta y apoyo";
+  if(role==="spectator")return "Solo visualización";
+  return "Participante";
+}
+async function saveAdminTrainerRole(profileId,select){
+  if(!isAdmin||!profileId||!select)return;
+  const previous=select.dataset.savedRole||"player";
+  select.disabled=true;
+  try{
+    const {data,error}=await authClient.rpc("admin_set_profile_role",{
+      p_profile_id:profileId,
+      p_event_role:select.value
+    });
+    if(error)throw error;
+    const saved=Array.isArray(data)?data[0]:data;
+    select.dataset.savedRole=saved?.event_role||select.value;
+    notify("Rol actualizado: "+eventRoleLabel(select.dataset.savedRole)+".");
+    await loadAdminTrainers();
+  }catch(error){
+    select.value=previous;
+    notify("No se pudo cambiar el rol: "+(error.message||"error desconocido."));
+  }finally{
+    select.disabled=false;
+  }
+}
 function renderAdminTrainers(){
   const grid=document.getElementById("adminTrainersGrid");
   if(!grid)return;
@@ -3195,9 +3227,20 @@ function renderAdminTrainers(){
     const cards=document.createElement("span");cards.textContent=Number(trainer.cards_available||0)+" "+(Number(trainer.cards_available||0)===1?"CARTA":"CARTAS");
     const spins=document.createElement("span");spins.textContent=Number(trainer.spins_remaining||0)+" GIROS · "+Number(trainer.bonus_spins_remaining||0)+" EXTRA";
     meta.append(tramo,cards,spins);
+    const roleWrap=document.createElement("div");roleWrap.className="admin-trainer-role-control";
+    const roleBadge=document.createElement("span");roleBadge.className="admin-role-badge role-"+(trainer.event_role||"player");roleBadge.textContent=eventRoleLabel(trainer.event_role||"player");
+    const roleSelect=document.createElement("select");roleSelect.className="admin-role-select";roleSelect.setAttribute("aria-label","Rol de "+(trainer.display_name||"participante"));
+    [["player","Jugador"],["coach","Coach"],["spectator","Espectador"]].forEach(([value,label])=>{
+      const option=document.createElement("option");option.value=value;option.textContent=label;roleSelect.append(option);
+    });
+    roleSelect.value=trainer.event_role||"player";
+    roleSelect.dataset.savedRole=roleSelect.value;
+    roleSelect.title=eventRoleDescription(roleSelect.value);
+    roleSelect.addEventListener("change",()=>saveAdminTrainerRole(trainer.id,roleSelect));
+    roleWrap.append(roleBadge,roleSelect);
     const button=document.createElement("button");button.type="button";button.className="player-view-button admin-trainer-open";button.textContent="VER ENTRENADOR ↗";
     button.addEventListener("click",()=>openAdminTrainerDetail(trainer.id));
-    article.append(avatar,identity,meta,button);grid.append(article);
+    article.append(avatar,identity,meta,roleWrap,button);grid.append(article);
   });
 }
 async function loadAdminTrainers(){
@@ -4786,7 +4829,7 @@ async function activateUserSession(user){
 
     notificationCache=[];
     setNotificationBadge(0);
-    activeSessionUserId=null;currentProfile=null;isAdmin=false;adminAccessChecked=false;cloudMode=false;cloudDeck=[];cloudRoute=[];cloudSpecial=[];cloudInventory=[];
+    activeSessionUserId=null;currentProfile=null;eventRole="player";isAdmin=false;adminAccessChecked=false;cloudMode=false;cloudDeck=[];cloudRoute=[];cloudSpecial=[];cloudInventory=[];
     currentTramo=0;tramoSpinsRemaining=0;bonusTramoSpinsRemaining=0;
     normalCardLimit=5;cardsPerTramo=2;normalSpinsPerTramo=3;
     rouletteAccessByPool={legendary:0,fiesta:0};
@@ -5702,7 +5745,44 @@ async function openAdminTypeLeague(){
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
+function canAccessPage(page){
+  if(!currentAuthUser)return page==="home";
+  if(isAdmin)return true;
+  if(eventRole==="player")return true;
+  if(eventRole==="coach")return ["home","players","activity","typeleague"].includes(page);
+  if(eventRole==="spectator")return ["home","activity","typeleague"].includes(page);
+  return page==="home";
+}
+
+function renderRoleNavigation(){
+  const allowed=new Set(
+    eventRole==="player"
+      ? ["home","roulette","players","activity","profile","deck","pokemon","notifications","typeleague","admin"]
+      : eventRole==="coach"
+        ? ["home","players","activity","typeleague"]
+        : ["home","activity","typeleague"]
+  );
+  document.querySelectorAll(".main-nav [data-page]").forEach(button=>{
+    const page=button.dataset.page;
+    if(page==="admin")button.hidden=!isAdmin;
+    else button.hidden=!allowed.has(page);
+  });
+  document.querySelectorAll(".overview-card[data-page]").forEach(card=>{
+    card.hidden=!allowed.has(card.dataset.page);
+  });
+}
+
 function setPage(page){
+  if(!canAccessPage(page)){
+    notify(
+      eventRole==="coach"
+        ? "Este apartado no está disponible para coaches."
+        : eventRole==="spectator"
+          ? "Este apartado no está disponible para espectadores."
+          : "Este apartado requiere iniciar sesión."
+    );
+    page="home";
+  }
   if(page==="typeleague"&&(!currentAuthUser||(!typeLeagueVisible&&!isAdmin))){
     notify("TypeLeague todavía no está disponible para los participantes.");
     page="home";
@@ -5717,6 +5797,7 @@ function setPage(page){
   });
   const labels={home:"INICIO",roulette:"RULETA",typeleague:"TYPELEAGUE",players:"JUGADORES",activity:"MURO DE CARTAS",profile:"MI PERFIL",deck:"MI BARAJA",pokemon:"MI EQUIPO POKÉMON",notifications:"NOTIFICACIONES",admin:"ADMINISTRACIÓN"};
   setText("currentSection",labels[page]||"INICIO");
+  renderRoleNavigation();
   document.getElementById("sidebar").classList.remove("open");
   document.getElementById("mobileScrim").classList.remove("show");
   if(page==="roulette")drawWheel();
