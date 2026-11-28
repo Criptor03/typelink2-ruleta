@@ -4637,3 +4637,81 @@ body{
     justify-self:start;
   }
 }
+
+
+.admin-role-legend{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  padding:12px 14px;
+  margin:0 0 12px;
+  background:#14212b;
+  border-color:#30434f;
+}
+.admin-role-legend div{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  min-width:0;
+}
+.admin-role-legend strong{
+  font:900 9px 'Barlow Condensed';
+  letter-spacing:1.3px;
+  color:#dfe7ec;
+}
+.admin-role-legend span{
+  font-size:8px;
+  line-height:1.5;
+  color:#7f929e;
+}
+.admin-trainer-role-control{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:7px;
+  min-width:155px;
+}
+.admin-role-badge{
+  border:1px solid #3c4b56;
+  padding:4px 6px;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:1px;
+  color:#a9b7c0;
+  white-space:nowrap;
+}
+.admin-role-badge.role-player{
+  border-color:#456c5a;
+  color:#7fb593;
+}
+.admin-role-badge.role-coach{
+  border-color:#53677a;
+  color:#9eb4c7;
+}
+.admin-role-badge.role-spectator{
+  border-color:#5c5c63;
+  color:#a8a8af;
+}
+.admin-role-select{
+  min-width:112px;
+  border:1px solid #3b4c58;
+  border-radius:4px;
+  background:#101a22;
+  color:#dfe7ec;
+  padding:7px 8px;
+  font:800 8px Inter;
+  letter-spacing:.5px;
+  cursor:pointer;
+}
+.admin-role-select:focus{
+  outline:none;
+  border-color:#748895;
+  box-shadow:0 0 0 2px #74889522;
+}
+@media(max-width:900px){
+  .admin-role-legend{grid-template-columns:1fr;}
+  .admin-trainer-role-control{
+    justify-content:flex-start;
+    min-width:0;
+  }
+}
